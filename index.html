@@ -74,6 +74,25 @@
   }
   p { color: var(--fg); margin-bottom: 14px; }
   p.dim { color: var(--dim); }
+  ul.list { list-style: none; margin: 0 0 14px; padding: 0; }
+  ul.list li {
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    line-height: 1.55;
+  }
+  ul.list li::before {
+    content: "·";
+    color: var(--hot);
+    font-weight: 800;
+    position: absolute;
+    left: 4px;
+    top: -2px;
+    font-size: 22px;
+  }
+  section h3 + p, section h3 + ul.list { margin-top: 8px; }
+  section h3 ~ h3 { margin-top: 28px; }
   .placeholder {
     border: 1px dashed #2a2a2a;
     background: #0f0f0f;
@@ -184,7 +203,22 @@
   <!-- 어디까지 왔고 무엇이 가능한지 -->
   <section>
     <h2>어디까지 왔고 무엇이 가능한가</h2>
-    <div class="placeholder">제품 단계 본문 자리 — 1단·2단 레이더 / 자동배차 필터 / 정산 통계 / 두 폰 분리 운영 등 현재 박혀있는 기능. 단순 기능 나열이 아니라 디렉터 운행에서 어떻게 손에 박히는가 톤.</div>
+
+    <h3>목표는 간단합니다.</h3>
+    <ul class="list">
+      <li>세 번 네 번 터치하던 걸 <span class="hot">한 번</span>에.</li>
+      <li>5초 10초 고민하던 걸 <span class="hot">1초</span> 안에.</li>
+    </ul>
+    <p>그게 다입니다.</p>
+
+    <h3>플랫폼 — 다섯에서 셋으로</h3>
+    <p>처음엔 빅서비스 플랫폼 어플 다섯 개를 묶어서 연동해 보려 했습니다. 기술적으로는 가능한 한 단계까지 갔습니다. 다만 그 중 두 개는 도저히 안고 갈 수 없을 만큼 사용자 즉 운전하는 기사에게 친화적이지 않았습니다. 오히려 방해가 됩니다.</p>
+    <p class="dim">어떤 플랫폼인지는 따로 언급하지 않겠습니다. 고소당할까 봐 무섭습니다.</p>
+
+    <h3>폰 — 한 대도 좋고 두 대도 좋습니다</h3>
+    <p>핸드폰 한 대로도 쓸 수 있고 두 대로도 쓸 수 있습니다. 두 대가 반드시 더 나은 것도 아닙니다. <span class="hot">굳이 이 도구 때문에 핸드폰 하나 더 사지 마십시오.</span> 원래 두 대 쓰시던 분들은 두 대를 연동해서 쓸 수 있게 만들고 있습니다.</p>
+
+    <p class="dim">구체적인 구현 단계와 어디까지 갈지는 곧 보충해 드리겠습니다.</p>
   </section>
 
   <!-- MANIFESTO (원문 보존) -->
