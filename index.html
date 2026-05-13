@@ -9,6 +9,13 @@
 <meta property="og:title" content="QuickPilot">
 <meta property="og:description" content="운전 중에 콜 하나 더 잡겠다고 뒤질 뻔한 적, 한두 번이 아닙니다. 더럽고 열 받아서 내가 만들었습니다.">
 <meta property="og:type" content="website">
+
+<!-- markdown 렌더링 -->
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+<!-- 편집 모드 마크다운 에디터 -->
+<link rel="stylesheet" href="https://unpkg.com/easymde@2.18.0/dist/easymde.min.css">
+<script src="https://unpkg.com/easymde@2.18.0/dist/easymde.min.js" defer></script>
+
 <style>
   :root {
     --bg: #0a0a0a;
@@ -29,249 +36,232 @@
     -webkit-font-smoothing: antialiased;
   }
   main { max-width: 640px; margin: 0 auto; padding: 0 22px 80px; }
-  section { padding: 56px 0; border-bottom: 1px solid var(--line); }
+  section { padding: 56px 0; border-bottom: 1px solid var(--line); position: relative; }
   section:last-of-type { border-bottom: 0; }
 
-  /* HERO */
-  .hero { padding: 88px 0 64px; border-bottom: 1px solid var(--line); }
-  .hero .tag {
-    display: inline-block;
-    font-size: 13px;
-    letter-spacing: 0.08em;
-    color: var(--hot);
-    font-weight: 700;
-    margin-bottom: 22px;
-  }
-  .hero h1 {
-    font-size: 30px;
-    line-height: 1.35;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-    color: #ffffff;
-  }
-  .hero h1 .pop { color: var(--hot); }
-  .hero .sub {
-    margin-top: 22px;
-    color: var(--dim);
-    font-size: 15px;
-  }
-
-  /* SECTION TITLE */
-  h2 {
-    font-size: 13px;
-    letter-spacing: 0.14em;
-    color: var(--hot);
-    font-weight: 800;
-    margin-bottom: 18px;
-    text-transform: uppercase;
-  }
-  h3 {
-    font-size: 22px;
-    line-height: 1.4;
-    font-weight: 700;
-    margin-bottom: 14px;
-    color: #ffffff;
-  }
-  p { color: var(--fg); margin-bottom: 14px; }
-  p.dim { color: var(--dim); }
-  ul.list { list-style: none; margin: 0 0 14px; padding: 0; }
-  ul.list li {
+  /* 마크다운 콘텐츠 안의 bold = 빨강 강조 */
+  .md strong { color: var(--hot); font-weight: 700; }
+  .md em { color: var(--dim); font-style: italic; }
+  .md p { color: var(--fg); margin-bottom: 14px; }
+  .md ul { list-style: none; margin: 0 0 14px; padding: 0; }
+  .md ul li {
     position: relative;
     padding-left: 18px;
     margin-bottom: 10px;
     font-size: 18px;
     line-height: 1.55;
   }
-  ul.list li::before {
-    content: "·";
-    color: var(--hot);
-    font-weight: 800;
-    position: absolute;
-    left: 4px;
-    top: -2px;
-    font-size: 22px;
+  .md ul li::before {
+    content: "·"; color: var(--hot); font-weight: 800;
+    position: absolute; left: 4px; top: -2px; font-size: 22px;
   }
-  section h3 + p, section h3 + ul.list { margin-top: 8px; }
-  section h3 ~ h3 { margin-top: 28px; }
-  .placeholder {
-    border: 1px dashed #2a2a2a;
-    background: #0f0f0f;
-    color: #6a6a6a;
-    padding: 18px;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-bottom: 14px;
+  .md h3 {
+    font-size: 22px; line-height: 1.4; font-weight: 700;
+    margin: 28px 0 14px; color: #ffffff;
+  }
+  .md h3:first-child { margin-top: 8px; }
+  .md blockquote {
+    border-left: 3px solid var(--hot);
+    padding: 4px 0 4px 12px;
+    margin: 18px 0;
+    color: var(--dim); font-size: 14px;
   }
 
-  /* MANIFESTO */
-  .manifesto p {
-    font-size: 18px;
-    line-height: 1.75;
+  /* HERO */
+  .hero { padding: 88px 0 64px; border-bottom: 1px solid var(--line); }
+  .hero .tag {
+    display: inline-block; font-size: 13px; letter-spacing: 0.08em;
+    color: var(--hot); font-weight: 700; margin-bottom: 22px;
+  }
+  .hero .md p { font-size: 30px; line-height: 1.35; font-weight: 800;
+    letter-spacing: -0.01em; color: #ffffff; }
+  .hero .md strong { color: var(--hot); }
+  .hero .md.sub { margin-top: 22px; }
+  .hero .md.sub p { color: var(--dim); font-size: 15px; font-weight: 400; }
+
+  /* SECTION HEADER */
+  .sec-head {
+    display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 18px;
   }
-  .manifesto .hot { color: var(--hot); font-weight: 700; }
-  .manifesto .sig {
-    margin-top: 28px;
-    color: var(--dim);
-    font-size: 14px;
-    border-left: 2px solid var(--hot);
-    padding-left: 12px;
+  h2 {
+    font-size: 13px; letter-spacing: 0.14em; color: var(--hot);
+    font-weight: 800; text-transform: uppercase;
   }
 
+  /* EDIT BUTTON */
+  .edit-btn {
+    background: transparent; border: 1px solid var(--line);
+    color: var(--dim); font-size: 12px; padding: 6px 10px;
+    border-radius: 6px; cursor: pointer; font-family: inherit;
+  }
+  .edit-btn:hover { color: var(--hot); border-color: var(--hot); }
+
+  /* MANIFESTO */
+  .manifesto .md p { font-size: 18px; line-height: 1.75; margin-bottom: 18px; }
+  .manifesto .md blockquote { font-size: 14px; }
+
   /* DEMO */
-  .demo {
+  .demo-frame {
     margin: 24px auto;
-    width: 100%;
-    max-width: 340px;
+    width: 100%; max-width: 340px;
     aspect-ratio: 9 / 18;
-    border: 8px solid #1c1c1c;
-    border-radius: 38px;
+    border: 8px solid #1c1c1c; border-radius: 38px;
     background: #050505;
     box-shadow: 0 8px 40px rgba(255, 59, 48, 0.10);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #4a4a4a;
-    font-size: 13px;
-    text-align: center;
-    padding: 20px;
+    display: flex; align-items: center; justify-content: center;
+    color: #4a4a4a; font-size: 13px; text-align: center; padding: 20px;
   }
 
   /* CTA */
   .cta { padding: 72px 0 24px; }
-  .cta h3 { font-size: 24px; }
   .btn {
-    display: block;
-    width: 100%;
-    background: var(--hot);
-    color: #ffffff;
-    text-align: center;
-    font-weight: 800;
-    font-size: 17px;
-    padding: 18px 22px;
-    border-radius: 12px;
-    text-decoration: none;
-    margin-top: 18px;
-    border: 0;
-    cursor: pointer;
+    display: block; width: 100%;
+    background: var(--hot); color: #ffffff;
+    text-align: center; font-weight: 800; font-size: 17px;
+    padding: 18px 22px; border-radius: 12px;
+    text-decoration: none; margin-top: 18px; border: 0; cursor: pointer;
   }
   .btn:active { transform: translateY(1px); }
   .small {
-    color: var(--dim);
-    font-size: 13px;
-    margin-top: 16px;
-    text-align: center;
+    color: var(--dim); font-size: 13px; margin-top: 16px; text-align: center;
   }
 
   footer {
-    color: #555;
-    font-size: 12px;
-    text-align: center;
-    padding: 32px 22px 60px;
-    border-top: 1px solid var(--line);
+    color: #555; font-size: 12px; text-align: center;
+    padding: 32px 22px 60px; border-top: 1px solid var(--line);
   }
 
-  /* DESKTOP */
+  /* EDIT MODE OVERLAY */
+  .edit-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    z-index: 100; display: none;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .edit-overlay.on { display: flex; }
+  .edit-panel {
+    background: #131313; border: 1px solid var(--line); border-radius: 12px;
+    width: 100%; max-width: 720px; max-height: 90vh;
+    display: flex; flex-direction: column;
+  }
+  .edit-panel header {
+    padding: 16px 20px; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .edit-panel header h3 { font-size: 14px; color: var(--hot); font-weight: 700; letter-spacing: 0.08em; }
+  .edit-panel header .x {
+    background: transparent; border: 0; color: var(--dim);
+    font-size: 22px; cursor: pointer;
+  }
+  .edit-panel .body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+  .edit-panel footer {
+    padding: 14px 20px; border-top: 1px solid var(--line);
+    display: flex; gap: 10px; justify-content: flex-end;
+    border-bottom: 0; background: none;
+  }
+  .edit-panel footer button {
+    padding: 10px 18px; border-radius: 8px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: inherit; border: 0;
+  }
+  .btn-save { background: var(--hot); color: #fff; }
+  .btn-cancel { background: transparent; border: 1px solid var(--line); color: var(--dim); }
+  .input {
+    width: 100%; padding: 10px 12px; background: #050505;
+    border: 1px solid var(--line); color: var(--fg);
+    border-radius: 6px; font-family: monospace; font-size: 13px;
+  }
+  .input:focus { border-color: var(--hot); outline: none; }
+  .help { color: var(--dim); font-size: 13px; margin: 12px 0; line-height: 1.6; }
+  .help a { color: var(--hot); }
+  .status { font-size: 13px; margin-top: 10px; }
+  .status.ok { color: #4ade80; }
+  .status.err { color: var(--hot); }
+
+  /* EasyMDE dark tweaks */
+  .EasyMDEContainer .CodeMirror,
+  .EasyMDEContainer .editor-preview,
+  .EasyMDEContainer .editor-toolbar {
+    background: #0a0a0a; color: var(--fg); border-color: var(--line);
+  }
+  .EasyMDEContainer .CodeMirror-cursor { border-color: var(--hot); }
+  .EasyMDEContainer .editor-toolbar button { color: var(--dim); }
+  .EasyMDEContainer .editor-toolbar button:hover,
+  .EasyMDEContainer .editor-toolbar button.active { background: #1f1f1f; color: var(--hot); }
+
   @media (min-width: 720px) {
     body { font-size: 18px; }
-    .hero h1 { font-size: 40px; }
-    h3 { font-size: 26px; }
-    .manifesto p { font-size: 19px; }
+    .hero .md p { font-size: 40px; }
   }
 </style>
 </head>
 <body>
 <main>
 
-  <!-- HERO -->
+  <!-- 1. HERO -->
   <header class="hero">
     <div class="tag">QUICKPILOT · 베타 테스터 모집</div>
-    <h1>
-      운전 중에 콜 하나 더 잡겠다고 핸드폰 2개 세팅해 놓고 어플 서너개 조작하다가
-      <span class="pop">뒤질 뻔한 게 한두 번이 아닙니다.</span><br>
-      <span class="pop">더럽고 열 받아서 내가 만들었습니다.</span>
-    </h1>
-    <p class="sub">현장 기사가 직접 만드는 콜 자동배차·필터·정산 도구.</p>
+    <div class="sec-head">
+      <span style="display:none">hero</span>
+      <button class="edit-btn" data-edit="hero">✏ 편집</button>
+    </div>
+    <div class="md" data-content="hero">로딩 중…</div>
+    <div class="md sub" data-content="hero-sub"></div>
   </header>
 
-  <!-- 빌드업 스토리 -->
+  <!-- 2. 빌드업 -->
   <section>
-    <h2>여기까지 어떻게 왔는가</h2>
-
-    <p>이 앱 쓰는 사람들은 운전하다가 알림 뜨면 빠르게 캐치하고 무사히 할 일 끝내고 돈 벌어서 집에 가야 하는 사람들입니다. <span class="hot">기다리는 사람들 있습니다.</span> 절대 간과하면 안 됩니다.</p>
-
-    <p>UI가 한 픽셀 어긋나면 그게 배달 한 건 놓치는 겁니다. 사용자가 집에 들고 갈 돈이 그만큼 줄어드는 겁니다. 현장에 직접 있으면서 만들어야 매 줄의 코드에 그 무게가 박힙니다. <span class="hot">사용자에 대한 책임감은 거리에 반비례합니다.</span></p>
-
-    <p>현장의 온도는 시간이 지나면 떨어집니다. 현장의 언어는 거쳐갈수록 변질됩니다. 본사 관리자가 기사 현장을 모르면 그 외침이 답답한 잡음으로만 들립니다. 매크로 운영자도 마찬가지입니다. 자기도 안 쓰는 제품을 팔고 기기에 관심 없고 서버 메타데이터만 긁어 구독료 돌립니다. <span class="hot">현장에서 멀어진 채로 만든 도구는 현장을 보호하지 못하고 착취만 합니다.</span></p>
-
-    <p>그래서 직접 운전합니다. 직접 코드를 짭니다. 운행 한 건 한 건이 큐피의 검증 에피소드입니다. 운행 중 몸에 걸리는 머릿돌 하나하나 제거가 먼저고 우아함·속도·일관성은 그다음입니다.</p>
-
-    <p>이건 직접 현장에서 개고생해 본 사람이 그 모든 걸 다 녹여서 하나하나 전부 검증하고 빠짐없이 녹여내는 게 중요합니다.</p>
+    <div class="sec-head">
+      <h2>여기까지 어떻게 왔는가</h2>
+      <button class="edit-btn" data-edit="buildup">✏ 편집</button>
+    </div>
+    <div class="md" data-content="buildup">로딩 중…</div>
   </section>
 
-  <!-- 어디까지 왔고 무엇이 가능한지 -->
+  <!-- 3. 어디까지 왔고 -->
   <section>
-    <h2>어디까지 왔고 무엇이 가능한가</h2>
-
-    <h3>목표는 간단합니다.</h3>
-    <ul class="list">
-      <li>세 번 네 번 터치하던 걸 <span class="hot">한 번</span>에.</li>
-      <li>5초 10초 고민하던 걸 <span class="hot">1초</span> 안에.</li>
-    </ul>
-    <p>그게 다입니다.</p>
-
-    <h3>플랫폼 — 다섯에서 셋으로</h3>
-    <p>처음엔 빅서비스 플랫폼 어플 다섯 개를 묶어서 연동해 보려 했습니다. 기술적으로는 가능한 한 단계까지 갔습니다. 다만 그 중 두 개는 도저히 안고 갈 수 없을 만큼 사용자 즉 운전하는 기사에게 친화적이지 않았습니다. 오히려 방해가 됩니다.</p>
-    <p class="dim">어떤 플랫폼인지는 따로 언급하지 않겠습니다. 고소당할까 봐 무섭습니다.</p>
-
-    <h3>폰 — 한 대도 좋고 두 대도 좋습니다</h3>
-    <p>핸드폰 한 대로도 쓸 수 있고 두 대로도 쓸 수 있습니다. 두 대가 반드시 더 나은 것도 아닙니다. <span class="hot">굳이 이 도구 때문에 핸드폰 하나 더 사지 마십시오.</span> 원래 두 대 쓰시던 분들은 두 대를 연동해서 쓸 수 있게 만들고 있습니다.</p>
-
-    <p class="dim">구체적인 구현 단계와 어디까지 갈지는 곧 보충해 드리겠습니다.</p>
+    <div class="sec-head">
+      <h2>어디까지 왔고 무엇이 가능한가</h2>
+      <button class="edit-btn" data-edit="now">✏ 편집</button>
+    </div>
+    <div class="md" data-content="now">로딩 중…</div>
   </section>
 
-  <!-- MANIFESTO (원문 보존) -->
+  <!-- 4. MANIFESTO -->
   <section class="manifesto">
-    <h2>한 가지 부탁드립니다</h2>
-
-    <p><span class="hot">지지기냐고 묻지 마세요. 지지기랑 비교도 하지 마세요.</span> 그거 굉장히 무례한 말입니다. 나름 명품 가방 한번 만들어 보겠다고 한 땀 한 땀 영혼을 다해 바느질 하고 있는데 지나가면서 어디 동대문 뒷골목에서 주워온 거냐고 툭 던지고 가는거랑 똑같습니다. 그런 불법 매크로나 따라하자고 이렇게 매출이 반토막나고 잠자는 시간이 반토막 나면서 하나부터 열까지 머리로 박아가며 검증하고 있는거 아닙니다. 그렇게 한가하지도 않고 그렇게 심심하지도 않습니다. 제가 이거 만든다고 욕 먹을 일도 아니지만 누군들 마음에 안 들고 쓰기 싫으면 안 쓰면 그만입니다. 써달라고 부탁하기도 싫습니다. 에너지 갉아 먹는 악성 유저는 제가 먼저 차단합니다.</p>
-
-    <p>그럼에도 이걸 끝까지 완성시켜야 이유는 딱 한 가지입니다. <span class="hot">우리 아저씨들 우여곡절 끝에 여기까지 왔는데, 만원 한 장이라도 더 벌어서 아무 사고 없이 집에 들어가야 됩니다.</span> 기다리는 사람들 있습니다. 그 아저씨 한 명 무너지면 다 무너집니다. 그 아저씨 한 명 잘 되면 다 잘 될 수 있습니다.</p>
-
-    <p>우리가 사용해야 하는 플랫폼 어플들이 각자 생긴 게 다르고 기능이 부족한 건 백번 양보한다 쳐도 자동 배차 하나 똑바로 안 되고 필터 없이 하루 종일 쓸데없는 팝업이 울려대는 건 <span class="hot">사고 유발 그 이상도 이하도 아닙니다.</span></p>
-
-    <p>여기까지 관심 갖고 찾아와 주신 형님들 보란 듯이 다시 일어나시고 두 번 다시 무너지지 마십시오.</p>
-
-    <p class="sig">저도 그랬기 때문에 감히 주제 넘게 말씀드립니다.</p>
+    <div class="sec-head">
+      <h2>한 가지 부탁드립니다</h2>
+      <button class="edit-btn" data-edit="manifesto">✏ 편집</button>
+    </div>
+    <div class="md" data-content="manifesto">로딩 중…</div>
   </section>
 
-  <!-- 큰 그림 -->
+  <!-- 5. VISION -->
   <section>
-    <h2>어디로 가는가</h2>
-
-    <p>큐피의 약속은 단 하나입니다. 여러분의 모든 운행 케이스가 자료로 박힙니다. <span class="hot">1년 운행이면 본인도 잊은 1,000개 패턴이 자료 안에 그대로 살아있습니다.</span> 머릿속에서는 시간이 지나면 평균값과 강한 감정만 남고 나머지는 자동으로 휘발됩니다. 자료로 박히면 휘발되지 않습니다.</p>
-
-    <p>큐피는 알고리즘으로 사람을 가르치지 않습니다. <span class="hot">사람의 자료를 학습해서 그 사람의 비서가 됩니다.</span> 기사 A가 잡는 콜과 기사 B가 잡는 콜이 다릅니다. 시간대도 다르고 권역도 다르고 시급 기준도 다릅니다. 평균값 알고리즘이 A에게 B의 룰을 추천하면 짜증나고 신뢰는 무너집니다. 그래서 일반론으로 가지 않습니다.</p>
-
-    <p>기존 플랫폼 어플을 조작하지 않습니다. 강제로 인위적으로 바꾸지 않습니다. <span class="hot">자연스럽게 둔 상태에서 그 위에서 더 나은 선택을 할 수 있게 해줍니다.</span> 그래서 합법이고 그래서 계정 정지·페널티 위험이 없습니다. 매크로 운영자가 들어가지 못하는 영역입니다.</p>
-
-    <p><span class="hot">합법 + 더 나음 + 더 쌈,</span> 셋이 동시에 성립하면 시장은 자연스럽게 이주합니다. 큐피가 지금까지 이 난리 이 연병을 친 이유입니다.</p>
+    <div class="sec-head">
+      <h2>어디로 가는가</h2>
+      <button class="edit-btn" data-edit="vision">✏ 편집</button>
+    </div>
+    <div class="md" data-content="vision">로딩 중…</div>
   </section>
 
-  <!-- DEMO -->
+  <!-- 6. DEMO -->
   <section>
-    <h2>직접 느껴보세요</h2>
-    <h3>사진 백 장보다 한 번 눌러보는 게 빠릅니다.</h3>
-    <p class="dim">아래 폰 화면에 큐피 핵심 시나리오 한두 가지가 박힙니다. GG 자동확정으로 들어온 정반대 방향 콜이 큐피 필터에 어떻게 걸러지는지 두 폰 분리 운영에서 어떻게 흐르는지 손가락으로 직접 눌러보면서요.</p>
-    <div class="demo">여기 폰 화면 박힙니다.<br>곧 손가락으로 직접 눌러 보실 수 있습니다.</div>
+    <div class="sec-head">
+      <h2>직접 느껴보세요</h2>
+      <button class="edit-btn" data-edit="demo">✏ 편집</button>
+    </div>
+    <div class="md" data-content="demo">로딩 중…</div>
+    <div class="demo-frame">여기 폰 화면 박힙니다.<br>곧 손가락으로 직접 눌러 보실 수 있습니다.</div>
   </section>
 
-  <!-- CTA -->
+  <!-- 7. CTA -->
   <section class="cta">
-    <h2>베타 테스터 모집</h2>
-    <h3>아무나 막 쓰는 도구로 안 만듭니다.</h3>
-    <p>무료로 드리는 이유는 단 하나입니다. 여러분이 큐피를 쓰면서 쏘아 올려주는 자료가 다음 사용자들의 큐피를 더 똑똑하게 만들기 때문입니다. 그래서 신청해 주신 분 한 분 한 분 직접 확인하고 등록해 드립니다.</p>
-    <p class="dim">본인 인증된 핸드폰 번호로 라이센스가 발급됩니다. 등록된 본인만 쓸 수 있습니다.</p>
+    <div class="sec-head">
+      <h2>베타 테스터 모집</h2>
+      <button class="edit-btn" data-edit="cta">✏ 편집</button>
+    </div>
+    <div class="md" data-content="cta">로딩 중…</div>
     <a class="btn" href="#apply">베타 테스터 신청하기</a>
     <p class="small">폼 준비 중입니다. 며칠 안에 작동합니다.</p>
   </section>
@@ -282,5 +272,21 @@
   © QuickPilot · 현장 기사가 직접 만드는 도구
 </footer>
 
+<!-- EDIT MODE OVERLAY -->
+<div class="edit-overlay" id="overlay">
+  <div class="edit-panel">
+    <header>
+      <h3 id="edit-title">편집</h3>
+      <button class="x" onclick="closeEdit()">×</button>
+    </header>
+    <div class="body" id="edit-body"></div>
+    <footer>
+      <button class="btn-cancel" onclick="closeEdit()">취소</button>
+      <button class="btn-save" onclick="saveEdit()">저장 + Push</button>
+    </footer>
+  </div>
+</div>
+
+<script src="admin.js" defer></script>
 </body>
 </html>
