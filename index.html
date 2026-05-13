@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QuickPilot — 운전 중에 콜 하나 더 잡겠다고 뒤질 뻔한 적, 한두 번이 아닙니다</title>
+<meta name="description" content="더럽고 열 받아서 내가 만들었다. 현장 기사가 직접 만드는 콜 자동배차·필터·정산 도구.">
+<meta name="theme-color" content="#0a0a0a">
+<meta property="og:title" content="QuickPilot">
+<meta property="og:description" content="운전 중에 콜 하나 더 잡겠다고 뒤질 뻔한 적, 한두 번이 아닙니다. 더럽고 열 받아서 내가 만들었습니다.">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --fg: #f5f5f5;
+    --dim: #9a9a9a;
+    --hot: #ff3b30;
+    --line: #1f1f1f;
+    --card: #131313;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--fg); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+    line-height: 1.65;
+    font-size: 17px;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 0 22px 80px; }
+  section { padding: 56px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: 0; }
+
+  /* HERO */
+  .hero { padding: 88px 0 64px; border-bottom: 1px solid var(--line); }
+  .hero .tag {
+    display: inline-block;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--hot);
+    font-weight: 700;
+    margin-bottom: 22px;
+  }
+  .hero h1 {
+    font-size: 30px;
+    line-height: 1.35;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: #ffffff;
+  }
+  .hero h1 .pop { color: var(--hot); }
+  .hero .sub {
+    margin-top: 22px;
+    color: var(--dim);
+    font-size: 15px;
+  }
+
+  /* SECTION TITLE */
+  h2 {
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    color: var(--hot);
+    font-weight: 800;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  h3 {
+    font-size: 22px;
+    line-height: 1.4;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #ffffff;
+  }
+  p { color: var(--fg); margin-bottom: 14px; }
+  p.dim { color: var(--dim); }
+  .placeholder {
+    border: 1px dashed #2a2a2a;
+    background: #0f0f0f;
+    color: #6a6a6a;
+    padding: 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* MANIFESTO */
+  .manifesto p {
+    font-size: 18px;
+    line-height: 1.75;
+    margin-bottom: 18px;
+  }
+  .manifesto .hot { color: var(--hot); font-weight: 700; }
+  .manifesto .sig {
+    margin-top: 28px;
+    color: var(--dim);
+    font-size: 14px;
+    border-left: 2px solid var(--hot);
+    padding-left: 12px;
+  }
+
+  /* DEMO */
+  .demo {
+    margin: 24px auto;
+    width: 100%;
+    max-width: 340px;
+    aspect-ratio: 9 / 18;
+    border: 8px solid #1c1c1c;
+    border-radius: 38px;
+    background: #050505;
+    box-shadow: 0 8px 40px rgba(255, 59, 48, 0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4a4a4a;
+    font-size: 13px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  /* CTA */
+  .cta { padding: 72px 0 24px; }
+  .cta h3 { font-size: 24px; }
+  .btn {
+    display: block;
+    width: 100%;
+    background: var(--hot);
+    color: #ffffff;
+    text-align: center;
+    font-weight: 800;
+    font-size: 17px;
+    padding: 18px 22px;
+    border-radius: 12px;
+    text-decoration: none;
+    margin-top: 18px;
+    border: 0;
+    cursor: pointer;
+  }
+  .btn:active { transform: translateY(1px); }
+  .small {
+    color: var(--dim);
+    font-size: 13px;
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  footer {
+    color: #555;
+    font-size: 12px;
+    text-align: center;
+    padding: 32px 22px 60px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* DESKTOP */
+  @media (min-width: 720px) {
+    body { font-size: 18px; }
+    .hero h1 { font-size: 40px; }
+    h3 { font-size: 26px; }
+    .manifesto p { font-size: 19px; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="tag">QUICKPILOT · 베타 테스터 모집</div>
+    <h1>
+      운전 중에 콜 하나 더 잡겠다고 핸드폰 2개 세팅해 놓고 어플 서너개 조작하다가
+      <span class="pop">뒤질 뻔한 게 한두 번이 아닙니다.</span><br>
+      <span class="pop">더럽고 열 받아서 내가 만들었습니다.</span>
+    </h1>
+    <p class="sub">현장 기사가 직접 만드는 콜 자동배차·필터·정산 도구.</p>
+  </header>
+
+  <!-- 빌드업 스토리 (디렉터 직접 작성) -->
+  <section>
+    <h2>여기까지 어떻게 왔는가</h2>
+    <div class="placeholder">디렉터 본문 — 빌드업 스토리 (운행 경력 / 시장 경험 / 큐피 시작 계기 / 여정 한 단락) 자리. 슬로건과 manifesto 사이의 결을 잇는 본문이라 디렉터 본인 손으로 채워야 함.</div>
+  </section>
+
+  <!-- 어디까지 왔고 무엇이 가능한지 -->
+  <section>
+    <h2>어디까지 왔고 무엇이 가능한가</h2>
+    <div class="placeholder">제품 단계 본문 자리 — 1단·2단 레이더 / 자동배차 필터 / 정산 통계 / 두 폰 분리 운영 등 현재 박혀있는 기능. 단순 기능 나열이 아니라 디렉터 운행에서 어떻게 손에 박히는가 톤.</div>
+  </section>
+
+  <!-- MANIFESTO (원문 보존) -->
+  <section class="manifesto">
+    <h2>한 가지 부탁드립니다</h2>
+
+    <p><span class="hot">지지기냐고 묻지 마세요. 지지기랑 비교도 하지 마세요.</span> 그거 굉장히 무례한 말입니다. 나름 명품 가방 한번 만들어 보겠다고 한 땀 한 땀 영혼을 다해 바느질 하고 있는데 지나가면서 어디 동대문 뒷골목에서 주워온 거냐고 툭 던지고 가는거랑 똑같습니다. 그런 불법 매크로나 따라하자고 이렇게 매출이 반토막나고 잠자는 시간이 반토막 나면서 하나부터 열까지 머리로 박아가며 검증하고 있는거 아닙니다. 그렇게 한가하지도 않고 그렇게 심심하지도 않습니다. 제가 이거 만든다고 욕 먹을 일도 아니지만 누군들 마음에 안 들고 쓰기 싫으면 안 쓰면 그만입니다. 써달라고 부탁하기도 싫습니다. 에너지 갉아 먹는 악성 유저는 제가 먼저 차단합니다.</p>
+
+    <p>그럼에도 이걸 끝까지 완성시켜야 이유는 딱 한 가지입니다. <span class="hot">우리 아저씨들 우여곡절 끝에 여기까지 왔는데, 만원 한 장이라도 더 벌어서 아무 사고 없이 집에 들어가야 됩니다.</span> 기다리는 사람들 있습니다. 그 아저씨 한 명 무너지면 다 무너집니다. 그 아저씨 한 명 잘 되면 다 잘 될 수 있습니다.</p>
+
+    <p>우리가 사용해야 하는 플랫폼 어플들이 각자 생긴 게 다르고 기능이 부족한 건 백번 양보한다 쳐도 자동 배차 하나 똑바로 안 되고 필터 없이 하루 종일 쓸데없는 팝업이 울려대는 건 <span class="hot">사고 유발 그 이상도 이하도 아닙니다.</span></p>
+
+    <p>여기까지 관심 갖고 찾아와 주신 형님들 보란 듯이 다시 일어나시고 두 번 다시 무너지지 마십시오.</p>
+
+    <p class="sig">저도 그랬기 때문에 감히 주제 넘게 말씀드립니다.</p>
+  </section>
+
+  <!-- 큰 그림 (디렉터 직접 작성) -->
+  <section>
+    <h2>어디로 가는가</h2>
+    <div class="placeholder">큰 그림 본문 자리 — 큐피가 인성 매크로 시장을 어떻게 자연 흡수하는가 / 합법 + 더 나음 + 더 쌈의 흐름 / 자료 자산이 누적되면서 모든 사용자가 같이 똑똑해지는 구조. 디렉터 본인 비전 한 단락.</div>
+  </section>
+
+  <!-- DEMO -->
+  <section>
+    <h2>직접 느껴보세요</h2>
+    <h3>사진 백 장보다 한 번 눌러보는 게 빠릅니다.</h3>
+    <p class="dim">아래 폰 화면에 큐피 핵심 시나리오 한두 가지가 박힙니다. GG 자동확정으로 들어온 정반대 방향 콜이 큐피 필터에 어떻게 걸러지는지 두 폰 분리 운영에서 어떻게 흐르는지 손가락으로 직접 눌러보면서요.</p>
+    <div class="demo">[ 인터랙티브 데모 위치 ]<br>실제 큐피 핵심 시나리오 한두 개 시뮬레이션 박힙니다.</div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <h2>베타 테스터 모집</h2>
+    <h3>아무나 막 쓰는 도구로 안 만듭니다.</h3>
+    <p>무료로 드리는 이유는 단 하나입니다. 여러분이 큐피를 쓰면서 쏘아 올려주는 자료가 다음 사용자들의 큐피를 더 똑똑하게 만들기 때문입니다. 그래서 신청해 주신 분 한 분 한 분 직접 확인하고 등록해 드립니다.</p>
+    <p class="dim">본인 인증된 핸드폰 번호로 라이센스가 발급됩니다. 등록된 본인만 쓸 수 있습니다.</p>
+    <a class="btn" href="#apply">베타 테스터 신청하기</a>
+    <p class="small">신청 폼 연결 자리 — 구글폼 또는 자체 폼 박을 위치.</p>
+  </section>
+
+</main>
+
+<footer>
+  © QuickPilot · 현장 기사가 직접 만드는 도구
+</footer>
+
+</body>
+</html>
