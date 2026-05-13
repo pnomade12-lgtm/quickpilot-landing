@@ -29,63 +29,74 @@
   html, body { background: var(--bg); color: var(--fg); }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
-    line-height: 1.65;
+    line-height: 1.9;
     font-size: 17px;
     word-break: keep-all;
     overflow-wrap: anywhere;
     -webkit-font-smoothing: antialiased;
   }
-  main { max-width: 640px; margin: 0 auto; padding: 0 22px 80px; }
-  section { padding: 56px 0; border-bottom: 1px solid var(--line); position: relative; }
+  main { max-width: 600px; margin: 0 auto; padding: 0 24px 100px; }
+  section { padding: 72px 0; border-bottom: 1px solid var(--line); position: relative; }
   section:last-of-type { border-bottom: 0; }
 
   /* 마크다운 콘텐츠 안의 bold = 빨강 강조 */
   .md strong { color: var(--hot); font-weight: 700; }
-  .md em { color: var(--dim); font-style: italic; }
-  .md p { color: var(--fg); margin-bottom: 14px; }
-  .md ul { list-style: none; margin: 0 0 14px; padding: 0; }
+  .md em { color: var(--dim); font-style: italic; font-size: 0.95em; }
+  .md p { color: var(--fg); margin-bottom: 26px; line-height: 1.9; }
+  .md p:last-child { margin-bottom: 0; }
+  .md ul { list-style: none; margin: 0 0 24px; padding: 0; }
   .md ul li {
     position: relative;
-    padding-left: 18px;
-    margin-bottom: 10px;
-    font-size: 18px;
-    line-height: 1.55;
+    padding-left: 22px;
+    margin-bottom: 14px;
+    font-size: 19px;
+    line-height: 1.6;
   }
   .md ul li::before {
     content: "·"; color: var(--hot); font-weight: 800;
-    position: absolute; left: 4px; top: -2px; font-size: 22px;
+    position: absolute; left: 4px; top: -4px; font-size: 26px;
   }
   .md h3 {
-    font-size: 22px; line-height: 1.4; font-weight: 700;
-    margin: 28px 0 14px; color: #ffffff;
+    font-size: 22px; line-height: 1.45; font-weight: 700;
+    margin: 44px 0 18px; color: #ffffff;
   }
   .md h3:first-child { margin-top: 8px; }
   .md blockquote {
     border-left: 3px solid var(--hot);
-    padding: 4px 0 4px 12px;
-    margin: 18px 0;
+    padding: 4px 0 4px 14px;
+    margin: 24px 0;
     color: var(--dim); font-size: 14px;
+  }
+  .md hr {
+    border: 0; height: 1px; background: var(--line);
+    margin: 36px 0; opacity: 0.6;
   }
 
   /* HERO */
-  .hero { padding: 88px 0 64px; border-bottom: 1px solid var(--line); }
+  .hero { padding: 96px 0 72px; border-bottom: 1px solid var(--line); }
   .hero .tag {
-    display: inline-block; font-size: 13px; letter-spacing: 0.08em;
-    color: var(--hot); font-weight: 700; margin-bottom: 22px;
+    display: inline-block; font-size: 12px; letter-spacing: 0.14em;
+    color: var(--hot); font-weight: 700; margin-bottom: 28px;
   }
-  .hero .md p { font-size: 30px; line-height: 1.35; font-weight: 800;
-    letter-spacing: -0.01em; color: #ffffff; }
+  .hero .md p {
+    font-size: 28px; line-height: 1.45; font-weight: 800;
+    letter-spacing: -0.01em; color: #ffffff;
+    margin-bottom: 18px;
+  }
   .hero .md strong { color: var(--hot); }
-  .hero .md.sub { margin-top: 22px; }
-  .hero .md.sub p { color: var(--dim); font-size: 15px; font-weight: 400; }
+  .hero .md.sub { margin-top: 28px; }
+  .hero .md.sub p {
+    color: var(--dim); font-size: 15px; font-weight: 400;
+    line-height: 1.6;
+  }
 
   /* SECTION HEADER */
   .sec-head {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 18px;
+    margin-bottom: 32px;
   }
   h2 {
-    font-size: 13px; letter-spacing: 0.14em; color: var(--hot);
+    font-size: 12px; letter-spacing: 0.18em; color: var(--hot);
     font-weight: 800; text-transform: uppercase;
   }
 
@@ -97,9 +108,11 @@
   }
   .edit-btn:hover { color: var(--hot); border-color: var(--hot); }
 
-  /* MANIFESTO */
-  .manifesto .md p { font-size: 18px; line-height: 1.75; margin-bottom: 18px; }
-  .manifesto .md blockquote { font-size: 14px; }
+  /* MANIFESTO — 문단 호흡 길게 */
+  .manifesto .md p {
+    font-size: 18px; line-height: 2.0; margin-bottom: 30px;
+  }
+  .manifesto .md blockquote { font-size: 15px; margin-top: 36px; }
 
   /* DEMO */
   .demo-frame {
@@ -191,7 +204,10 @@
 
   @media (min-width: 720px) {
     body { font-size: 18px; }
-    .hero .md p { font-size: 40px; }
+    main { max-width: 640px; }
+    .hero .md p { font-size: 38px; }
+    .md p { margin-bottom: 30px; }
+    .manifesto .md p { font-size: 19px; }
   }
 </style>
 </head>
