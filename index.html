@@ -69,6 +69,14 @@
     margin-bottom: 18px;
     text-transform: uppercase;
   }
+  /* 5/17 디렉터 명시 — manifesto·why 헤드라인은 본문 2배 (한국어 대표 메시지) */
+  .manifesto h2, [data-box="why"] h2 {
+    font-size: 38px;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    line-height: 1.3;
+    margin-bottom: 24px;
+  }
   h3 {
     font-size: 22px;
     line-height: 1.4;
@@ -244,31 +252,6 @@
     </div>
   </header>
 
-  <!-- 빌드업 스토리 (디렉터 직접 작성) -->
-  <section class="box" data-box="buildup">
-    <div class="box-content">
-      <h2>여기까지 어떻게 왔는가</h2>
-      <div class="placeholder">디렉터 본문 — 빌드업 스토리 (운행 경력 / 시장 경험 / 큐피 시작 계기 / 여정 한 단락) 자리. 슬로건과 manifesto 사이의 결을 잇는 본문이라 디렉터 본인 손으로 채워야 함.</div>
-    </div>
-  </section>
-
-  <!-- 어디까지 왔고 무엇이 가능한지 -->
-  <section class="box" data-box="status">
-    <div class="box-content">
-      <h2>어디까지 왔고 무엇이 가능한가</h2>
-      <div class="placeholder">제품 단계 본문 자리 — 1단·2단 레이더 / 자동배차 필터 / 정산 통계 / 두 폰 분리 운영 등 현재 박혀있는 기능. 단순 기능 나열이 아니라 디렉터 운행에서 어떻게 손에 박히는가 톤.</div>
-    </div>
-  </section>
-
-  <!-- WHY — 누가 이득을 보는가 -->
-  <section class="box" data-box="why">
-    <div class="box-content">
-      <h2>누가 가장 이득을 보고 있습니까?</h2>
-      <p>플랫폼에서 규정하는 불법 매크로(지지기)의 한계는 명확합니다. <span class="hot">"불법 프로그램(지지기 등)을 판매 또는 설치 유도하는 행위는 다른 사업자나 기사를 기망하는 행위로 공유 영구 정지 사유에 해당할 수 있습니다."</span> 우리는 지금까지 생계를 위해 '영구 정지' 사유에 해당하는 엄청난 위험을 감수하고, 또 강제 확정 후 취소하기를 매일같이 반복하여 패널티(확정 후 취소 5회 누적 시 오더 노출 지연)를 안고 일을 하고 있었습니다. 비공식적으로 지지기 사용자가 90% 이상이라고 알려져 있고, 안 쓰면 바보라는 말 까지 돌고 있는 와중에 선택권 이라는 게 있었습니까? 남들도 다 하는데 안하면 일을 못한다고 하니 그저 울며 겨자먹기로 월 5만원 내외의 비용을 추가로 지출하며 해야만 하는 것 아니였습니까? 그럼에도 정말 웃긴건 그런 사용자가 90% 이상이라고 하니, 누가 더 나을 것도, 못날것도 없는 제자리 걸음 수준이라는 것 입니다.</p>
-      <p class="sig">제가 딱 한 가지만 묻겠습니다. <span class="hot">불법 매크로(지지기)로 인해서 누가 가장 이득을 보고 있습니까?</span></p>
-    </div>
-  </section>
-
   <!-- MANIFESTO (원문 보존) -->
   <section class="manifesto box" data-box="manifesto">
     <div class="box-content">
@@ -283,6 +266,31 @@
       <p>여기까지 관심 갖고 찾아와 주신 형님들 보란 듯이 다시 일어나시고 두 번 다시 무너지지 마십시오.</p>
 
       <p class="sig">저도 그랬기 때문에 감히 주제 넘게 말씀드립니다.</p>
+    </div>
+  </section>
+
+  <!-- WHY — 누가 이득을 보는가 -->
+  <section class="box" data-box="why">
+    <div class="box-content">
+      <h2>누가 가장 이득을 보고 있습니까?</h2>
+      <p>플랫폼에서 규정하는 불법 매크로(지지기)의 한계는 명확합니다. <span class="hot">"불법 프로그램(지지기 등)을 판매 또는 설치 유도하는 행위는 다른 사업자나 기사를 기망하는 행위로 공유 영구 정지 사유에 해당할 수 있습니다."</span> 우리는 지금까지 생계를 위해 '영구 정지' 사유에 해당하는 엄청난 위험을 감수하고, 또 강제 확정 후 취소하기를 매일같이 반복하여 패널티(확정 후 취소 5회 누적 시 오더 노출 지연)를 안고 일을 하고 있었습니다. 비공식적으로 지지기 사용자가 90% 이상이라고 알려져 있고, 안 쓰면 바보라는 말 까지 돌고 있는 와중에 선택권 이라는 게 있었습니까? 남들도 다 하는데 안하면 일을 못한다고 하니 그저 울며 겨자먹기로 월 5만원 내외의 비용을 추가로 지출하며 해야만 하는 것 아니였습니까? 그럼에도 정말 웃긴건 그런 사용자가 90% 이상이라고 하니, 누가 더 나을 것도, 못날것도 없는 제자리 걸음 수준이라는 것 입니다.</p>
+      <p class="sig">제가 딱 한 가지만 묻겠습니다. <span class="hot">불법 매크로(지지기)로 인해서 누가 가장 이득을 보고 있습니까?</span></p>
+    </div>
+  </section>
+
+  <!-- 빌드업 스토리 (디렉터 직접 작성) -->
+  <section class="box" data-box="buildup">
+    <div class="box-content">
+      <h2>여기까지 어떻게 왔는가</h2>
+      <div class="placeholder">디렉터 본문 — 빌드업 스토리 (운행 경력 / 시장 경험 / 큐피 시작 계기 / 여정 한 단락) 자리. 슬로건과 manifesto 사이의 결을 잇는 본문이라 디렉터 본인 손으로 채워야 함.</div>
+    </div>
+  </section>
+
+  <!-- 어디까지 왔고 무엇이 가능한지 -->
+  <section class="box" data-box="status">
+    <div class="box-content">
+      <h2>어디까지 왔고 무엇이 가능한가</h2>
+      <div class="placeholder">제품 단계 본문 자리 — 1단·2단 레이더 / 자동배차 필터 / 정산 통계 / 두 폰 분리 운영 등 현재 박혀있는 기능. 단순 기능 나열이 아니라 디렉터 운행에서 어떻게 손에 박히는가 톤.</div>
     </div>
   </section>
 
