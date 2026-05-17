@@ -441,29 +441,37 @@
       docClone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
       const html = '<!doctype html>\n' + docClone.outerHTML;
 
-      const metaRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}?ref=${BRANCH}`, {
-        headers: { Authorization: 'token ' + pat }
-      });
-      if (!metaRes.ok) {
-        const errTxt = await metaRes.text();
-        throw new Error('SHA fetch ' + metaRes.status + ' — ' + errTxt.slice(0, 150));
-      }
-      const meta = await metaRes.json();
+      // 5/17 본질 fix — 409 conflict (sha 자료 자료) 시 자동 retry (최대 3회)
+      //   디렉터 페이지가 옛 자료 자료 자료 박힌 경우 본인이 GitHub에서 새 sha 받아 재시도
+      let putOk = false; let lastErr = '';
+      for (let attempt = 0; attempt < 3 && !putOk; attempt++) {
+        const metaRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}?ref=${BRANCH}&_=${Date.now()}`, {
+          headers: { Authorization: 'token ' + pat, 'Cache-Control': 'no-cache' }
+        });
+        if (!metaRes.ok) {
+          const errTxt = await metaRes.text();
+          throw new Error('SHA fetch ' + metaRes.status + ' — ' + errTxt.slice(0, 150));
+        }
+        const meta = await metaRes.json();
 
-      const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}`, {
-        method: 'PUT',
-        headers: { Authorization: 'token ' + pat, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: `편집: ${box.dataset.box} 박스 (랜딩 편집 UI)`,
-          content: btoa(unescape(encodeURIComponent(html))),
-          sha: meta.sha,
-          branch: BRANCH
-        })
-      });
-      if (!putRes.ok) {
+        const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}`, {
+          method: 'PUT',
+          headers: { Authorization: 'token ' + pat, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `편집: ${box.dataset.box} 박스 (랜딩 편집 UI)`,
+            content: btoa(unescape(encodeURIComponent(html))),
+            sha: meta.sha,
+            branch: BRANCH
+          })
+        });
+        if (putRes.ok) { putOk = true; break; }
         const err = await putRes.text();
-        throw new Error('PUT ' + putRes.status + ' — ' + err.slice(0, 200));
+        lastErr = 'PUT ' + putRes.status + ' — ' + err.slice(0, 200);
+        if (putRes.status !== 409) throw new Error(lastErr);
+        // 409 = sha conflict, retry with fresh sha
+        flash(`sha 자료 자료 — 재시도 ${attempt + 1}/3`);
       }
+      if (!putOk) throw new Error('재시도 실패: ' + lastErr);
       box._snapshot = null;
       flash('저장 완료 ✓ (1~2분 후 라이브 반영)', 'ok');
     } catch (e) {
