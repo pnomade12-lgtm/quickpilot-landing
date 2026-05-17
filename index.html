@@ -445,8 +445,10 @@
       //   디렉터 페이지가 옛 자료 자료 자료 박힌 경우 본인이 GitHub에서 새 sha 받아 재시도
       let putOk = false; let lastErr = '';
       for (let attempt = 0; attempt < 3 && !putOk; attempt++) {
+        // 5/17 본질 fix — Cache-Control 헤더 제거 (GitHub API CORS preflight fail 원인).
+        //   캐시 회피는 URL에 박힌 _=Date.now() 만으로 충분.
         const metaRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}?ref=${BRANCH}&_=${Date.now()}`, {
-          headers: { Authorization: 'token ' + pat, 'Cache-Control': 'no-cache' }
+          headers: { Authorization: 'token ' + pat }
         });
         if (!metaRes.ok) {
           const errTxt = await metaRes.text();
