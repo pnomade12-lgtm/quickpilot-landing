@@ -340,9 +340,20 @@
   const OWNER_LOGIN = 'pnomade12-lgtm';
   const PAT_KEY = 'qp_landing_pat';
 
-  const status = document.getElementById('edit-status');
+  function ensureStatus() {
+    // 5/17 본질 fix — saveEdit cloneNode에서 #edit-status 같이 삭제됐던 자료.
+    //   HTML source에 박혔다 사라진 자료 자료 자료. 매번 자동 재생성 박음.
+    let s = document.getElementById('edit-status');
+    if (!s) {
+      s = document.createElement('div');
+      s.id = 'edit-status';
+      document.body.appendChild(s);
+    }
+    return s;
+  }
   function flash(msg, kind) {
     // kind: 'ok' | 'error' | undefined
+    const status = ensureStatus();
     status.textContent = msg;
     status.className = 'show' + (kind ? ' ' + kind : '');
     console.log('[QP edit]', msg);
