@@ -1,0 +1,51 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>1307 김태욱 · 비다마스 콜 방향</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#9A8F78}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm)}
+.head{padding:13px 15px 9px}
+.ttl{font-size:17px;font-weight:800}
+.sub{font-size:12.5px;color:var(--ts);margin-top:3px}
+#map{height:62vh;margin:0 10px;border-radius:14px;border:1px solid var(--bd)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;padding:10px 15px;font-size:12.5px;color:var(--tm)}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
+.miss{margin:4px 14px 40px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:11px 13px}
+.miss h3{font-size:13px;margin-bottom:6px}
+.miss .row{font-size:12px;color:var(--ts);padding:3px 0;border-top:1px dashed var(--bd)}
+.amtlbl{background:rgba(20,20,20,.78);color:#fff;border:none;border-radius:5px;padding:1px 5px;font-size:11px;font-weight:700;white-space:nowrap}
+</style></head><body>
+<div class="head">
+<div class="ttl">1307 김태욱 · 비다마스 콜 방향</div>
+<div class="sub">2026-06-08 ~13:00 · 다마스 제외 24건 중 지도표시 16 · 좌표없음 8 · ★=유저 위치(부천)</div>
+</div>
+<div id="map"></div>
+<div class="legend">
+<span><i style="background:#16a34a"></i>인성</span>
+<span><i style="background:#888;outline:1px solid #aaa"></i>통합콜</span>
+<span><i style="background:#3b82f6"></i>카카오</span>
+<span>● 출발 &nbsp; ➜ 도착방향</span>
+</div>
+<div class="miss"><h3>좌표 미확인 8건 (지도 제외)</h3><div class="row">08:53 · 인성 · 34,600 · 온수동 → 경기 평택시 서류/평택현덕면 / 서류/평택현덕면 <b>(도착좌표없음)</b></div><div class="row">09:27 · 인성 · 92,400 · 김포걸포동 → 강원 평창군평창읍 강원평창 <b>(도착좌표없음)</b></div><div class="row">10:27 · 인성 · 30,800 · 문래동6가 → 경기 용인시 처인구 남사읍 <b>(출발 도착좌표없음)</b></div><div class="row">10:31 · 인성 · 34,600 · 인천강화불은면 삼성리 → 서울 강남구 삼성동 <b>(출발 좌표없음)</b></div><div class="row">11:06 · 통합콜 · 39,000 · 산곡동 → 휘경동 <b>(도착좌표없음)</b></div><div class="row">11:08 · 인성 · 23,100 · 간단/영등포동6가 → 경기 파주시 광탄면 <b>(출발 좌표없음)</b></div><div class="row">12:17 · 카카오 · 30,220 · 소사 심곡본 → 구로 구로3, 구로 구로3, 중구 회현 <b>(출발 도착좌표없음)</b></div><div class="row">12:47 · 인성 · 53,900 · 14시픽/소사본동 → 충북 청주시 상당구 청주시 용암동 <b>(도착좌표없음)</b></div></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
+<script>
+const DRAWN=[{"t":"08:49","plat":"인성","amount":21500,"veh":"승용/소형","o":[37.419486,126.8837827],"d":[37.4753253,126.8863954],"route":"9시50분/일직동 → 서울 금천구 가산동","od":"일직동","dd":"가산동"},{"t":"09:35","plat":"인성","amount":21500,"veh":"승용/소형","o":[37.4753253,126.8863954],"d":[37.5626596,126.9226107],"route":"오전10시/박1/가산동 → 서울 마포구 바로/마포연남동 / 바로/마포연남동","od":"가산동","dd":"마포연남동"},{"t":"09:44","plat":"인성","amount":30800,"veh":"오","o":[37.5019274,126.801957],"d":[37.6938801,127.2230356],"route":"춘의동 → 경기 남양주시 오남읍","od":"춘의동","dd":"오남읍"},{"t":"09:47","plat":"인성","amount":30800,"veh":"오","o":[37.5763055,126.7722975],"d":[37.24455,127.29056],"route":"11시/상야동 → 경기 용인시 처인구 양지읍(용인","od":"상야동","dd":"양지읍"},{"t":"09:53","plat":"인성","amount":26900,"veh":"오","o":[37.5340894,126.7833694],"d":[37.37944,127.00711],"route":"오정동 → 경기 의왕시 학의동","od":"오정동","dd":"학의동"},{"t":"10:12","plat":"통합콜","amount":39000,"veh":"오","o":[37.4753253,126.8863954],"d":[37.5548536,127.0080699],"route":"가산동 → 다산동","od":"가산동","dd":"다산동"},{"t":"10:44","plat":"인성","amount":77000,"veh":"오","o":[37.4945849,126.8845477],"d":[37.5152233,127.0549741],"route":"구로동 → 서울 강남구 들어주기/삼성동 / 들어주기/삼성동","od":"구로동","dd":"삼성동"},{"t":"11:06","plat":"인성","amount":26200,"veh":"오","o":[37.4891009,127.0660428],"d":[37.8323336,127.0890728],"route":"12시/개포동 → 경기 양주시 양주옥정동","od":"개포동","dd":"양주옥정동"},{"t":"11:11","plat":"인성","amount":23100,"veh":"오","o":[37.19482,126.94288],"d":[37.5926573,126.9216114],"route":"봉담읍 → 서울 은평구 응암동","od":"봉담읍","dd":"응암동"},{"t":"11:11","plat":"인성","amount":30800,"veh":"오","o":[37.52041,126.7680161],"d":[37.4850937,127.1193144],"route":"삼정동 → 서울 송파구 문정동/바로감 / 문정동/바로감","od":"삼정동","dd":"문정동"},{"t":"11:29","plat":"인성","amount":30800,"veh":"오","o":[37.4913299,126.7843422],"d":[37.5662284,126.942899],"route":"부천원미동 → 경기 파주시 파주/신촌동 / 파주/신촌동","od":"부천원미동","dd":"신촌동"},{"t":"11:36","plat":"인성","amount":26900,"veh":"오","o":[37.5854662,126.6805067],"d":[37.6208998,126.9127557],"route":"당하동 → 경기 과천시 갈현동","od":"당하동","dd":"갈현동"},{"t":"12:07","plat":"인성","amount":38500,"veh":"오","o":[37.5854662,126.6805067],"d":[37.4943466,126.8445367],"route":"당하동/ → 인천 서구 오류동/배송아님 / 오류동/배송아님","od":"당하동","dd":"오류동"},{"t":"12:39","plat":"통합콜","amount":40000,"veh":"오","o":[37.4906976,126.723817],"d":[37.6565148,127.1216627],"route":"인천부평동 → 4시전/남양주별내동","od":"인천부평동","dd":"남양주별내동"},{"t":"12:39","plat":"인성","amount":20700,"veh":"오","o":[37.55408,126.7329],"d":[37.5926573,126.9216114],"route":"1:30)방축동 → 서울 은평구 응암동","od":"방축동","dd":"응암동"},{"t":"12:47","plat":"인성","amount":30800,"veh":"오","o":[37.4881988,126.6764228],"d":[37.39038,127.22346],"route":"가좌동 → 경기 광주시 태전동","od":"가좌동","dd":"태전동"}], USER=[37.522787,126.767532], COL={"인성":"#16a34a","통합콜":"#ffffff","카카오":"#3b82f6","기타":"#9aa0a6"};
+const map=L.map('map');
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,attribution:'© OSM © CARTO'}).addTo(map);
+const all=[USER];
+// 유저 위치 ★
+L.marker(USER,{icon:L.divIcon({className:'',html:'<div style="font-size:24px;line-height:1;filter:drop-shadow(0 0 3px #000)">⭐</div>',iconSize:[24,24],iconAnchor:[12,12]})}).addTo(map).bindPopup('김태욱 위치 (부천)');
+DRAWN.forEach(x=>{
+  const c=COL[x.plat]||COL['기타'];
+  const line=L.polyline([x.o,x.d],{color:c,weight:3,opacity:.85}).addTo(map);
+  L.polylineDecorator(line,{patterns:[{offset:'70%',repeat:0,symbol:L.Symbol.arrowHead({pixelSize:11,polygon:false,pathOptions:{stroke:true,color:c,weight:3}})}]}).addTo(map);
+  L.circleMarker(x.o,{radius:4,color:c,fillColor:c,fillOpacity:1,weight:1}).addTo(map);
+  L.tooltip({permanent:true,direction:'center',className:'amtlbl',offset:[0,0]}).setLatLng(x.d).setContent(x.amount.toLocaleString()).addTo(map);
+  line.bindPopup('<b>'+x.amount.toLocaleString()+'원</b> · '+x.plat+' · '+x.veh+'<br>'+x.od+' → '+x.dd+'<br><span style="color:#888">'+x.route+'</span>');
+  all.push(x.o,x.d);
+});
+map.fitBounds(all,{padding:[40,40]});
+</script></body></html>

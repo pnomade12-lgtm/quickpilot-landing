@@ -1,0 +1,1071 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>QP 베타 모니터 — 테스터 현황</title>
+<meta name="theme-color" content="#0a0a0a">
+<meta name="robots" content="noindex,nofollow">
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyBoZSnKoTu6nBdE0VfJAiCmWgjfKgLHqus",
+    authDomain: "quickpilot-39d72.firebaseapp.com",
+    databaseURL: "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "quickpilot-39d72",
+    storageBucket: "quickpilot-39d72.firebasestorage.app",
+    messagingSenderId: "530394028123",
+    appId: "1:530394028123:web:ab56e0951f214401d0c77e"
+  });
+  const DB_URL = "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app";
+</script>
+
+<style>
+  :root {
+    --bg:#0a0a0a; --fg:#f5f5f5; --dim:#9a9a9a; --hot:#ff3b30;
+    --line:#1f1f1f; --card:#131313; --ok:#34c759; --warn:#ff9f0a;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { background:var(--bg); color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif; -webkit-text-size-adjust:100%; }
+  main { max-width:480px; margin:0 auto; padding:18px 14px 88px; }
+  h1 { font-size:20px; font-weight:800; }
+  .sub { color:var(--dim); font-size:13px; margin-top:3px; }
+  #login { display:none; text-align:center; padding:80px 20px; }
+  #login button { margin-top:18px; padding:12px 22px; border:0; border-radius:10px; background:#fff; color:#000; font-weight:800; font-size:15px; }
+  #login .err { color:var(--hot); margin-top:14px; font-size:13px; }
+  #app { display:none; }
+  .top { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .who { margin-left:auto; color:var(--dim); font-size:12px; }
+  .signout { background:none; border:1px solid var(--line); color:var(--dim); border-radius:8px; padding:5px 10px; font-size:12px; }
+  .topbtns-r { margin-left:auto; display:flex; gap:8px; }
+  .gear { width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center; padding:0; background:none; border:1px solid var(--line); color:var(--dim); border-radius:13px; font-size:21px; line-height:1; }
+  .gear:active { background:#1a1a1a; }
+  .stat { display:flex; gap:6px; margin-bottom:12px; }
+  .stat .box { flex:1; min-width:0; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 6px; text-align:center; cursor:pointer; }
+  .stat .box:active { background:#1a1a1a; }
+  .stat .num { font-size:22px; font-weight:800; }
+  .stat .lab { color:var(--dim); font-size:11px; margin-top:2px; }
+  .cards { display:flex; flex-direction:column; gap:8px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; cursor:pointer; }
+  .card:active { background:#1a1a1a; }
+  .detail-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:50; padding:16px; overflow-y:auto; overscroll-behavior:contain; }
+  #mapModal { z-index:60; }
+  .detail-card { max-width:560px; margin:24px auto; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; }
+  .detail-head { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .detail-head span { font-weight:800; font-size:16px; flex:1; }
+  #d-title { text-align:center; font-weight:400; }
+  .detail-head button { background:none; border:1px solid var(--line); color:var(--dim); border-radius:8px; padding:4px 10px; font-size:14px; }
+  .d-mapbtn { width:100%; background:#1f6feb; border:0; color:#fff; border-radius:10px; padding:11px; font-size:14px; font-weight:800; margin-bottom:6px; }
+  .dsec { border-top:1px solid var(--line); padding:10px 0; }
+  .dsec h4 { font-size:12px; color:var(--dim); font-weight:700; margin-bottom:6px; }
+  .dsec .v { font-size:14px; line-height:1.6; }
+  .ocall { font-size:13px; padding:5px 0; border-bottom:1px dashed var(--line); }
+  .ocall .t { color:var(--dim); font-size:11px; }
+  .card .r1 { display:flex; align-items:center; gap:6px; }
+  .card .nick { font-weight:800; font-size:15px; }
+  .card .ver { font-size:11px; font-weight:700; margin-left:6px; }
+  .v-new { color:#34c759; } .v-mid { color:#ffd60a; } .v-old { color:#ff9f0a; }
+  .card .when { margin-left:auto; color:var(--dim); font-size:12px; white-space:nowrap; }
+  .card .r2 { color:var(--dim); font-size:12px; margin-top:4px; word-break:break-all; }
+  .card .r3 { display:flex; gap:20px; margin-top:8px; }
+  .card .r3 b { font-weight:800; font-size:16px; }
+  .card .r3 .lab { color:var(--dim); font-size:11px; margin-left:3px; }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:50%; flex:none; }
+  .d-live { background:var(--ok); } .d-idle { background:var(--warn); } .d-off { background:#555; } .d-late { background:var(--hot); }
+  .crash { color:var(--hot); }
+  .empty { color:var(--dim); text-align:center; padding:40px; }
+  .refresh { color:var(--dim); font-size:11px; }
+  .dist { color:var(--dim); font-size:12.5px; margin:-4px 0 12px; line-height:1.5; }
+  .topbtns { position:fixed; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; z-index:40; display:flex; gap:6px; padding:8px 12px calc(8px + env(safe-area-inset-bottom)); background:rgba(10,10,10,.97); border-top:1px solid var(--line); }
+  .topbtns .tbtn { flex:1; min-width:0; background:var(--card); border:1px solid var(--line); color:var(--fg); border-radius:12px; padding:11px 6px; font-size:14px; font-weight:700; text-align:center; }
+  .topbtns .tbtn:active { background:#1a1a1a; }
+  .topbtns .tbtn.ph { color:#3a3a3a; border-style:dashed; }
+  #ag-search, #usearch { width:100%; background:#0e0e0e; border:1px solid var(--line); color:var(--fg); border-radius:9px; padding:9px 11px; font-size:14px; margin-bottom:8px; }
+  #ag-search::placeholder, #usearch::placeholder { color:#5a5a5a; }
+  .usearch-wrap { position:relative; margin-bottom:8px; }
+  .usearch-wrap #usearch { padding-right:36px; margin-bottom:0; }
+  #usearch-clear { display:none; position:absolute; right:6px; top:50%; transform:translateY(-50%); width:26px; height:26px; background:#2a2a2a; border:1px solid var(--line); color:var(--fg); border-radius:7px; font-size:12px; line-height:1; }
+  #usearch-clear.show { display:block; }
+  .ddate { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+  .ddate button { width:42px; height:42px; flex:0 0 auto; background:#1a1a1a; border:1px solid var(--line); color:var(--fg); border-radius:10px; font-size:16px; }
+  .ddate input { flex:1; min-width:0; text-align:center; background:#0e0e0e; border:1px solid var(--line); color:var(--fg); border-radius:10px; padding:10px; font-size:17px; font-weight:800; letter-spacing:2px; }
+  .aglist, .adlist { max-height:62vh; overflow-y:auto; margin-top:4px; }
+  .agrow { display:flex; align-items:center; gap:8px; padding:8px 2px; border-bottom:1px solid var(--line); font-size:13px; }
+  .agrow .agname { font-weight:700; word-break:break-all; }
+  .agrow .agph { color:var(--dim); font-size:12px; white-space:nowrap; margin-right:auto; }
+  .agrow .agcnt { color:var(--dim); font-size:12px; white-space:nowrap; }
+  .agrow .agheart { color:#ff6b6b; font-size:12px; white-space:nowrap; }
+  .adblk { padding:8px 2px; border-bottom:1px solid var(--line); }
+  .adblk .adname { font-weight:700; font-size:14px; margin-bottom:3px; }
+  .adblk .adcmt { font-size:13px; line-height:1.5; margin:2px 0; }
+  .adblk .adcmt .adt { color:var(--dim); font-size:11px; }
+  .ufilter { display:flex; gap:6px; margin-bottom:12px; }
+  .ufilter button { flex:1; background:var(--card); border:1px solid var(--line); color:var(--dim); border-radius:9px; padding:8px 4px; font-size:13px; font-weight:700; }
+  .ufilter button.on { background:#1f6feb; border-color:#1f6feb; color:#fff; }
+  .ufilter .dot { margin-right:4px; vertical-align:middle; }
+  .ufilter .fc { font-weight:800; opacity:.9; }
+  .nb { display:flex; flex-direction:column; gap:9px; }
+  .nb .ncur { font-size:12px; color:var(--dim); line-height:1.5; word-break:break-all; }
+  .nb input, .nb textarea { background:#0e0e0e; border:1px solid var(--line); color:var(--fg); border-radius:9px; padding:10px 11px; font-size:14px; width:100%; }
+  .nb textarea { min-height:55vh; resize:vertical; font-family:inherit; line-height:1.55; }
+  .nb .nlabel { font-size:12px; font-weight:700; color:var(--dim); }
+  .nb .ndiv { border-top:1px solid var(--line); margin:3px 0; }
+  .nb .nbtns { display:flex; gap:6px; }
+  .nb .nbtns button { flex:1; border:0; border-radius:9px; padding:10px 4px; font-size:13px; font-weight:800; }
+  .nb .nsend { background:#1f6feb; color:#fff; }
+  .nb .nhide { background:#2a2a2a; color:var(--dim); border:1px solid var(--line); }
+  .nb .npreset { background:#0f2417; color:#4ade80; border:1px solid #1f5236; }
+  .nb .nstat { font-size:12px; color:var(--ok); min-height:14px; }
+  #apply-btn { position:relative; }
+  .reddot { display:none; position:absolute; top:5px; right:7px; width:8px; height:8px; border-radius:50%; background:#ff3b30; box-shadow:0 0 0 2px var(--card); }
+  .reddot.show { display:block; }
+  #map { height:62vh; border-radius:10px; }
+  #map.movemode { outline:2px solid #16a34a; outline-offset:-2px; }
+  .movehint { position:absolute; top:8px; left:8px; z-index:1000; background:rgba(0,0,0,.62); color:#fff; font-size:11px; padding:3px 8px; border-radius:7px; pointer-events:none; }
+  .flag-icon { background:transparent; border:none; font-size:24px; line-height:1; text-shadow:0 0 3px #000,0 0 3px #000; }
+  #map .leaflet-popup-content { color:#000; font-weight:700; }
+</style>
+</head>
+<body>
+<main>
+  <div id="login">
+    <h1>QP 베타 모니터</h1>
+    <div class="sub">디렉터 전용</div>
+    <button id="login-btn">구글 계정으로 로그인</button>
+    <div class="err" id="login-err"></div>
+  </div>
+
+  <div id="app">
+    <div class="top">
+      <div>
+        <h1>QP 베타 모니터</h1>
+        <div id="upd-ts" style="font-size:11px;color:#8a8a8a;margin-top:3px"></div>
+      </div>
+      <span class="topbtns-r">
+        <button class="gear" id="data-btn" title="통계">📊</button>
+        <button class="gear" id="server-btn" title="서버">🖥️</button>
+        <button class="gear" id="gear" title="설정">⚙️</button>
+      </span>
+    </div>
+
+    <div class="stat">
+      <div class="box" data-stat="설치"><div class="num" id="s-total">0</div><div class="lab">설치</div></div>
+      <div class="box" data-stat="운행중"><div class="num" id="s-live">0</div><div class="lab">운행중</div></div>
+      <div class="box" data-stat="감지"><div class="num" id="s-orders">0</div><div class="lab">감지</div></div>
+      <div class="box" data-stat="크래시"><div class="num crash" id="s-crash">0</div><div class="lab">크래시</div></div>
+    </div>
+    <div class="topbtns">
+      <button id="apply-btn" class="tbtn">📋 신청<span id="apply-dot" class="reddot"></span></button>
+      <button id="map-btn" class="tbtn">🗺 지도</button>
+      <button id="agency-btn" class="tbtn">🏢 주선사</button>
+      <button id="addr-btn" class="tbtn">📍 주소지</button>
+    </div>
+    <div class="ufilter" id="ufilter">
+      <button data-s="활성" class="on"><span class="dot d-live"></span>활성 <span class="fc">0</span></button>
+      <button data-s="휴면"><span class="dot d-idle"></span>휴면 <span class="fc">0</span></button>
+      <button data-s="비활성"><span class="dot d-late"></span>비활성 <span class="fc">0</span></button>
+      <button data-s="미인증"><span class="dot d-off"></span>미인증 <span class="fc">0</span></button>
+    </div>
+
+    <div class="usearch-wrap"><input id="usearch" type="text" placeholder="유저 검색 (이름·닉네임·전화)" autocomplete="off"><button id="usearch-clear" type="button">✕</button></div>
+
+    <div id="rows" class="cards"></div>
+    <div class="empty" id="empty">불러오는 중...</div>
+  </div>
+
+  <div id="detail" class="detail-modal">
+    <div class="detail-card">
+      <div class="detail-head"><span id="d-title"></span></div>
+      <div id="d-body"></div>
+    </div>
+  </div>
+
+  <div id="stoast" class="detail-modal">
+    <div class="detail-card" style="max-width:440px;"><div id="st-title" style="font-weight:800;margin-bottom:8px;"></div><div id="st-body" class="v" style="white-space:pre-wrap;font-size:14px;line-height:1.7;"></div></div>
+  </div>
+
+  <div id="settings" class="detail-modal">
+    <div class="detail-card" style="max-width:360px;">
+      <div class="detail-head"><span>설정</span><button id="set-close">✕</button></div>
+      <div class="dsec"><div class="v" style="display:flex;align-items:center;gap:10px;"><span id="who-email" style="color:var(--dim);font-size:13px;flex:1;word-break:break-all;"></span><button class="signout" id="signout">로그아웃</button></div></div>
+    </div>
+  </div>
+
+
+  <div id="mapModal" class="detail-modal">
+    <div class="detail-card" style="max-width:760px;">
+      <div class="detail-head"><span id="m-title">테스터 위치 — 최근 GPS</span><button id="m-close">✕</button></div>
+      <div id="map"></div>
+      <div id="m-info" class="v" style="font-size:12px;color:var(--dim);margin-top:8px;text-align:center;"></div>
+    </div>
+  </div>
+
+  <div id="agencyModal" class="detail-modal">
+    <div class="detail-card" style="max-width:440px;">
+      <div class="detail-head"><span>🏢 주선사 <span id="ag-count" style="color:var(--dim);font-size:13px;font-weight:400;"></span></span><button id="ag-close">✕</button></div>
+      <input id="ag-search" type="text" placeholder="주선사 검색 (이름·전화)" autocomplete="off">
+      <div id="ag-body" class="aglist"></div>
+    </div>
+  </div>
+
+  <div id="addrModal" class="detail-modal">
+    <div class="detail-card" style="max-width:440px;">
+      <div class="detail-head"><span>📍 주소지 <span id="ad-count" style="color:var(--dim);font-size:13px;font-weight:400;"></span></span><button id="ad-close">✕</button></div>
+      <div id="ad-body" class="adlist"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  const auth = firebase.auth();
+  const db = firebase.database();
+  const DIRECTORS = ["pnomade12@gmail.com", "pnomade13@gmail.com"];
+
+  const $ = id => document.getElementById(id);
+  const loginEl = $("login"), appEl = $("app");
+
+  // uid -> { profile, ordersToday:{}, crashes:{} } + 붙인 ref 핸들
+  const data = {};
+  const refs = {};      // uid -> [ref,...]
+  let displayOrder = [];   // 표시 순서 — 값은 실시간, 정렬은 1분마다만(순서 튐 방지)
+  let uidPollTimer = null, tickTimer = null, sortTimer = null, statusPollTimer = null;
+  let summaryMode = false, summaryRef = null;   // 서버 집계(monitor_summary) 읽기 모드 — 없거나 오래되면 유저별 실시간으로 폴백
+  let lastSummaryTs = 0;   // 마지막 서버 집계 기준시각 — stale 배지용
+  let statusFilter = "활성";   // 활성 · 비활성 · 휴면 · 미설치
+  let searchKw = "";           // 유저 검색어(이름·닉네임·전화) — 있으면 상태 무관 매칭만 표시
+  let licNotIns = [];            // 미설치 명단(라이선스 대조)
+  let applyWired = false;
+
+  $("login-btn").onclick = () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(e => { $("login-err").textContent = "로그인 실패: " + e.message; });
+  };
+  $("data-btn").onclick = () => { location.href = "server.html?v=" + Date.now(); };
+  $("server-btn").onclick = () => { location.href = "serverops.html?v=" + Date.now(); };
+  $("gear").onclick = () => openLayer("settings");
+  $("usearch").oninput = e => { searchKw = e.target.value.trim(); $("usearch-clear").classList.toggle("show", !!e.target.value); render(); };
+  $("usearch-clear").onclick = () => { $("usearch").value = ""; searchKw = ""; $("usearch-clear").classList.remove("show"); render(); $("usearch").focus(); };
+  $("agency-btn").onclick = openAgencies;
+  $("ag-search").oninput = e => renderAgencies(e.target.value);
+  $("addr-btn").onclick = openAddrs;
+  $("ag-close").onclick = userCloseTop;
+  $("ad-close").onclick = userCloseTop;
+  $("agencyModal").onclick = userCloseTop;
+  $("addrModal").onclick = userCloseTop;
+  document.querySelector("#agencyModal .detail-card").onclick = e => e.stopPropagation();
+  document.querySelector("#addrModal .detail-card").onclick = e => e.stopPropagation();
+
+  // 주선사 — 오더에서 자동 수집된 주선사 목록 + 하트 수(하트는 아직 미수집이면 0). 하트 많은 순 → 최근 등장 순.
+  let agencyList = [];
+  async function openAgencies() {
+    openLayer("agencyModal");
+    $("ag-search").value = "";
+    const box = $("ag-body"); box.textContent = "불러오는 중…";
+    try {
+      const o = (await db.ref("v1/agencies").once("value")).val() || {};
+      const heartN = a => (a.hearts != null ? Number(a.hearts) : (a.heartedBy ? Object.keys(a.heartedBy).length : 0)) || 0;
+      const cntN = a => (a.cleanCount != null ? Number(a.cleanCount) : 0) || 0;   // 정리된 감지수(출발+도착 중복제거). 부풀린 count로 폴백 안 함.
+      agencyList = Object.values(o).filter(a => a && a.name)
+        .map(a => ({ name: a.name, phone: a.phone || "", cnt: cntN(a), heart: heartN(a), lastTs: a.lastTs || 0 }))
+        .sort((x, y) => y.cnt - x.cnt || y.heart - x.heart || y.lastTs - x.lastTs);
+      renderAgencies("");
+    } catch (e) { box.textContent = "로드 실패: " + e.message; }
+  }
+  function renderAgencies(q) {
+    const esc = s => String(s == null ? "" : s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+    const kw = (q || "").trim();
+    const list = kw ? agencyList.filter(a => (a.name + " " + a.phone).indexOf(kw) >= 0) : agencyList;
+    $("ag-count").textContent = kw ? (list.length + "/" + agencyList.length + "개사") : (agencyList.length + "개사");
+    $("ag-body").innerHTML = list.map(a => `<div class="agrow"><span class="agname">${esc(a.name)}</span><span class="agph">${esc(a.phone)}</span><span class="agcnt">감지 ${a.cnt}</span><span class="agheart">❤ ${a.heart}</span></div>`).join("") || "검색 결과 없음";
+  }
+
+  // 주소지 — 공식 주소 DB 연동 전. 누군가 남긴 건물 코멘트가 있으면 그대로 표시(최근 코멘트 순).
+  async function openAddrs() {
+    openLayer("addrModal");
+    const box = $("ad-body"); box.textContent = "불러오는 중…";
+    const esc = s => String(s == null ? "" : s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+    try {
+      const o = (await db.ref("v1/buildings").once("value")).val() || {};
+      const blocks = Object.keys(o).map(name => {
+        const cs = Object.values((o[name] && o[name].comments) || {}).filter(Boolean).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+        return { name, cs, last: cs[0] ? (cs[0].ts || 0) : 0 };
+      }).filter(b => b.cs.length).sort((a, b) => b.last - a.last);
+      $("ad-count").textContent = blocks.length + "곳";
+      box.innerHTML = blocks.map(b => `<div class="adblk"><div class="adname">${esc(b.name)}</div>` + b.cs.map(c => `<div class="adcmt"><b>${esc(c.nickname || "?")}</b> ${esc(c.msg || "")} <span class="adt">${ago(c.ts)}</span></div>`).join("") + `</div>`).join("") || "작성된 주소지 코멘트 없음";
+    } catch (e) { box.textContent = "로드 실패: " + e.message; }
+  }
+  $("set-close").onclick = userCloseTop;
+  $("settings").onclick = userCloseTop;
+  document.querySelector("#settings .detail-card").onclick = e => e.stopPropagation();
+  $("signout").onclick = () => auth.signOut();
+
+  auth.onAuthStateChanged(user => {
+    if (!user) { loginEl.style.display = "block"; appEl.style.display = "none"; teardown(); return; }
+    if (!DIRECTORS.includes(user.email)) {
+      $("login-err").textContent = "권한 없는 계정입니다 (" + user.email + ").";
+      auth.signOut(); return;
+    }
+    loginEl.style.display = "none"; appEl.style.display = "block";
+    $("who-email").textContent = user.email;
+    start();
+  });
+
+  function kstDate() {
+    const n = new Date();
+    const k = new Date(n.getTime() + n.getTimezoneOffset() * 60000 + 9 * 3600000);
+    return k.getFullYear() + "-" + String(k.getMonth() + 1).padStart(2, "0") + "-" + String(k.getDate()).padStart(2, "0");
+  }
+  let curDate = kstDate();
+
+  // 신청 메뉴 — 공지 작성 폐기(앱에서 관리). 미처리 베타 신청 있으면 빨간 점, 누르면 관리 페이지로.
+  function wireNotice() {
+    if (applyWired) return;
+    applyWired = true;
+    const btn = $("apply-btn"), dot = $("apply-dot");
+    btn.onclick = () => { location.href = "admin-applications.html"; };
+    db.ref("applications").on("value", s => {
+      const v = s.val() || {};
+      const newN = Object.values(v).filter(a => a && a.status !== "approved" && a.status !== "rejected").length;   // 미처리 = 신규
+      dot.classList.toggle("show", newN > 0);
+      btn.title = newN > 0 ? (newN + "건 신규 신청") : "베타 신청 관리";
+    });
+  }
+
+  async function start() {
+    wireNotice();
+    const usedSummary = await loadFromSummary();     // 서버 집계 우선(가벼움). 없거나 오래되면 false.
+    if (!usedSummary) await pollUids();              // 폴백: 유저별 실시간 리스너(기존 경로)
+    reorder();
+    setTimeout(checkLicenses, 3000);                 // 프로필 로드 후 미설치 대조
+    if (!summaryMode) {                              // 실시간 경로일 때만 유저별 폴링 가동
+      if (uidPollTimer) clearInterval(uidPollTimer);
+      uidPollTimer = setInterval(pollUids, 90000);   // 새 테스터 픽업(경량: 90초)
+      if (statusPollTimer) clearInterval(statusPollTimer);
+      statusPollTimer = setInterval(pollStatus, 120000);   // 위치·접속 신호 120초마다 일괄 갱신(활성판정 30분 기준이라 정확도 영향 0)
+      pollStatus();
+    }
+    if (sortTimer) clearInterval(sortTimer);
+    sortTimer = setInterval(reorder, 60000);         // 정렬은 1분마다만
+    if (tickTimer) clearInterval(tickTimer);
+    tickTimer = setInterval(() => {
+      if (!summaryMode) { const nd = kstDate(); if (nd !== curDate) { curDate = nd; teardownListeners(); pollUids(); } }   // 자정 버킷 갱신(실시간 경로). 요약 모드는 서버가 날짜 처리.
+      render();
+    }, 1000);
+  }
+
+  // ===== 서버 집계 읽기(경량 경로) — monitor_summary 노드 하나만 읽어 목록 구성. 상세·지도는 그대로 날것 lazy. =====
+  async function loadFromSummary() {
+    let all;
+    try { all = (await db.ref("v1/app/monitor_summary").once("value")).val() || {}; } catch (e) { return false; }
+    const meta = all._meta || {};
+    if (!meta.ts || Date.now() - meta.ts > 5 * 60000) return false;   // 노드 없음·5분 넘게 정체 → 실시간 폴백
+    summaryMode = true;
+    applySummary(all);
+    summaryRef = db.ref("v1/app/monitor_summary");
+    summaryRef.on("value", s => { const v = s.val(); if (v && v._meta && Date.now() - v._meta.ts < 10 * 60000) applySummary(v); });   // 1분마다 서버 갱신분 반영
+    return true;
+  }
+  function applySummary(all) {
+    lastSummaryTs = (all._meta && all._meta.ts) || lastSummaryTs;
+    const keep = {};
+    Object.keys(all).forEach(uid => {
+      if (uid === "_meta") return;
+      const s = all[uid] || {};
+      keep[uid] = true;
+      data[uid] = {
+        profile: { nickname: s.nick || "", name: s.name || "", phone: s.phone || "", region: s.region || "", vehicle_type: s.vt || "", email: s.email || "" },
+        ver: s.ver || "",
+        ordCnt: s.ordCnt || 0, plat: s.plat || {}, lastOrderTsV: s.lastOrderTs || 0,
+        crCnt: s.crCnt || 0, lastCrashTsV: s.lastCrashTs || 0,
+        seenTs: s.seenTs || 0, lastMoveTs: s.lastMoveTs || 0,
+        lastGps: { ts: s.gpsTs || 0, lat: (s.lat == null ? null : s.lat), lng: (s.lng == null ? null : s.lng) },
+        ordersToday: null, crashes: null, status: null,
+      };
+      if (!displayOrder.includes(uid)) displayOrder.push(uid);
+    });
+    Object.keys(data).forEach(uid => { if (!keep[uid]) delete data[uid]; });   // 요약에서 빠진 uid 정리
+    displayOrder = displayOrder.filter(u => keep[u]);
+    render();
+    updateUpdTs();
+  }
+
+  // 서버 집계가 멈추면(함수 사망 등) 옛 숫자를 그대로 보여주지 않도록 기준시각 배지 표시
+  function updateUpdTs() {
+    const el = document.getElementById("upd-ts"); if (!el) return;
+    if (!summaryMode) { el.textContent = "실시간"; el.style.color = "#8a8a8a"; return; }
+    if (!lastSummaryTs) { el.textContent = ""; return; }
+    const min = Math.floor((Date.now() - lastSummaryTs) / 60000);
+    el.textContent = "갱신 " + (min <= 0 ? "방금" : min + "분 전");
+    el.style.color = min > 6 ? "#ff6b6b" : "#8a8a8a";
+  }
+  setInterval(updateUpdTs, 30000);
+
+  function actTsOf(uid) {
+    const d = data[uid]; if (!d) return 0;
+    const lo = d.lastOrderTsV != null ? d.lastOrderTsV : lastOrderTs(d.ordersToday);
+    const lc = d.lastCrashTsV != null ? d.lastCrashTsV : lastCrashTs(d.crashes);
+    return Math.max(lo, lc, d.seenTs || 0);
+  }
+  // 운행 신호 = 오늘 콜 감지(마지막 detected_at). 백그라운드 GPS와 무관한 '실제 일하는' 신호.
+  function workTsOf(uid) { const d = data[uid]; if (!d) return 0; return d.lastOrderTsV != null ? d.lastOrderTsV : lastOrderTs(d.ordersToday); }
+  // 오늘 0시(KST) epoch ms — 모니터 표시는 0시~다음 0시(오늘)만. 서버엔 전체 보존.
+  function dayStartMs() { const n = Date.now(); return n - ((n + 9 * 3600000) % 86400000); }
+  function crashKeysToday(crashes) { const s = dayStartMs(); return Object.keys(crashes || {}).filter(k => (Number((crashes[k] && crashes[k].ts) || k) || 0) >= s); }
+  function crashKeysInRange(crashes, a, b) { return Object.keys(crashes || {}).filter(k => { const t = Number((crashes[k] && crashes[k].ts) || k) || 0; return t >= a && t < b; }); }
+  // 날짜(KST) 헬퍼 — 개인 상세 날짜 패널용
+  function todayKST() { const k = new Date(Date.now() + 9 * 3600000); return { y: k.getUTCFullYear(), m: k.getUTCMonth() + 1, d: k.getUTCDate() }; }
+  function ymdStr(s) { return s.y + "-" + String(s.m).padStart(2, "0") + "-" + String(s.d).padStart(2, "0"); }
+  function ymdYY(s) { return String(s.y).slice(2) + String(s.m).padStart(2, "0") + String(s.d).padStart(2, "0"); }
+  function ymdShift(s, delta) { const dt = new Date(Date.UTC(s.y, s.m - 1, s.d) + delta * 86400000); return { y: dt.getUTCFullYear(), m: dt.getUTCMonth() + 1, d: dt.getUTCDate() }; }
+  function ymdParse(str) { const m = /^(\d{2})(\d{2})(\d{2})$/.exec((str || "").trim()); if (!m) return null; const o = { y: 2000 + (+m[1]), m: +m[2], d: +m[3] }; return (o.m >= 1 && o.m <= 12 && o.d >= 1 && o.d <= 31) ? o : null; }
+  // 1분마다 활동순 재정렬. 그 사이 값·dot은 실시간 갱신되되 순서는 고정.
+  function reorder() {
+    const rank = uid => { const s = statusOf(uid); return s === "활성" ? 0 : s === "휴면" ? 1 : 2; };  // 녹→주황→빨강
+    displayOrder = Object.keys(data).sort((a, b) =>
+      rank(a) - rank(b) || (workTsOf(b) - workTsOf(a)) || (actTsOf(b) - actTsOf(a)));
+    render();
+  }
+
+  // 대용량(gps_track·user_actions) 안 당기고 uid 목록만 shallow REST로.
+  async function pollUids() {
+    const u = auth.currentUser; if (!u) return;
+    try {
+      const token = await u.getIdToken();
+      const res = await fetch(DB_URL + "/v1/users.json?shallow=true&auth=" + token);
+      const obj = await res.json() || {};
+      Object.keys(obj).forEach(uid => {
+        if (uid === "director-nuri") return;          // 운영(v1) 자료 — 베타 테스터 아님, 제외
+        if (!refs[uid]) attach(uid);
+      });
+      checkLicenses();
+    } catch (e) {}
+  }
+
+  // 미설치 검출 — 라이선스(phone) ↔ 설치 유저(profile.phone) 대조. 매칭 없으면 미설치.
+  async function checkLicenses() {
+    let lic = {};
+    try { lic = (await db.ref("licenses").once("value")).val() || {}; } catch (e) { return; }
+    const installed = new Set();
+    Object.values(data).forEach(d => { const ph = d.profile && d.profile.phone; if (ph) installed.add(String(ph)); });
+    const now = Date.now();
+    const notIns = [];
+    Object.keys(lic).forEach(phone => {
+      const L = lic[phone];
+      if (!L || L.status !== "active") return;   // 만료(expired)는 모니터 카운트·목록에서 숨김(디렉터 요청) — DB엔 보존, 요청 시 조회
+      if (L.role) return;   // 디렉터 역할폰(main/second)은 미인증 대조 제외 — 일반 테스터엔 role 없음
+      if (!installed.has(String(phone))) {
+        const ageH = L.grantedAt ? Math.floor((now - Number(L.grantedAt)) / 3600000) : null;
+        const expired = L.status === "expired";   // 자동 만료 비활성화 — 승인자 오만료·업데이트 후 차단 방지(만료는 디렉터 수동만)
+        notIns.push({ name: L.name || phone, phone: String(phone), ageH, appKey: L.appKey || "", expired, note: L.note || "" });
+      }
+    });
+    notIns.sort((a, b) => (b.ageH || 0) - (a.ageH || 0));
+    licNotIns = notIns;
+    if (statusFilter === "미인증") render();
+  }
+
+  // 가벼운 노드만 구독: profile + 오늘 orders + crash + 오늘 gps·액션 최신 1건(켜짐 신호).
+  function snapMaxTs(snap) {
+    let mx = 0;
+    snap.forEach(ch => { const v = ch.val(); const t = Number((v && v.ts) || ch.key) || 0; if (t > mx) mx = t; });
+    return mx;
+  }
+  // 활성 인정 최소 변위 — 30분 창에서 실제로 이만큼 멀어져야 '운행'으로 인정(주차 중 GPS 떨림이 속도 스파이크로 활성 오판하는 것 차단).
+  const MOVE_DISP_M = 500;
+  // 30분 GPS 창(snap) → 활동범위 박스 대각이 MOVE_DISP_M 이상일 때만 lastMoveTs 인정. 미만이면 제자리 드리프트로 보고 0.
+  function windowMove(snap) {
+    let mv = 0, last = null, has = false;
+    let minLa = Infinity, maxLa = -Infinity, minLn = Infinity, maxLn = -Infinity;
+    snap.forEach(c => {
+      const v = c.val(); if (!v) return;
+      const t = Number(v.ts) || 0, la = Number(v.lat), ln = Number(v.lng);
+      if (Number.isFinite(la) && Number.isFinite(ln)) { has = true; if (la < minLa) minLa = la; if (la > maxLa) maxLa = la; if (ln < minLn) minLn = ln; if (ln > maxLn) maxLn = ln; }
+      const sp = v.speed_kmh != null ? Number(v.speed_kmh) : null;
+      if (t && (sp != null ? (sp > 3 && !v.is_stop) : !v.is_stop)) mv = Math.max(mv, t);
+      last = v;
+    });
+    const span = has ? haversine(minLa, minLn, maxLa, maxLn) : 0;
+    return { lastMoveTs: (mv && span >= MOVE_DISP_M) ? mv : 0, last };
+  }
+  // 위치·접속 신호 60초 일괄 폴링 — 유저별 최근 30분 GPS·최신 액션 읽어 lastMoveTs(변위 게이트)·lastGps·seenTs 갱신. 끝에 한 번만 render.
+  async function pollStatus() {
+    const uids = Object.keys(refs); if (!uids.length) return;
+    const bucket = Math.floor(Date.now() / 86400000);
+    await Promise.all(uids.map(async uid => {
+      if (!data[uid]) return;
+      try {
+        const [gS, aS] = await Promise.all([
+          db.ref("v1/users/" + uid + "/gps_track/main/" + bucket).orderByKey().startAt(String(Date.now() - 30 * 60000)).once("value"),
+          db.ref("v1/users/" + uid + "/user_actions/" + bucket).orderByKey().limitToLast(1).once("value")
+        ]);
+        const w = windowMove(gS);
+        if (w.lastMoveTs) data[uid].lastMoveTs = Math.max(data[uid].lastMoveTs || 0, w.lastMoveTs);   // 변위 미달이면 갱신 안 함 → 30분 지나면 자연히 휴면
+        if (w.last) data[uid].lastGps = { ts: Number(w.last.ts) || 0, is_stop: !!w.last.is_stop, lat: Number(w.last.lat), lng: Number(w.last.lng) };
+        const t = Math.max(snapMaxTs(gS), snapMaxTs(aS)); if (t > data[uid].seenTs) data[uid].seenTs = t;
+      } catch (e) {}
+    }));
+    render();
+  }
+  function attach(uid) {
+    data[uid] = { profile: null, ordersToday: {}, crashes: {}, seenTs: 0, ver: "", lastGps: null, status: null, lastMoveTs: 0 };
+    if (!displayOrder.includes(uid)) displayOrder.push(uid);   // 새 테스터는 끝에, 다음 정렬 때 자리 잡음
+    const base = "v1/users/" + uid;
+    const rV = db.ref(base + "/app_version");
+    rV.on("value", s => { data[uid].ver = s.val() || ""; render(); });
+    const bucket = Math.floor(Date.now() / 86400000);   // 앱의 일자 버킷(= epoch day)
+    const rP = db.ref(base + "/profile");
+    rP.on("value", s => { data[uid].profile = s.val() || {}; render(); });
+    const rO = db.ref(base + "/orders/" + curDate);
+    rO.on("value", s => { data[uid].ordersToday = s.val() || {}; render(); });
+    const rC = db.ref(base + "/crash_logs");
+    rC.on("value", s => { data[uid].crashes = s.val() || {}; render(); });
+    // 로드 시 1회: 최근 30분 GPS로 lastMoveTs 시드. limitToLast(1)만 쓰면 로드 이후 점만 봐서, 정지(신호대기) 중 로드 시 직전 운행을 놓쳐 휴면 오판.
+    db.ref(base + "/gps_track/main/" + bucket).orderByKey().startAt(String(Date.now() - 30 * 60000)).once("value").then(s => {
+      const w = windowMove(s);   // 변위 500m 이상일 때만 활성 인정(주차 드리프트 컷)
+      if (w.lastMoveTs) data[uid].lastMoveTs = Math.max(data[uid].lastMoveTs || 0, w.lastMoveTs);
+      if (w.last && !data[uid].lastGps) data[uid].lastGps = { ts: Number(w.last.ts) || 0, is_stop: !!w.last.is_stop, lat: Number(w.last.lat), lng: Number(w.last.lng) };
+      render();
+    }).catch(() => {});
+    // 위치·접속 신호(GPS·화면액션)는 매 발화 폭주를 피하려 실시간 리스너 대신 30초 폴링(pollStatus)으로 갱신. 정확도 동일(활성/휴면=30분 기준).
+    const rS = db.ref(base + "/status");
+    rS.on("value", s => { data[uid].status = s.val() || {}; render(); });   // 자동배차 dispatch_on 등
+    refs[uid] = [rP, rO, rC, rV, rS];
+  }
+
+  function teardownListeners() {
+    Object.values(refs).forEach(arr => arr.forEach(r => r.off()));
+    for (const k in refs) delete refs[k];
+    for (const k in data) delete data[k];
+    displayOrder = [];
+  }
+  function teardown() {
+    if (uidPollTimer) clearInterval(uidPollTimer);
+    if (statusPollTimer) clearInterval(statusPollTimer);
+    if (tickTimer) clearInterval(tickTimer);
+    if (sortTimer) clearInterval(sortTimer);
+    if (summaryRef) { summaryRef.off(); summaryRef = null; }
+    teardownListeners();
+  }
+
+  function lastOrderTs(orders) {
+    let mx = 0;
+    Object.values(orders || {}).forEach(o => {
+      ["detected_at","accepted_at","arrive_at","delivered_at"].forEach(f => {
+        const v = Number(o && o[f]); if (v && v > mx) mx = v;
+      });
+    });
+    return mx;
+  }
+  function lastCrashTs(cr) {
+    let mx = 0;
+    Object.values(cr || {}).forEach(c => { const v = Number(c && c.ts); if (v && v > mx) mx = v; });
+    return mx;
+  }
+  function ago(ts) {
+    if (!ts) return "—";
+    const d = Date.now() - ts;
+    if (d < 60000) return "방금";
+    if (d < 3600000) return Math.floor(d / 60000) + "분 전";
+    if (d < 86400000) return Math.floor(d / 3600000) + "시간 전";
+    return Math.floor(d / 86400000) + "일 전";
+  }
+
+  function ordStats(orders) {
+    let cnt = 0; const plat = {};
+    Object.values(orders || {}).forEach(o => {
+      cnt++;
+      const pf = (o && o.platform) || "기타"; plat[pf] = (plat[pf] || 0) + 1;
+    });
+    return { cnt, plat };
+  }
+
+  let _renderBlock = false, _renderPending = false;
+  function render() {   // 3초에 한 번만 실제 그리기 — 신호가 쏟아져도 화면 칠하기는 합침(데이터 상태는 즉시 최신).
+    if (_renderBlock) { _renderPending = true; return; }
+    _renderBlock = true; renderNow();
+    setTimeout(() => { _renderBlock = false; if (_renderPending) { _renderPending = false; render(); } }, 5000);
+  }
+  function renderNow() {
+    const uids = displayOrder.filter(u => data[u]);
+    Object.keys(data).forEach(u => { if (uids.indexOf(u) < 0) uids.push(u); });   // 아직 정렬 전 새 uid
+    const now = Date.now();
+    const rows = uids.map(uid => {
+      const d = data[uid];
+      const p = d.profile || {};
+      const os = d.ordCnt != null ? { cnt: d.ordCnt, plat: d.plat || {} } : ordStats(d.ordersToday);   // 요약 모드=미리계산, 폴백=raw
+      const crCnt = d.crCnt != null ? d.crCnt : crashKeysToday(d.crashes).length;
+      const loTs = d.lastOrderTsV != null ? d.lastOrderTsV : lastOrderTs(d.ordersToday);
+      const lcTs = d.lastCrashTsV != null ? d.lastCrashTsV : lastCrashTs(d.crashes);
+      const actTs = Math.max(loTs, lcTs, d.seenTs || 0);
+      return {
+        uid, nick: p.nickname || "(미입력)", phone: p.phone || "",
+        region: p.region || "", vt: p.vehicle_type || "", ver: d.ver || "",
+        ordCnt: os.cnt, crCnt, actTs, workTs: loTs
+      };
+    });
+
+    let liveN = 0, ordSum = 0, crN = 0;
+    rows.forEach(r => {
+      if (statusOf(r.uid) === "활성") liveN++;   // 감지+GPS이동 동시 = 지금 일하는 중
+      ordSum += r.ordCnt; if (r.crCnt > 0) crN++;
+    });
+    $("s-total").textContent = rows.length;
+    $("s-live").textContent = liveN;
+    $("s-orders").textContent = ordSum;
+    $("s-crash").textContent = crN;
+    const verNums = [...new Set(rows.filter(r => !DIRECTORS.includes((data[r.uid].profile || {}).email)).map(r => verNum(r.ver)).filter(n => n > 0))].sort((a, b) => b - a);   // 디렉터 테스트폰(0.9)은 최신 판정 제외
+    const latestVer = verNums[0] || 0, prevVer = verNums.length > 1 ? verNums[1] : -1;
+    const latestVerStr = (rows.find(r => !DIRECTORS.includes((data[r.uid].profile || {}).email) && verNum(r.ver) === latestVer) || {}).ver || "";
+
+    const esc = s => String(s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+
+    // 필터 버튼 인원수
+    const tally = { 활성: 0, 휴면: 0, 비활성: 0 };
+    rows.forEach(r => { const s = statusOf(r.uid); if (tally[s] != null) tally[s]++; });
+    document.querySelectorAll("#ufilter button").forEach(b => { const fc = b.querySelector(".fc"); if (fc) fc.textContent = (b.dataset.s === "미인증" ? licNotIns.length : (tally[b.dataset.s] || 0)); });
+
+    // 미인증 필터 — 라이선스 대조 명단(테스터 카드 아님). 검색 중이면 건너뜀(검색은 상태 무관 전체 대상).
+    if (statusFilter === "미인증" && !searchKw) {
+      $("empty").style.display = licNotIns.length ? "none" : "block";
+      if (!licNotIns.length) { $("empty").textContent = "미인증 없음"; $("rows").innerHTML = ""; return; }
+      $("rows").innerHTML = licNotIns.map(x => {
+        const red = !!x.expired;
+        return `<div class="card" data-appkey="${esc(x.appKey)}" data-name="${esc(x.name)}" data-phone="${esc(x.phone)}"><div class="r1"><span class="nick">${esc(x.name)}</span><span class="ver">${esc(x.phone)}</span><span class="when ${red ? 'crash' : ''}">미인증 ${x.ageH != null ? x.ageH + 'h' : '?'}${x.expired ? ' (만료)' : ''}</span></div>${x.note ? `<div style="font-size:11px;color:#b0a68a;margin-top:3px">📌 ${esc(x.note)}</div>` : ''}</div>`;
+      }).join("");
+      return;
+    }
+
+    const isPin = r => ((data[r.uid].profile || {}).email) === "pnomade13@gmail.com";   // 디렉터 구동폰(김다마) — 해당 상태 탭 내 최상단 고정
+    let shown;
+    if (searchKw) {   // 검색 시 상태 무관 전체에서 이름·닉네임·전화 매칭만
+      shown = rows.filter(r => { const p = data[r.uid].profile || {}; return [r.nick, r.phone, p.name].some(v => v && String(v).indexOf(searchKw) >= 0); });
+    } else {
+      const inTab = rows.filter(r => statusOf(r.uid) === statusFilter);
+      shown = [...inTab.filter(isPin), ...inTab.filter(r => !isPin(r))];
+    }
+    $("empty").style.display = shown.length ? "none" : "block";
+    if (!shown.length) { $("empty").textContent = searchKw ? "검색 결과 없음" : (statusFilter + " 테스터 없음"); $("rows").innerHTML = ""; return; }
+    $("rows").innerHTML = shown.map(r => {
+      const st = statusOf(r.uid);
+      const dot = st === "활성" ? "d-live" : st === "휴면" ? "d-idle" : "d-late";  // 녹=일하는중 · 주황=대기/이동 · 빨강=비활성
+      const sub = [esc(r.phone), esc(r.region), esc(r.vt)].filter(Boolean).join(" · ");
+      const isDir = DIRECTORS.includes((data[r.uid].profile || {}).email);
+      const dispVer = (isDir && verNum(r.ver) > latestVer && latestVerStr) ? latestVerStr : r.ver;   // 디렉터 관제폰 테스트버전(>fleet 최신)은 구동폰 fleet 버전으로 표기
+      return `<div class="card" data-uid="${r.uid}">
+        <div class="r1"><span class="dot ${dot}"></span><span class="nick">${esc(r.nick)}</span>${dispVer ? `<span class="ver ${verClass(dispVer, latestVer, prevVer)}">${esc(dispVer)}</span>` : ""}<span class="when">${ago(r.actTs)}</span></div>
+        <div class="r2">${sub || "정보 미입력"}</div>
+        <div class="r3">
+          <span><b>${r.ordCnt}</b><span class="lab">오늘 감지</span></span>
+          <span><b class="${r.crCnt ? "crash" : ""}">${r.crCnt || 0}</b><span class="lab">크래시</span></span>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // ===== 테스터 상세 — 카드 탭 시 그 사람 실기록(이미 쌓인 raw) 펼침 =====
+  $("rows").addEventListener("click", e => {
+    const card = e.target.closest(".card");
+    if (!card) return;
+    if (card.dataset.uid) openDetail(card.dataset.uid);
+    else if (card.dataset.phone !== undefined) openAppDetail(card.dataset.appkey, card.dataset.name, card.dataset.phone);
+  });
+  async function openAppDetail(appKey, name, phone) {
+    $("st-title").textContent = (name || "") + " · " + (phone || "");
+    $("st-body").innerHTML = "불러오는 중...";
+    openLayer("stoast");
+    let a = {};
+    if (appKey) { try { a = (await db.ref("applications/" + appKey).once("value")).val() || {}; } catch (e) {} }
+    const esc = s => String(s == null ? "" : s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+    const created = a.createdAt ? new Date(Number(a.createdAt) + 9 * 3600000).toISOString().substr(0, 16).replace("T", " ") : "-";
+    $("st-body").innerHTML = a.name
+      ? `기종: ${esc(a.phoneModel || "-")}<br>신청일: ${created}<br>상태: ${esc(a.status || "-")}<br><br>소개:<br>${esc(a.intro || "(없음)")}`
+      : "신청서 정보 없음";
+  }
+  document.querySelectorAll("#ufilter button").forEach(b => {
+    b.onclick = () => { statusFilter = b.dataset.s; document.querySelectorAll("#ufilter button").forEach(x => x.classList.toggle("on", x === b)); render(); };
+  });
+  // 일하는 중(활성) = 자동배차 활동(감지) + GPS 이동이 최근 30분 안에 동시 충족.
+  // 신호는 있으나 둘 다는 아님(대기·데이터수집·앱 깜빡 이동) = 휴면. 최근 신호 자체 없음 = 비활성.
+  function statusOf(uid) {
+    const d = data[uid]; if (!d) return "비활성";
+    const now = Date.now(), W = 30 * 60000;
+    if (d.lastMoveTs && now - d.lastMoveTs < W) return "활성";                         // 최근 30분 내 움직임 = 일하는 중(중간에 멈춰도 30분 유지)
+    const appOn = (d.lastGps && now - d.lastGps.ts < W) || (d.seenTs && now - d.seenTs < W);
+    return appOn ? "휴면" : "비활성";                                                  // 앱 켜져 신호는 옴 = 휴면 / 신호 없음 = 비활성
+  }
+
+  // 상단 박스 탭 → 해당 지표 상세만 토스트로.
+  $("stoast").onclick = userCloseTop;
+  document.querySelectorAll(".stat .box").forEach(b => {
+    b.onclick = () => { const w = b.dataset.stat; $("st-title").textContent = w; $("st-body").innerHTML = statDetail(w); openLayer("stoast"); };
+  });
+  function statDetail(which) {
+    const now = Date.now();
+    const esc = s => String(s == null ? "" : s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+    const rows = Object.keys(data).map(uid => ({ uid, nick: (data[uid].profile && data[uid].profile.nickname) || uid.substr(0, 6) }));
+    if (which === "설치") return "설치 " + rows.length + "명<br>" + (rows.map(r => esc(r.nick)).join(", ") || "없음");
+    if (which === "운행중") { const a = rows.filter(r => statusOf(r.uid) === "활성"); return "지금 운행 중 " + a.length + "명 (감지+GPS이동 동시·최근 30분)<br>" + (a.map(r => esc(r.nick)).join(", ") || "없음"); }
+    if (which === "감지") { const g = {}; let sum = 0; Object.values(data).forEach(d => { if (d.plat) { Object.keys(d.plat).forEach(pf => { g[pf] = (g[pf] || 0) + d.plat[pf]; sum += d.plat[pf]; }); } else { Object.values(d.ordersToday || {}).forEach(o => { const pf = (o && o.platform) || "기타"; g[pf] = (g[pf] || 0) + 1; sum++; }); } }); return "오늘 감지 " + sum + "건<br>" + (Object.entries(g).sort((a, b) => b[1] - a[1]).map(e => esc(e[0]) + " " + e[1]).join(" · ") || "없음"); }
+    if (which === "크래시") { const c = rows.map(r => ({ nick: r.nick, n: data[r.uid].crCnt != null ? data[r.uid].crCnt : crashKeysToday(data[r.uid].crashes).length })).filter(x => x.n > 0); return c.length ? "오늘 크래시 " + c.length + "명<br>" + c.map(x => esc(x.nick) + " " + x.n + "건").join(", ") : "오늘 크래시 없음"; }
+    return "";
+  }
+  // 레이어 스택 — 모달을 겹겹이 쌓고, 뒤로가기 한 번 = 맨 위 레이어만 닫힘(아래 레이어 복귀). 페이지 이동 방지.
+  let stack = [];
+  function openLayer(id) { if (!stack.length) document.body.style.overflow = "hidden"; stack.push(id); $(id).style.display = "block"; try { history.pushState({ depth: stack.length }, ""); } catch (e) {} }
+  function popLayer() { const top = stack.pop(); if (top) $(top).style.display = "none"; if (!stack.length) document.body.style.overflow = ""; }
+  function userCloseTop() { if (stack.length) { try { history.back(); } catch (e) { popLayer(); } } }
+  window.addEventListener("popstate", () => { if (stack.length) popLayer(); });
+  $("detail").onclick = userCloseTop;
+
+  function hhmm(ts) { return ts ? new Date(Number(ts) + 9 * 3600000).toISOString().substr(11, 5) : "—"; }
+  function haversine(la1, ln1, la2, ln2) { const R = 6371000, r = Math.PI / 180; const dLa = (la2 - la1) * r, dLn = (ln2 - ln1) * r; const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin(dLn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(a)); }
+  function verNum(v) { const m = /(\d+)\.(\d+)/.exec(v || ""); return m ? (+m[1]) * 1000 + (+m[2]) : 0; }
+  function verClass(v, latest, prev) { const n = verNum(v); if (!n) return ""; if (n === latest) return "v-new"; if (n === prev) return "v-mid"; return "v-old"; }
+
+  // 설치(첫 기록) 시각 — 명시 필드가 없어 가장 이른 데이터로 추정. on-demand.
+  async function firstSeen(uid) {
+    try {
+      const token = await auth.currentUser.getIdToken();
+      for (const node of ["gps_track/main", "system_events", "user_actions"]) {
+        const sh = await fetch(DB_URL + "/v1/users/" + uid + "/" + node + ".json?shallow=true&auth=" + token).then(r => r.json());
+        if (!sh) continue;
+        const minB = Math.min(...Object.keys(sh).map(Number));
+        const first = await fetch(DB_URL + "/v1/users/" + uid + "/" + node + "/" + minB + ".json?orderBy=%22%24key%22&limitToFirst=1&auth=" + token).then(r => r.json());
+        if (first) { const k = Object.keys(first)[0]; const v = first[k]; return Number((v && v.ts) || k) || (minB * 86400000); }
+      }
+    } catch (e) {}
+    return 0;
+  }
+
+  let detailUid = null, detailSel = null, detailDrive = null;   // 상세에서 계산한 운행 수치 — 동선 지도와 동일 기준으로 공유
+  function openDetail(uid) { detailUid = uid; openLayer("detail"); loadDetail(uid, todayKST()); }
+  async function loadDetail(uid, sel) {
+    detailUid = uid; detailSel = sel;
+    const d = data[uid]; if (!d) return;
+    const p = d.profile || {};
+    $("d-title").textContent = [p.nickname || "(미입력)", p.name, p.phone].filter(Boolean).join(" · ");
+    $("d-body").innerHTML = '<div class="dsec v">불러오는 중...</div>';
+    const base = "v1/users/" + uid;
+    const dayStart = Date.UTC(sel.y, sel.m - 1, sel.d) - 9 * 3600000, dayEnd = dayStart + 86400000;   // 선택일 KST 0~24시
+    const bk0 = Math.floor(dayStart / 86400000), bk1 = Math.floor((dayEnd - 1) / 86400000);
+    let gps = {}, orders = {}, stVal = {}, pf = p;   // pf = 상세용 전체 프로필(요약본은 목록 필드만 담음 — 생년월일 등은 raw에서)
+    try {   // 선택일 GPS 버킷 + 그날 orders + status + 전체 프로필 한 번에 병렬(순차 읽기 지연 제거)
+      const reads = [];
+      for (let bk = bk0; bk <= bk1; bk++) reads.push(db.ref(base + "/gps_track/main/" + bk).orderByKey().once("value"));
+      reads.push(db.ref(base + "/orders/" + ymdStr(sel)).once("value"));
+      reads.push(db.ref(base + "/status").once("value"));
+      reads.push(db.ref(base + "/profile").once("value"));
+      const snaps = await Promise.all(reads);
+      pf = snaps.pop().val() || p;
+      stVal = snaps.pop().val() || {};
+      orders = snaps.pop().val() || {};
+      snaps.forEach(s => { gps = Object.assign(gps, s.val() || {}); });
+      $("d-title").textContent = [pf.nickname || "(미입력)", pf.name, pf.phone].filter(Boolean).join(" · ");   // 전체 프로필로 헤더 확정
+    } catch (e) {}
+
+    // 운행 — 정확도 스크리닝 후, 구동폰(second) 점 있으면 그것만(S22 분리), 아직 분리 전이면 전체. 표준: 정확도필터 + 속도 스파이크 제거 + 정지판정.
+    const inWin = Object.values(gps).filter(o => o && o.ts && Number(o.ts) >= dayStart && Number(o.ts) < dayEnd && (o.accuracy_m == null || Number(o.accuracy_m) < 30));
+    const sec = inWin.filter(o => o.device === "second");
+    const gv = (sec.length ? sec : inWin).sort((a, b) => a.ts - b.ts);
+    const gTotal = gv.length;
+    const lastTs = gTotal ? Number(gv[gv.length - 1].ts) : 0;
+    const nowMs = Date.now();
+    // 이동 점(속도>3 & 정지아님)·오더 감지 시각
+    const moveTs = gv.filter(o => { const s = o.speed_kmh != null ? Number(o.speed_kmh) : null; return s != null ? (s > 3 && !o.is_stop) : !o.is_stop; }).map(o => Number(o.ts));
+    const ordTs = Object.values(orders || {}).map(o => Number(o && o.detected_at) || 0).filter(t => t >= dayStart && t < dayEnd).sort((a, b) => a - b);
+    // 운행 시작 = 첫 오더 감지가 GPS 이동과 겹치는 시점(앱 on·감지·이동 동시). 새벽 단발 감지·비업무 이동 제외.
+    const COW = 30 * 60000;
+    let workStart = null;
+    for (const t of ordTs) { if (moveTs.some(m => Math.abs(m - t) <= COW)) { workStart = t; break; } }
+    if (workStart == null) workStart = moveTs.length ? moveTs[0] : (gTotal ? Number(gv[0].ts) : 0);
+    // 운행 끝 = 마지막 오더 감지·마지막 GPS 이동 중 늦은 것(시작과 대칭). 주차 중 GPS만 갱신은 제외.
+    const lastMoveTsV = moveTs.length ? moveTs[moveTs.length - 1] : 0;
+    const lastOrderTs = ordTs.length ? ordTs[ordTs.length - 1] : 0;
+    const lastWorkTs = Math.max(lastMoveTsV, lastOrderTs);
+    const ongoing = lastWorkTs && (nowMs - lastWorkTs < 30 * 60000);                 // 마지막 작업 신호 30분 내 = 진행 중
+    const workEnd = ongoing ? nowMs : (lastWorkTs || lastTs);
+    const workMs = workStart && workEnd > workStart ? workEnd - workStart : 0;
+    // 거리·운행시간은 작업 구간[workStart~workEnd] 안에서만 집계 → 구간 밖 새벽 블립 제외, 운행률 ≤ 100%. 거리=속도 적분(떨림 안 탐), 시간=트립 단위(5분 이내 정차 포함).
+    let distM = 0, tripMs = 0, tripStart = null, lastMv = null, prev = null;
+    gv.forEach(o => {
+      const t = Number(o.ts);
+      if (t < workStart || t > workEnd) { prev = null; return; }   // 구간 밖 제외(경계에서 prev 끊어 구간 넘는 적분 방지)
+      const sp = o.speed_kmh != null ? Number(o.speed_kmh) : null;
+      const moving = sp != null ? (sp > 3 && !o.is_stop) : !o.is_stop;
+      if (prev) {
+        const dt = t - Number(prev.ts);
+        if (dt > 0 && dt < 15 * 60000) {
+          if (sp != null) { if (sp > 3 && sp < 150) distM += sp / 3.6 * (dt / 1000); }
+          else if (o.lat && o.lng && prev.lat && prev.lng) { const dseg = haversine(prev.lat, prev.lng, o.lat, o.lng); if (dseg / (dt / 1000) < 42 && !o.is_stop) distM += dseg; }
+        }
+      }
+      if (moving) { if (tripStart == null) tripStart = t; lastMv = t; }
+      else if (tripStart != null && lastMv != null && t - lastMv > 5 * 60000) { tripMs += lastMv - tripStart; tripStart = null; }
+      prev = o;
+    });
+    if (tripStart != null && lastMv != null) tripMs += lastMv - tripStart;
+    const runPct = workMs ? Math.min(100, Math.round(tripMs / workMs * 100)) : 0;
+    const mins = ms => ms >= 3600000 ? (Math.floor(ms / 3600000) + "시간 " + Math.round(ms % 3600000 / 60000) + "분") : Math.round(ms / 60000) + "분";
+    const clk = ms => { const d = new Date(Number(ms) + 9 * 3600000); return String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0"); };
+    const driveTxt = gTotal ? `운행 ${mins(tripMs)} · ${(distM / 1000).toFixed(1)}km · 운행률 ${runPct}%` : "기록 없음(위치 OFF/미운행)";
+    const rangeTxt = gTotal ? `${clk(workStart)} ~ ${ongoing ? "현재" : clk(workEnd)}` : "";
+    detailDrive = { km: (distM / 1000).toFixed(1), dur: mins(tripMs), runPct, workStart, workEnd };   // 동선 지도가 같은 수치 사용
+
+    // 버전(카드와 같은 색 규칙) + 설치(첫 기록) 시각
+    const verNums = [...new Set(Object.values(data).filter(x => x && !DIRECTORS.includes((x.profile || {}).email)).map(x => verNum(x.ver)).filter(n => n > 0))].sort((a, b) => b - a);   // 디렉터 테스트폰(0.9) 제외
+    const latestVer = verNums[0] || 0, prevVer = verNums.length > 1 ? verNums[1] : -1;
+    const latestVerStr = (Object.values(data).find(x => x && !DIRECTORS.includes((x.profile || {}).email) && verNum(x.ver) === latestVer) || {}).ver || "";
+    const isDir = DIRECTORS.includes((p || {}).email);
+    const ver = (isDir && verNum(d.ver) > latestVer && latestVerStr) ? latestVerStr : (d.ver || "?");
+    const st = stVal;
+    const verSince = Number(st.versionInstalledAt) || 0;                 // AS가 현재 버전 설치 시각 보고하면 그걸 사용
+    const installLabel = verSince ? "설치" : "최초 설치";                 // verSince 없으면 첫 사용(최초) 기준임을 명시
+    const fmtInstall = ts => ts ? new Date(ts + 9 * 3600000).toISOString().slice(0, 16).replace("T", " ") : "기록 없음";
+    const installTxt = verSince ? fmtInstall(verSince) : "확인 중…";       // verSince 없으면 firstSeen 비동기로 채움(첫 화면 지연 제거)
+
+    // 감지 콜
+    const ords = Object.values(orders || {}).sort((a, b) => (Number(b.detected_at) || 0) - (Number(a.detected_at) || 0));
+    const ordHtml = ords.length ? ords.map(o => {
+      // 감지한 콜만 표시. 측정·수행(완료) 여부는 앱 신호가 정리되면 AS에서 받아 반영(별표·물음표 없음).
+      return `<div class="ocall"><span class="t">${hhmm(o.detected_at)}</span> ${esc2(o.platform || "?")} | ${esc2(cleanLoc(o.origin, o.platform, false))}→${esc2(cleanLoc(o.dest, o.platform, true))} | ${vehOf(o) ? esc2(vehOf(o)) + " " : ""}${o.amount ? Number(o.amount).toLocaleString() + "원" : "-"}</div>`;
+    }).join("") : '<div class="v">없음</div>';
+
+    const crKeys = crashKeysInRange(d.crashes, dayStart, dayEnd).sort((a, b) => Number(b) - Number(a));
+    const crHtml = crKeys.length ? crKeys.map(k => {
+      const msg = (d.crashes[k] && d.crashes[k].msg) || "";
+      const m = msg.match(/(\w+(?:Exception|Error))\s*:?\s*([^\n]*)/);
+      const body = crashGloss(msg) || (m ? (m[1] + (m[2] ? ": " + m[2].trim() : "")) : (msg.split("\n")[0] || "오류"));
+      const ts = Number(d.crashes[k] && d.crashes[k].ts) || Number(k);
+      return `<div class="ocall"><span class="t">${hhmm(ts)}</span> ${esc2(body.length > 80 ? body.slice(0, 80) + "…" : body)}</div>`;
+    }).join("") : '<div class="v">없음</div>';
+    const bday = /^\d{8}$/.test(pf.birth || "") ? String(pf.birth).slice(2) : (pf.birth || "-");
+    $("d-body").innerHTML =
+      `<div class="ddate"><button id="dd-prev">◀</button><input id="dd-date" inputmode="numeric" maxlength="6" autocomplete="off" value="${ymdYY(sel)}"><button id="dd-next">▶</button></div>
+       <button id="d-map" class="d-mapbtn">📍 위치 · 동선 지도</button>
+       <div class="dsec"><h4>정보</h4><div class="v">${esc2(pf.region || "-")} · ${esc2(pf.vehicle_type || "-")} · ${esc2(bday)}</div></div>
+       <div class="dsec"><h4>운행</h4><div class="v">${gTotal ? `${rangeTxt}<br>${driveTxt}<br><span id="d-loc">현재 위치: 확인 중…</span>` : driveTxt}</div></div>
+       <div class="dsec"><h4>버전 · 설치</h4><div class="v"><span class="ver ${verClass(ver, latestVer, prevVer)}" style="margin:0">${esc2(ver)}</span> · ${installLabel} <span id="d-install">${installTxt}</span></div></div>
+       <div class="dsec"><h4>감지 콜 ${ords.length}건</h4>${ordHtml}</div>
+       <div class="dsec"><h4>크래시 ${crKeys.length}건</h4>${crHtml}</div>`;
+    $("d-map").onclick = (e) => { e.stopPropagation(); showUserMap(uid); };
+    $("dd-prev").onclick = (e) => { e.stopPropagation(); loadDetail(uid, ymdShift(sel, -1)); };
+    $("dd-next").onclick = (e) => { e.stopPropagation(); loadDetail(uid, ymdShift(sel, 1)); };
+    $("dd-date").onclick = (e) => e.stopPropagation();
+    $("dd-date").onchange = (e) => { e.stopPropagation(); const pp = ymdParse(e.target.value); if (pp) loadDetail(uid, pp); else e.target.value = ymdYY(sel); };
+    if (gTotal) {
+      const last = gv[gv.length - 1];
+      if (last && last.lat && last.lng) regionOf(last.lat, last.lng).then(t => { const el = $("d-loc"); if (el) el.textContent = "현재 위치: " + t; });
+    }
+    if (!verSince) firstSeen(uid).then(ts => { const el = $("d-install"); if (el && detailUid === uid) el.textContent = fmtInstall(ts); });   // 설치시각은 비동기로 채움(첫 화면 지연 제거)
+  }
+  function esc2(s) { return String(s == null ? "" : s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c])); }
+  // 오더 위치 정제 — 상호·시간·태그·박스·마스킹 걷어내고 주소(지역)만. 인성은 상호/주소/상호 구조라 위치로 추출.
+  function cleanLoc(s, platform, isDest) {
+    if (s == null) return "";
+    let str = String(s)
+      .replace(/\(([^)]*)\)/g, (m, c) => /[동읍면리가]$/.test(c.trim()) ? (" " + c.trim()) : "")  // 동 든 괄호는 풀고 나머지 괄호 제거
+      .replace(/\d{1,2}:\d{2}/g, "")            // 시간
+      .replace(/[가-힣]{1,4}\)/g, "")            // 긴급) 서류) 등 태그
+      .replace(/[!@*>]/g, " ")
+      .replace(/\/?\s*\d*박스/g, "")             // 1박스
+      .replace(/리프트/g, "");
+    let segs = str.split("/").map(x => x.trim()).filter(Boolean);
+    if (platform === "인성") segs = isDest ? segs.slice(0, 2) : segs.slice(-1);   // dest=시군구+동, origin=상호 뒤 주소
+    const out = segs.join(" ").replace(/\s+/g, " ").trim();
+    return out.split(" ").filter((t, i, a) => t && t !== a[i - 1]).join(" ");     // 연속 중복 토큰 제거
+  }
+  // 크래시 원문 → 한국어 한 줄 해설(알려진 패턴만, 없으면 null → 원문 예외 표기).
+  function crashGloss(msg) {
+    if (/BadTokenException/.test(msg) && /(2038|permission denied)/.test(msg)) return "오버레이 권한 없이 창 표시 시도(권한 거부)";
+    if (/DatabaseException/.test(msg) && /convert.*Long.*String/.test(msg)) return "RTDB 자료형 불일치(숫자를 문자열로 읽음)";
+    if (/OutOfMemoryError/.test(msg)) return "메모리 부족";
+    if (/NullPointerException/.test(msg)) return "널 참조 오류";
+    if (/(ANR|not responding)/i.test(msg)) return "앱 응답 없음(ANR)";
+    return null;
+  }
+  // 오더 차종 — vehicle_type 우선, 없으면 detail_json(car/options)에서. 1글자 코드는 풀어서.
+  const VMAP = { "다": "다마", "다마": "다마", "다마스": "다마", "라": "라보", "라보": "라보", "카": "카니", "카니발": "카니", "오": "오토", "오토": "오토", "오토바이": "오토", "승용": "승용", "승용차": "승용", "승합": "승합", "승합차": "승합", "밴": "밴", "윙": "윙바", "윙바디": "윙바", "1톤": "1톤", "1": "1톤" };
+  function vehOf(o) {
+    let v = (o && o.vehicle_type) || "";
+    if (!v && o && o.detail_json) { try { const j = JSON.parse(o.detail_json); v = String(j.car || j.options || "").split(/[-\/]/)[0].trim(); } catch (e) {} }
+    v = String(v).trim();
+    return VMAP[v] || v.slice(0, 2);
+  }
+
+  // 좌표 → 행정구역(시 구 동). OSM Nominatim 역지오코딩(키 없음). 좌표 반올림 캐시로 중복 조회 방지.
+  const geoCache = {};
+  async function regionOf(lat, lng) {
+    const key = lat.toFixed(3) + "," + lng.toFixed(3);
+    if (geoCache[key]) return geoCache[key];
+    try {
+      const r = await fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=ko&lat=" + lat + "&lon=" + lng);
+      const j = await r.json();
+      const a = j.address || {};
+      const si = (a.city || a.county || a.town || a.province || "").replace(/특별시|광역시/g, "");
+      const gu = a.borough || a.city_district || a.district || "";
+      const dong = a.quarter || a.neighbourhood || a.suburb || a.village || "";
+      const parts = [si, gu, dong].filter((v, i, arr) => v && arr.indexOf(v) === i);
+      const txt = parts.join(" ") || j.display_name || "확인 불가";
+      geoCache[key] = txt;
+      return txt;
+    } catch (e) { return "확인 불가"; }
+  }
+
+  // ===== 위치 지도 — 최근 위치 마커 + 마커 클릭 시 오늘 경로(조회 1회 스냅샷) =====
+  let lmap = null, markers = [], routeLine = null, flagMarker = null, mapSingle = false, mapClosing = false;
+  function dismissMap() { if (mapClosing) return; mapClosing = true; userCloseTop(); setTimeout(() => { mapClosing = false; }, 400); }
+  $("map-btn").onclick = openMap;
+  $("m-close").onclick = userCloseTop;
+  $("mapModal").onclick = userCloseTop;                                          // 배경 터치 = 닫힘
+  document.querySelector("#mapModal .detail-card").onclick = e => e.stopPropagation();  // 지도/카드 탭은 닫지 않음(클릭 통과로 상세까지 닫히는 것 방지) · 닫기는 ✕·배경으로만
+
+  function ensureMap() {
+    if (!lmap) {
+      lmap = L.map("map", { zoomControl: false, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 120 }).setView([37.5, 127.0], 8);   // 줌 세밀 조정(정수 단계 점프 완화)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(lmap);
+      lmap.on("click", () => { if (!mapSingle) deselect(); });   // 개인 동선=탭 무시(닫기는 ✕·배경) · 전체지도=선택 해제
+    }
+  }
+  function setMapInteractive(on) {   // 지도 이동 핸들러 on/off
+    const a = on ? "enable" : "disable";
+    ["dragging", "scrollWheelZoom", "doubleClickZoom", "touchZoom", "boxZoom", "keyboard"].forEach(h => { if (lmap[h]) lmap[h][a](); });
+  }
+  // 모든 지도 공통 — 평소 고정(스크롤이 지도 위를 그냥 지나감), 롱탭하면 이동 모드 토글(다시 롱탭=고정).
+  let mapMoveOn = false, justToggled = false;
+  function setMoveBadge(on) {
+    const el = $("map"); el.classList.toggle("movemode", on);
+    let b = el.querySelector(".movehint");
+    if (on && !b) { b = document.createElement("div"); b.className = "movehint"; b.textContent = "이동 모드 · 다시 길게=고정"; el.appendChild(b); }
+    else if (!on && b) b.remove();
+  }
+  function mapMoveReset() { mapMoveOn = false; if (lmap) setMapInteractive(false); setMoveBadge(false); }
+  function mapMoveToggle() { if (!lmap) return; mapMoveOn = !mapMoveOn; setMapInteractive(mapMoveOn); setMoveBadge(mapMoveOn); justToggled = true; setTimeout(() => { justToggled = false; }, 600); }
+  (function () {
+    const el = $("map"); if (!el) return; let t = null;
+    const s = () => { clearTimeout(t); t = setTimeout(mapMoveToggle, 500); };
+    const a = () => clearTimeout(t);
+    el.addEventListener("touchstart", s, { passive: true });
+    el.addEventListener("touchmove", a, { passive: true });
+    el.addEventListener("touchend", a);
+    el.addEventListener("mousedown", s);
+    el.addEventListener("mousemove", a);
+    el.addEventListener("mouseup", a);
+    el.addEventListener("mouseleave", a);
+  })();
+  // 위치 마커 — 작고 잘 보이는 원형 점. 색은 항상 녹색 유지(선택 표시는 깃발로).
+  function dotMarker(latlng, status) {
+    const fill = status === "휴면" ? "#f59e0b" : "#16a34a";   // 활성=녹 · 휴면=주황
+    return L.circleMarker(latlng, { radius: 7, color: "#fff", weight: 2, fillColor: fill, fillOpacity: 1, bubblingMouseEvents: false });
+  }
+  function clearFlag() { if (flagMarker) { lmap.removeLayer(flagMarker); flagMarker = null; } }
+  function setFlag(latlng) {   // 동선 시작점에 파란 깃발(현재 위치=아이콘, 빨강 동선과 구분)
+    clearFlag();
+    flagMarker = L.marker(latlng, { icon: L.divIcon({ html: "📍", className: "flag-icon", iconSize: [24, 24], iconAnchor: [12, 23] }), interactive: false, keyboard: false }).addTo(lmap);
+  }
+  // 빈 곳 터치 = 선택 해제. 경로·깃발 제거(마커는 녹색 그대로).
+  function deselect() {
+    if (routeLine) { lmap.removeLayer(routeLine); routeLine = null; }
+    clearFlag();
+    $("m-info").textContent = "마커를 누르면 경로·정보 표시";
+  }
+  function trackDist(pts) { let d = 0; for (let i = 1; i < pts.length; i++) d += haversine(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]); return d; }
+  function durTxt(t0, t1) { const m = (t0 && t1) ? Math.round((t1 - t0) / 60000) : 0; return m >= 60 ? (Math.floor(m / 60) + "시간 " + (m % 60) + "분") : (m + "분"); }
+
+  function openMap() {
+    mapSingle = false;
+    openLayer("mapModal");
+    $("m-title").textContent = "테스터 위치 — 최근 GPS";
+    ensureMap();
+    mapMoveReset();   // 기본 고정(롱탭으로 이동 활성화)
+    setTimeout(() => lmap.invalidateSize(), 120);
+    markers.forEach(m => lmap.removeLayer(m)); markers = []; clearFlag();
+    if (routeLine) { lmap.removeLayer(routeLine); routeLine = null; }
+    // 메모리의 마지막 위치(data[uid].lastGps)로 즉시 일괄 표시 — 유저별 GPS 재읽기 제거(아이콘 하나씩 뜨던 원인). 동선은 마커 탭 시에만 읽기.
+    const pts = []; let n = 0;
+    Object.keys(data).forEach(uid => {
+      const st = statusOf(uid);
+      if (st === "비활성") return;   // 비활성은 지도에 표시 안 함
+      const g = data[uid].lastGps;
+      if (!g || !Number.isFinite(g.lat) || !Number.isFinite(g.lng) || !g.lat || !g.lng) return;
+      const nick = (data[uid].profile && data[uid].profile.nickname) || uid.substr(0, 6);
+      const mk = dotMarker([g.lat, g.lng], st).addTo(lmap);   // 활성 녹 · 휴면 주황
+      mk.on("click", () => showRoute(uid, nick, mk));
+      markers.push(mk); pts.push([g.lat, g.lng]); n++;
+    });
+    if (pts.length) lmap.fitBounds(pts, { padding: [40, 40] });
+    $("m-info").textContent = "현재 " + n + "명 · 녹색=운행중 · 주황=대기";
+  }
+
+  async function showRoute(uid, nick, mk) {
+    $("m-info").textContent = nick + " 경로 불러오는 중...";
+    if (routeLine) { lmap.removeLayer(routeLine); routeLine = null; }
+    clearFlag();
+    const bucket = Math.floor(Date.now() / 86400000);
+    let pts = [], t0 = 0, t1 = 0;
+    try {
+      const s = await db.ref("v1/users/" + uid + "/gps_track/main/" + bucket).once("value");
+      const arr = [];
+      s.forEach(c => { const v = c.val() || {}; const la = Number(v.lat), ln = Number(v.lng), t = Number(v.ts) || 0; if (la && ln) arr.push([t, la, ln]); });
+      arr.sort((a, b) => a[0] - b[0]);
+      pts = arr.map(x => [x[1], x[2]]);
+      if (arr.length) { t0 = arr[0][0]; t1 = arr[arr.length - 1][0]; }
+    } catch (e) {}
+    const km = (trackDist(pts) / 1000).toFixed(1);
+    if (pts.length > 1) {
+      routeLine = L.polyline(pts, { color: "#ff3b30", weight: 4, opacity: .9 }).addTo(lmap); routeLine.bringToBack();   // 경로는 아이콘 아래로
+      setFlag(pts[0]);   // 깃발 = 시작점(마커=현재 위치)
+      $("m-info").innerHTML = "<b>" + esc2(nick) + " · " + km + "km · " + durTxt(t0, t1) + "</b>";
+    } else {
+      $("m-info").innerHTML = "<b>" + esc2(nick) + " · 경로 점 부족</b>";
+    }
+  }
+
+  // 상세 팝업의 "위치·동선" 버튼 — 그 유저만 지도에 현재 위치 마커 + 오늘 동선.
+  async function showUserMap(uid) {
+    const p = (data[uid] && data[uid].profile) || {};
+    const nick = p.nickname || uid.substr(0, 6);
+    mapSingle = true;
+    openLayer("mapModal");
+    const sel = detailSel || todayKST();
+    $("m-title").textContent = nick + " — 위치 · 동선 " + ymdYY(sel);
+    ensureMap();
+    setMapInteractive(false); setMoveBadge(false); mapMoveOn = false;   // 개별 유저 동선은 고정 틀(탭=닫힘)
+    setTimeout(() => lmap.invalidateSize(), 120);
+    markers.forEach(m => lmap.removeLayer(m)); markers = []; clearFlag();
+    if (routeLine) { lmap.removeLayer(routeLine); routeLine = null; }
+    $("m-info").textContent = "불러오는 중...";
+    const dayStart = Date.UTC(sel.y, sel.m - 1, sel.d) - 9 * 3600000, dayEnd = dayStart + 86400000;
+    const bk0 = Math.floor(dayStart / 86400000), bk1 = Math.floor((dayEnd - 1) / 86400000);
+    const arr = [];
+    try {
+      for (let bk = bk0; bk <= bk1; bk++) {
+        const s = await db.ref("v1/users/" + uid + "/gps_track/main/" + bk).once("value");
+        s.forEach(c => { const v = c.val() || {}; const la = Number(v.lat), ln = Number(v.lng), t = Number(v.ts) || 0; if (la && ln && t >= dayStart && t < dayEnd) arr.push([t, la, ln]); });
+      }
+    } catch (e) {}
+    arr.sort((a, b) => a[0] - b[0]);
+    const dd = detailDrive || {};   // 상세와 동일 기준(작업 구간·속도적분 거리·트립 시간)
+    const ws = dd.workStart || (arr[0] ? arr[0][0] : 0), we = dd.workEnd || (arr.length ? arr[arr.length - 1][0] : 0);
+    const warr = arr.filter(x => x[0] >= ws && x[0] <= we);
+    const pts = (warr.length > 1 ? warr : arr).map(x => [x[1], x[2]]);
+    if (pts.length) {
+      routeLine = L.polyline(pts, { color: "#ff3b30", weight: 4, opacity: .9 }).addTo(lmap); routeLine.bringToBack();   // 경로는 아이콘 아래로
+      const last = pts[pts.length - 1];
+      const mk = dotMarker(last, statusOf(uid)).addTo(lmap);
+      markers.push(mk); setFlag(pts[0]);   // 깃발 = 시작점(마커=현재 위치)
+      setTimeout(() => lmap.fitBounds(pts, { padding: [40, 40], maxZoom: 14 }), 180);   // 크기 보정 후 동선 표시(과도 확대 방지 — maxZoom·여백)
+      const infoTxt = (dd.km != null) ? (dd.km + "km · " + dd.dur + " · 운행률 " + dd.runPct + "%") : ((trackDist(pts) / 1000).toFixed(1) + "km");
+      $("m-info").innerHTML = "<b>" + esc2(nick) + " · " + infoTxt + "</b>";
+      regionOf(last[0], last[1]).then(t => { const el = $("m-info"); if (el) el.innerHTML += "<br>📍 " + esc2(t); });   // 확대돼서 위치 안 보이니 현재 위치(행정구역) 줄바꿈으로
+    } else {
+      $("m-info").innerHTML = "<b>" + esc2(nick) + " · GPS 기록 없음</b>";
+    }
+  }
+})();
+</script>
+</body></html>

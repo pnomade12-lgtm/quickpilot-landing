@@ -1,0 +1,63 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>1307 김태욱 · 6/8 감지콜</title>
+<style>
+:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#9A8F78;--tmu:#B0A68A;--lv5:#7FB069;--soft:#F5E8B8;--grn:#CFE0C2;--org:#F0B860}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tm);font-family:-apple-system,'Noto Sans KR',sans-serif;-webkit-text-size-adjust:100%}
+.head{position:sticky;top:0;background:var(--bg);padding:16px 16px 10px;border-bottom:1px solid var(--bd);z-index:5}
+.ttl{font-size:18px;font-weight:800;color:var(--tm)}
+.sub{font-size:12.5px;color:var(--ts);margin-top:3px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+.chip{padding:8px 13px;border-radius:18px;background:var(--card);color:var(--ts);font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--bd);user-select:none}
+.chip.on{background:var(--tm);color:#fff;border-color:var(--tm)}
+.wrap{padding:14px 14px 60px;max-width:620px;margin:0 auto}
+.ocard{background:var(--card);border-radius:13px;padding:13px 14px;margin-bottom:9px;border:1px solid var(--bd)}
+.ohead{display:flex;justify-content:space-between;align-items:center}
+.obadge{font-size:11px;font-weight:800;padding:3px 9px;border-radius:7px;background:#5a5a5a;color:#fff}
+.obadge.인성{background:#16a34a;color:#fff}
+.obadge.통합콜{background:#fff;color:var(--tm);border:1px solid var(--bd)}
+.obadge.카카오{background:#3b82f6;color:#fff}
+.ots{font-size:12px;color:var(--tmu);font-variant-numeric:tabular-nums}
+.oroute{font-size:15.5px;font-weight:700;color:var(--tm);margin:8px 0 7px;line-height:1.4;word-break:keep-all}
+.obot{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.oamt{font-size:19px;font-weight:800;color:var(--tm);font-variant-numeric:tabular-nums}
+.oamt.hi{color:var(--lv5)}
+.ometa{font-size:12px;color:var(--ts);text-align:right;line-height:1.4}
+.empty{color:var(--ts);text-align:center;padding:36px}
+</style></head><body>
+<div class="head">
+<div class="ttl">1307 김태욱 · 감지 콜</div>
+<div class="sub">2026-06-08 오전~13:00 · 감지 44 · 확정 0 · 전부 패스</div>
+<div class="chips" id="bar">
+<span class="chip on" data-p="전체">전체</span>
+<span class="chip" data-p="인성">인성 33</span><span class="chip" data-p="통합콜">통합콜 10</span><span class="chip" data-p="카카오">카카오 1</span>
+<span class="chip" id="sortAmt">금액순</span>
+</div>
+</div>
+<div class="wrap" id="list"></div>
+<script>
+const DATA=[{"t":"12:47","plat":"인성","amount":53900,"route":"14시픽/소사본동  →  충북 청주시 상당구 청주시 용암동","meta":"승용/소형 · 14시"},{"t":"12:47","plat":"인성","amount":30800,"route":"가좌동  →  경기 광주시 태전동","meta":"오"},{"t":"12:39","plat":"인성","amount":20700,"route":"1:30)방축동  →  서울 은평구 응암동","meta":"오 · 1:30"},{"t":"12:39","plat":"통합콜","amount":40000,"route":"인천부평동  →  4시전/남양주별내동","meta":"오 · 5.3km · 4시"},{"t":"12:17","plat":"카카오","amount":30220,"route":"소사 심곡본  →  구로 구로3, 구로 구로3, 중구 회현","meta":""},{"t":"12:07","plat":"인성","amount":38500,"route":"당하동/  →  인천 서구 오류동/배송아님 / 오류동/배송아님","meta":"오 · 배송아님"},{"t":"11:36","plat":"인성","amount":26900,"route":"당하동  →  경기 과천시 갈현동","meta":"오"},{"t":"11:29","plat":"인성","amount":30800,"route":"부천원미동  →  경기 파주시 파주/신촌동 / 파주/신촌동","meta":"오"},{"t":"11:24","plat":"인성","amount":23100,"route":"계양서운동  →  서울 금천구 15시/4박/금천가산동 / 15시/4박/금천가산동","meta":"다 · 15시"},{"t":"11:16","plat":"통합콜","amount":40000,"route":"가산동  →  안산선부동","meta":"다 · 9.3km"},{"t":"11:16","plat":"인성","amount":26900,"route":"공항동  →  서울 중랑구 신내동","meta":"다"},{"t":"11:11","plat":"인성","amount":30800,"route":"삼정동  →  서울 송파구 문정동/바로감 / 문정동/바로감","meta":"오 · 바로감"},{"t":"11:11","plat":"통합콜","amount":40000,"route":"가산동  →  인천송도동","meta":"다 · 9.2km"},{"t":"11:11","plat":"인성","amount":23100,"route":"봉담읍  →  서울 은평구 응암동","meta":"오"},{"t":"11:08","plat":"인성","amount":23100,"route":"간단/영등포동6가  →  경기 파주시 광탄면","meta":"승용/소형"},{"t":"11:06","plat":"인성","amount":26200,"route":"12시/개포동  →  경기 양주시 양주옥정동","meta":"오 · 12시"},{"t":"11:06","plat":"통합콜","amount":39000,"route":"산곡동  →  휘경동","meta":"오 · 7.2km"},{"t":"10:45","plat":"인성","amount":30800,"route":"고촌물류단지  →  서울 종로구 종로평동","meta":"다"},{"t":"10:44","plat":"인성","amount":77000,"route":"구로동  →  서울 강남구 들어주기/삼성동 / 들어주기/삼성동","meta":"오 · 들어주기"},{"t":"10:41","plat":"인성","amount":37000,"route":"서구오류동/간단1번  →  인천 연수구 송도동/30층혼자운반 / 송도동/30층혼자운반","meta":"다 · 혼자운반"},{"t":"10:32","plat":"통합콜","amount":85000,"route":"12시/구로동  →  3시전/충북)삼성면","meta":"다 · 9.4km · 12시 · 3시"},{"t":"10:31","plat":"인성","amount":34600,"route":"인천강화불은면 삼성리  →  서울 강남구 삼성동","meta":"오"},{"t":"10:27","plat":"인성","amount":30800,"route":"문래동6가  →  경기 용인시 처인구 남사읍","meta":"오"},{"t":"10:23","plat":"인성","amount":34600,"route":"11시/인천중산동(인천공  →  서울 송파구 신천동","meta":"다 · 11시"},{"t":"10:20","plat":"인성","amount":15400,"route":"춘의동  →  논현동","meta":"다마스"},{"t":"10:12","plat":"통합콜","amount":39000,"route":"가산동  →  다산동","meta":"오 · 8.7km"},{"t":"09:53","plat":"인성","amount":26900,"route":"오정동  →  경기 의왕시 학의동","meta":"오"},{"t":"09:50","plat":"인성","amount":15400,"route":"부천/삼정동  →  석남동","meta":"다마스"},{"t":"09:47","plat":"인성","amount":30800,"route":"11시/상야동  →  경기 용인시 처인구 양지읍(용인","meta":"오 · 11시"},{"t":"09:44","plat":"인성","amount":30800,"route":"춘의동  →  경기 남양주시 오남읍","meta":"오"},{"t":"09:43","plat":"통합콜","amount":45000,"route":"10:00청라동  →  13시전)김포하성면","meta":"다 · 9.6km · 10:00 · 13시"},{"t":"09:40","plat":"인성","amount":21500,"route":"인천경서동  →  서울 금천구 독산동","meta":"다"},{"t":"09:35","plat":"인성","amount":21500,"route":"오전10시/박1/가산동  →  서울 마포구 바로/마포연남동 / 바로/마포연남동","meta":"승용/소형 · 10시"},{"t":"09:27","plat":"인성","amount":92400,"route":"김포걸포동  →  강원 평창군평창읍 강원평창","meta":"승용/소형"},{"t":"09:26","plat":"통합콜","amount":40000,"route":"09:40석남동  →  양평동5가","meta":"다 · 8.9km · 09:40"},{"t":"09:25","plat":"인성","amount":30800,"route":"고촌전호리  →  경기 화성시 동탄구 화성영천동","meta":"다"},{"t":"09:23","plat":"인성","amount":30800,"route":"오토)영등포동2가  →  경기 양주시 양주은현면","meta":"다"},{"t":"09:21","plat":"통합콜","amount":50000,"route":"인천가좌동  →  송파장지동","meta":"다 · 7.9km"},{"t":"09:18","plat":"인성","amount":30800,"route":"고촌전호리  →  인천 중구 운서동","meta":"다"},{"t":"09:13","plat":"통합콜","amount":45000,"route":"빈차10:15원창동  →  당산동4가","meta":"다 · 8.9km · 10:15"},{"t":"08:53","plat":"인성","amount":34600,"route":"온수동  →  경기 평택시 서류/평택현덕면 / 서류/평택현덕면","meta":"오 · 서류"},{"t":"08:49","plat":"인성","amount":21500,"route":"9시50분/일직동  →  서울 금천구 가산동","meta":"승용/소형 · 9시50분"},{"t":"08:48","plat":"인성","amount":30800,"route":"송도동  →  경기 김포시 대곶면","meta":"다"},{"t":"08:46","plat":"인성","amount":35000,"route":"주안동  →  구로구개봉동","meta":"다"}];
+let curPlat="전체",sortAmt=false;
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function render(){
+  let r=DATA.filter(x=>curPlat==="전체"||x.plat===curPlat);
+  if(sortAmt)r=[...r].sort((a,b)=>b.amount-a.amount);
+  const el=document.getElementById("list");
+  if(!r.length){el.innerHTML='<div class="empty">없음</div>';return;}
+  el.innerHTML=r.map(x=>
+    '<div class="ocard"><div class="ohead"><span class="obadge '+x.plat+'">'+x.plat+'</span><span class="ots">'+x.t+'</span></div>'+
+    '<div class="oroute">'+esc(x.route)+'</div>'+
+    '<div class="obot"><span class="oamt'+(x.amount>=50000?' hi':'')+'">'+x.amount.toLocaleString()+'</span>'+
+    '<span class="ometa">'+esc(x.meta)+'</span></div></div>'
+  ).join("");
+}
+document.getElementById("bar").addEventListener("click",e=>{
+  const c=e.target.closest(".chip");if(!c)return;
+  if(c.id==="sortAmt"){sortAmt=!sortAmt;c.classList.toggle("on",sortAmt);c.textContent=sortAmt?"시간순":"금액순";render();return;}
+  curPlat=c.dataset.p;
+  document.querySelectorAll('#bar .chip[data-p]').forEach(x=>x.classList.toggle("on",x===c));
+  render();
+});
+render();
+</script></body></html>

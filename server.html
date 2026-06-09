@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QP 서버 현황</title>
+<meta name="theme-color" content="#0a0a0a">
+<meta name="robots" content="noindex,nofollow">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://unpkg.com/h3-js@4.1.0/dist/h3-js.umd.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyBoZSnKoTu6nBdE0VfJAiCmWgjfKgLHqus",
+    authDomain: "quickpilot-39d72.firebaseapp.com",
+    databaseURL: "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "quickpilot-39d72",
+    storageBucket: "quickpilot-39d72.firebasestorage.app",
+    messagingSenderId: "530394028123",
+    appId: "1:530394028123:web:ab56e0951f214401d0c77e"
+  });
+  const DB_URL = "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app";
+</script>
+<style>
+  :root { --bg:#0a0a0a; --fg:#f5f5f5; --dim:#8a8a8a; --hot:#ff453a; --line:#1f1f1f; --card:#131313; --ok:#34c759; --warn:#ff9f0a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { background:var(--bg); color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif; -webkit-text-size-adjust:100%; }
+  main { max-width:760px; margin:0 auto; padding:18px 14px 60px; }
+  h1 { font-size:20px; font-weight:800; }
+  .sub { color:var(--dim); font-size:13px; margin-top:3px; }
+  .top { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  a.back { margin-left:auto; color:var(--dim); text-decoration:none; border:1px solid var(--line); border-radius:9px; padding:6px 11px; font-size:13px; }
+  #login { display:none; text-align:center; padding:80px 20px; }
+  #login button { margin-top:18px; padding:12px 22px; border:0; border-radius:10px; background:#fff; color:#000; font-weight:800; font-size:15px; }
+  #app { display:none; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px; }
+  .card h4 { font-size:12px; color:var(--dim); font-weight:700; margin-bottom:10px; letter-spacing:.04em; }
+  .stat3 { display:flex; gap:10px; }
+  .stat3 > div { flex:1; text-align:center; background:#0e0e0e; border:1px solid var(--line); border-radius:12px; padding:14px 6px; }
+  .stat3 .n { font-size:30px; font-weight:800; }
+  .stat3 .u { color:var(--dim); font-size:12px; margin-top:4px; }
+  .kv { font-size:14px; line-height:1.9; }
+  .kv b { font-weight:800; }
+  .kv .d { color:var(--dim); }
+  .note { color:var(--dim); font-size:12px; line-height:1.6; margin-top:8px; }
+  #chart { width:100%; height:auto; display:block; }
+  #heat { width:100%; height:380px; border-radius:10px; overflow:hidden; }
+  #heat .leaflet-control-attribution { font-size:9px; }
+  #omap { width:100%; height:380px; border-radius:10px; overflow:hidden; }
+  #omap .leaflet-control-attribution { font-size:9px; }
+  #heat.movemode, #omap.movemode { outline:2px solid #34c759; outline-offset:-2px; }
+  .mapwrap { position:relative; }
+  .movehint { position:absolute; top:8px; left:8px; z-index:500; background:rgba(0,0,0,.62); color:#fff; font-size:11px; padding:3px 8px; border-radius:7px; pointer-events:none; }
+  .datebar { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+  .datebar .dbtn { width:46px; height:46px; flex:0 0 auto; background:var(--card); border:1px solid var(--line); color:var(--fg); border-radius:12px; font-size:18px; }
+  .datebar .dbtn:active { background:#1a1a1a; }
+  .datebar .dinput { flex:1; min-width:0; text-align:center; background:#0e0e0e; border:1px solid var(--line); color:var(--fg); border-radius:12px; padding:12px; font-size:19px; font-weight:800; letter-spacing:3px; }
+  .sharebar { display:flex; height:16px; border-radius:8px; overflow:hidden; margin-top:10px; background:#0e0e0e; }
+  .sharebar > span { display:block; height:100%; }
+  .topnav { margin-left:auto; display:flex; gap:6px; }
+  .topnav a { color:var(--dim); text-decoration:none; border:1px solid var(--line); border-radius:9px; padding:6px 11px; font-size:13px; }
+  .acct { color:var(--dim); font-size:13px; display:flex; align-items:center; gap:10px; justify-content:space-between; }
+  .signout { background:none; border:1px solid var(--line); color:var(--dim); border-radius:8px; padding:6px 12px; font-size:13px; }
+  .err { color:var(--hot); font-size:13px; margin-top:10px; }
+</style>
+</head>
+<body>
+<main>
+  <div id="login">
+    <h1>QP 서버 현황</h1>
+    <div class="sub">디렉터 전용</div>
+    <button id="login-btn">구글 계정으로 로그인</button>
+    <div class="err" id="login-err"></div>
+  </div>
+
+  <div id="app">
+    <div class="top">
+      <div><h1>통계</h1><div class="sub" id="sub">불러오는 중…</div></div>
+      <div class="topnav">
+        <a href="monitor-all.html">← 모니터</a>
+        <a href="serverops.html">🖥️ 서버</a>
+      </div>
+    </div>
+
+    <div class="datebar">
+      <button id="d-prev" class="dbtn">◀</button>
+      <input id="d-date" class="dinput" inputmode="numeric" maxlength="6" autocomplete="off">
+      <button id="d-next" class="dbtn">▶</button>
+    </div>
+
+    <div class="card">
+      <h4>감지된 오더 (00시 → 24시)</h4>
+      <div class="stat3">
+        <div><div class="n" id="od-total">—</div><div class="u">총 감지</div></div>
+        <div><div class="n" id="od-avg">—</div><div class="u">1인 평균</div></div>
+      </div>
+      <div class="kv" id="od-plat" style="margin-top:12px;font-size:15px;">계산 중…</div>
+      <div class="sharebar" id="od-share"></div>
+    </div>
+
+    <div class="card">
+      <h4>시간별 오더 감지 (0시 → 24시)</h4>
+      <svg id="chart" viewBox="0 0 360 180"></svg>
+      <div class="note" id="chartnote"></div>
+    </div>
+
+    <div class="card">
+      <h4>오더 분포 (자동배차 감지 출발지)</h4>
+      <div id="omap"></div>
+      <div class="note" id="omapnote">불러오는 중…</div>
+    </div>
+
+    <div class="card">
+      <h4>운행 히트맵 (전체 테스터 GPS)</h4>
+      <div id="heat"></div>
+      <div class="note" id="heatnote">불러오는 중…</div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  const auth = firebase.auth();
+  const db = firebase.database();
+  const DIRECTORS = ["pnomade12@gmail.com", "pnomade13@gmail.com"];
+  const $ = id => document.getElementById(id);
+  let UIDS = [], sel = null, heatMap = null, omapMap = null;   // sel = {y,m,d} 선택 날짜(KST)
+
+  $("login-btn").onclick = () => {
+    const p = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(p).catch(e => { $("login-err").textContent = "로그인 실패: " + e.message; });
+  };
+
+  auth.onAuthStateChanged(user => {
+    if (!user) { $("login").style.display = "block"; $("app").style.display = "none"; return; }
+    if (!DIRECTORS.includes(user.email)) { $("login-err").textContent = "권한 없는 계정 (" + user.email + ")."; auth.signOut(); return; }
+    $("login").style.display = "none"; $("app").style.display = "block";
+    start();
+  });
+
+  function ago(ms) {
+    const d = Date.now() - ms;
+    if (d < 60000) return "방금";
+    if (d < 3600000) return Math.floor(d / 60000) + "분 전";
+    if (d < 86400000) return Math.floor(d / 3600000) + "시간 전";
+    return Math.floor(d / 86400000) + "일 전";
+  }
+
+  // ===== 날짜(KST) 헬퍼 =====
+  function todayKST() { const k = new Date(Date.now() + 9 * 3600000); return { y: k.getUTCFullYear(), m: k.getUTCMonth() + 1, d: k.getUTCDate() }; }
+  function dateStr(s) { return s.y + "-" + String(s.m).padStart(2, "0") + "-" + String(s.d).padStart(2, "0"); }
+  function yymmdd(s) { return String(s.y).slice(2) + String(s.m).padStart(2, "0") + String(s.d).padStart(2, "0"); }
+  function shiftDay(s, delta) { const dt = new Date(Date.UTC(s.y, s.m - 1, s.d) + delta * 86400000); return { y: dt.getUTCFullYear(), m: dt.getUTCMonth() + 1, d: dt.getUTCDate() }; }
+  function parseYYMMDD(str) { const m = /^(\d{2})(\d{2})(\d{2})$/.exec((str || "").trim()); if (!m) return null; const o = { y: 2000 + (+m[1]), m: +m[2], d: +m[3] }; return (o.m >= 1 && o.m <= 12 && o.d >= 1 && o.d <= 31) ? o : null; }
+
+  async function start() {
+    const u = auth.currentUser, token = await u.getIdToken();
+    try {
+      const r = await fetch(DB_URL + "/v1/users.json?shallow=true&auth=" + token);
+      UIDS = Object.keys(await r.json() || {}).filter(k => k !== "director-nuri");
+    } catch (e) { $("sub").textContent = "유저 로드 실패"; return; }
+    $("sub").textContent = "테스터 " + UIDS.length + "명";
+    sel = todayKST();
+    $("d-date").value = yymmdd(sel);
+    $("d-prev").onclick = () => { sel = shiftDay(sel, -1); $("d-date").value = yymmdd(sel); loadDate(); };
+    $("d-next").onclick = () => { sel = shiftDay(sel, 1); $("d-date").value = yymmdd(sel); loadDate(); };
+    $("d-date").onchange = () => { const p = parseYYMMDD($("d-date").value); if (p) { sel = p; loadDate(); } else { $("d-date").value = yymmdd(sel); } };
+    attachLongPress("omap", () => omapMap);   // 롱탭 이동 토글(맵 인스턴스는 날짜마다 새로 만들어도 div 리스너는 한 번만)
+    attachLongPress("heat", () => heatMap);
+    loadDate();
+  }
+
+  // 선택 날짜(00시~24시 KST)의 데이터로 박스·막대·맵 갱신
+  async function loadDate() {
+    const ds = dateStr(sel);
+    const dayStart = Date.UTC(sel.y, sel.m - 1, sel.d) - 9 * 3600000, dayEnd = dayStart + 86400000;   // KST 00:00~24:00
+    const isToday = ds === dateStr(todayKST());
+    $("od-total").textContent = "—"; $("od-avg").textContent = "—"; $("od-plat").textContent = "계산 중…"; $("od-share").innerHTML = "";
+
+    // 과거 날짜 = 서버 캐시(data_cache)만 읽음 — 유저별 풀스캔(특히 GPS) 없이 미리 계산된 집계·지도 그대로 사용.
+    if (!isToday) {
+      try {
+        const agg = (await db.ref("v1/app/data_cache/" + ds + "/aggregate").once("value")).val();
+        if (agg && agg.orders) {
+          const o = agg.orders;
+          $("od-total").textContent = o.total || 0;
+          $("od-avg").textContent = o.avgPerUser != null ? o.avgPerUser : (o.activeUsers ? (o.total / o.activeUsers).toFixed(1) : "0");
+          renderPlat(o.platform || {}, o.total || 0);
+          drawChart(agg.hourly || new Array(24).fill(0));
+          drawHexCached(agg.hex || []);
+          drawHeat(dayStart, dayEnd);   // 히트맵은 어제처럼 실시간 GPS 스캔(모양 동일 보장). 분포맵 hex만 캐시.
+          return;
+        }
+      } catch (e) {}
+      // 캐시 없으면 아래 풀스캔 폴백
+    }
+
+    // 오늘(또는 과거 캐시 부재): 오더만 가볍게 스캔(GPS 아님) — 카운트·플랫폼·시간대
+    const hours = new Array(24).fill(0);
+    const plat = {}, originCnt = {}; let totalOrd = 0, activeUsers = 0;
+    await Promise.all(UIDS.map(async uid => {
+      try {
+        const arr = Object.values((await db.ref("v1/users/" + uid + "/orders/" + ds).once("value")).val() || {}).filter(Boolean);
+        if (arr.length) activeUsers++;
+        arr.forEach(r => {
+          const t = Number(r.detected_at) || 0; if (t) hours[new Date(t + 9 * 3600000).getUTCHours()]++;
+          const pf = (r.platform || "기타").replace("통합콜", "통합"); plat[pf] = (plat[pf] || 0) + 1; totalOrd++;
+          const og = parseOrigin(r); if (og) originCnt[og] = (originCnt[og] || 0) + 1;
+        });
+      } catch (e) {}
+    }));
+    $("od-total").textContent = totalOrd;
+    $("od-avg").textContent = activeUsers ? (totalOrd / activeUsers).toFixed(1) : "0";
+    renderPlat(plat, totalOrd);
+    drawChart(hours);
+
+    // 지도: 오늘은 서버 data_maps(GPS 풀스캔 제거), 노드 없으면 클라 집계로 폴백
+    let maps = null;
+    if (isToday) { try { maps = (await db.ref("v1/app/data_maps/" + ds).once("value")).val(); } catch (e) {} }
+    if (maps && maps.heat) {
+      drawHexCached(maps.hex || []);
+      drawHeat(dayStart, dayEnd);   // 히트맵은 실시간 GPS 스캔(어제와 동일). 분포맵 hex만 캐시.
+    } else {
+      drawOrderMap(originCnt);
+      drawHeat(dayStart, dayEnd);
+    }
+  }
+
+  // 미리 계산된 육각 격자(data_cache/data_maps.hex) 그대로 렌더 — geo_cache·h3·풀스캔 불필요.
+  function drawHexCached(hex) {
+    const el = $("omap");
+    if (omapMap) { omapMap.remove(); omapMap = null; }
+    el.classList.remove("movemode"); const ob = el.querySelector(".movehint"); if (ob) ob.remove();
+    const map = L.map("omap", { zoomControl: false, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 120, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false });
+    omapMap = map;
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+    setTimeout(() => map.invalidateSize(), 150);
+    if (!hex.length) { map.setView([37.5, 127.0], 9); $("omapnote").textContent = "표시할 좌표 없음"; return; }
+    const allLat = [], allLng = []; let totalN = 0;
+    hex.forEach(c => {
+      if (!c.boundary || !c.boundary.length) return;
+      L.polygon(c.boundary, { stroke: false, fillColor: c.color || "#FFB300", fillOpacity: 0.6 }).addTo(map).bindTooltip((c.area || "") + " 일대 " + c.count + "건", { direction: "top", sticky: true });
+      c.boundary.forEach(p => { allLat.push(p[0]); allLng.push(p[1]); });
+      totalN += c.count || 0;
+    });
+    fitGG(map, allLat, allLng);
+    $("omapnote").textContent = "자동배차 출발지 분포(육각 격자) · " + totalN + "건 / " + hex.length + "칸";
+  }
+
+  // 플랫폼별 개수·% + 점유율 막대
+  function renderPlat(plat, total) {
+    const COL = { "인성": "#16a34a", "통합": "#ffffff", "카카오": "#3b82f6", "기타": "#5a5a5a" };   // 인성 녹색·통합 흰색·카카오 파란색
+    const cats = [];
+    ["인성", "통합", "카카오"].forEach(k => { if (plat[k]) cats.push([k, plat[k]]); });
+    Object.keys(plat).forEach(k => { if (!["인성", "통합", "카카오"].includes(k)) cats.push([k, plat[k]]); });
+    const pct = v => total ? Math.round(v / total * 100) : 0;
+    $("od-plat").innerHTML = total ? cats.map(([k, v]) => k + " <b>" + v + "</b> (" + pct(v) + "%)").join(" · ") : "감지 없음";
+    $("od-share").innerHTML = total ? cats.map(([k, v]) => `<span style="width:${(v / total * 100).toFixed(2)}%;background:${COL[k] || "#8a8a8a"}"></span>`).join("") : "";
+  }
+
+  // 출발지 동 이름 파싱 — 인성은 '@동', 통합콜 등은 '/' 앞 토큰. 행정동 접미사(동/읍/면/리/가)로 끝나는 것만(노이즈·POI 제외). geo_cache.json 키와 동일 규칙.
+  function parseOrigin(r) {
+    const p = r.platform || "", raw = r.raw_text || ""; let og = r.origin || ""; let t;
+    if (/인성/.test(p)) { const m = /@([^|/]+)/.exec(og) || /@([^|/]+)/.exec(raw); t = m ? m[1] : og.replace(/[*]+/g, "").replace(/\//g, " "); }
+    else { t = og.split("/")[0]; }
+    t = (t || "").split(")").pop().replace(/^\s*\d{1,2}:\d{2}\s*/, "").replace(/^\s*\d{1,2}시\s*/, "").replace(/[.\s]+$/, "").trim();
+    if (!t || !/(동|읍|면|리|가)$/.test(t)) return null;
+    return t;
+  }
+
+  // 지도 이동 핸들러 on/off
+  function setMapMove(map, on) {
+    const a = on ? "enable" : "disable";
+    ["dragging", "scrollWheelZoom", "doubleClickZoom", "touchZoom", "boxZoom", "keyboard"].forEach(h => { if (map[h]) map[h][a](); });
+  }
+  // 평소엔 고정(스크롤이 지도 위를 그냥 지나감). 길게 누르면 이동 모드 토글(다시 길게=고정). div 리스너는 한 번만 등록, 맵 인스턴스는 getMap()으로 매번 현재 것 참조.
+  function attachLongPress(id, getMap) {
+    const el = document.getElementById(id); if (!el) return;
+    let timer = null;
+    const toggle = () => {
+      const map = getMap(); if (!map) return;
+      const v = !map._moveOn; map._moveOn = v; setMapMove(map, v); el.classList.toggle("movemode", v);
+      let badge = el.querySelector(".movehint");
+      if (v && !badge) { badge = document.createElement("div"); badge.className = "movehint"; badge.textContent = "이동 모드 · 다시 길게=고정"; el.appendChild(badge); }
+      else if (!v && badge) badge.remove();
+    };
+    const start = () => { clearTimeout(timer); timer = setTimeout(toggle, 500); };
+    const abort = () => clearTimeout(timer);
+    el.addEventListener("touchstart", start, { passive: true });
+    el.addEventListener("touchmove", abort, { passive: true });
+    el.addEventListener("touchend", abort);
+    el.addEventListener("mousedown", start);
+    el.addEventListener("mousemove", abort);
+    el.addEventListener("mouseup", abort);
+    el.addEventListener("mouseleave", abort);
+  }
+  // 경기/수도권 박스 안 점들로 맞춤(타지역 1~2건이 줌을 끌어내리지 않게). 없으면 전체.
+  const GG = { s: 37.0, w: 126.4, n: 37.9, e: 127.6 };
+  function fitGG(map, lats, lngs) {
+    const all = lats.map((la, i) => [la, lngs[i]]);
+    const inGG = all.filter(p => p[0] >= GG.s && p[0] <= GG.n && p[1] >= GG.w && p[1] <= GG.e);
+    const use = inGG.length ? inGG : all;
+    if (use.length) map.fitBounds(use, { padding: [16, 16] }); else map.setView([37.45, 127.0], 9);
+  }
+
+  // 오더 분포 맵 — Uber식 육각 격자(H3). 출발지 좌표를 H3 셀로 모아 셀별 건수를 색 농도로 칠함. 좌표는 geo_cache.json(동→좌표).
+  async function drawOrderMap(originCnt) {
+    const el = $("omap");
+    if (omapMap) { omapMap.remove(); omapMap = null; }   // 날짜 변경 시 재생성
+    el.classList.remove("movemode"); const ob = el.querySelector(".movehint"); if (ob) ob.remove();
+    const map = L.map("omap", { zoomControl: false, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 120, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false });
+    omapMap = map;
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+    setTimeout(() => map.invalidateSize(), 150);
+    let cache = {};
+    try { cache = await (await fetch("geo_cache.json?v=" + Date.now())).json() || {}; } catch (e) {}
+    const RES = 6;   // H3 해상도(6≈가로 6km, 큼직). 7로 올리면 더 세밀.
+    const cells = new Map(); let mappedN = 0, unk = 0, unkN = 0;
+    const resolveGeo = tok => { if (cache[tok] && cache[tok].lat) return cache[tok]; for (let i = 1; i < tok.length - 1; i++) { const suf = tok.slice(i); if (cache[suf] && cache[suf].lat) return cache[suf]; } return null; };   // 앞 군더더기 제거: "1박스기안동"→"기안동"
+    Object.entries(originCnt).forEach(([tok, n]) => {
+      const c = resolveGeo(tok);
+      if (c && c.lat && typeof h3 !== "undefined") {
+        mappedN += n;
+        const h = h3.latLngToCell(c.lat, c.lng, RES);
+        let cell = cells.get(h); if (!cell) { cell = { n: 0, top: "", topN: 0 }; cells.set(h, cell); }
+        cell.n += n; if (n > cell.topN) { cell.topN = n; cell.top = tok; }
+      } else { unk++; unkN += n; }
+    });
+    if (!cells.size) { map.setView([37.5, 127.0], 9); $("omapnote").textContent = (cache && Object.keys(cache).length) ? "표시할 좌표 없음" : "좌표 캐시 준비 중 — 잠시 후 다시 열어주세요"; return; }
+    const maxN = Math.max(...[...cells.values()].map(c => c.n));
+    const PAL = ["#FFF176", "#FFD54F", "#FFB300", "#FB8C00", "#F4511E", "#D32F2F"];   // 우버식 노랑(낮음)→주황→빨강(높음)
+    const allLat = [], allLng = [];
+    [...cells.entries()].sort((a, b) => a[1].n - b[1].n).forEach(([h, c]) => {   // 낮은 셀 먼저 → 높은 셀이 위로
+      const bnd = h3.cellToBoundary(h);   // [[lat,lng],...]
+      const idx = Math.min(PAL.length - 1, Math.floor(Math.sqrt(c.n / maxN) * PAL.length));
+      L.polygon(bnd, { stroke: false, fillColor: PAL[idx], fillOpacity: 0.6 }).addTo(map).bindTooltip(c.top + " 일대 " + c.n + "건", { direction: "top", sticky: true });
+      bnd.forEach(p => { allLat.push(p[0]); allLng.push(p[1]); });
+    });
+    fitGG(map, allLat, allLng);
+    $("omapnote").textContent = "자동배차 출발지 분포(육각 격자) · " + mappedN + "건 / " + cells.size + "칸" + (unk ? " · 위치 미확인 " + unkN + "건" : "");
+  }
+
+  // 운행 히트맵 — 열 때마다 현재 GPS(KST 0시~지금)를 직접 집계해 OSM 위 부드러운 열분포로. 정적 파일 X.
+  async function drawHeat(dayStart, dayEnd) {
+    const el = $("heat");
+    if (heatMap) { heatMap.remove(); heatMap = null; }   // 날짜 변경 시 재생성
+    el.classList.remove("movemode"); const hb = el.querySelector(".movehint"); if (hb) hb.remove();
+    const map = L.map("heat", { zoomControl: false, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 120, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false });
+    heatMap = map;
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+    setTimeout(() => map.invalidateSize(), 150);
+    $("heatnote").textContent = "GPS 집계 중… (시간이 걸릴 수 있습니다)";
+    try {
+      const CELL = 0.03;
+      const bk0 = Math.floor(dayStart / 86400000), bk1 = Math.floor((dayEnd - 1) / 86400000);   // 선택일 KST 0~24시가 걸친 UTC 버킷
+      const grid = new Map(); let total = 0;
+      await Promise.all(UIDS.map(async uid => {
+        for (let bk = bk0; bk <= bk1; bk++) {
+          try {
+            const o = (await db.ref("v1/users/" + uid + "/gps_track/main/" + bk).once("value")).val();
+            if (!o) continue;
+            Object.values(o).forEach(pt => {
+              const t = Number(pt && pt.ts) || 0, la = Number(pt && pt.lat), ln = Number(pt && pt.lng);
+              if (t >= dayStart && t < dayEnd && la && ln && la > 33 && la < 39 && ln > 124 && ln < 131) {
+                const k = Math.round(la / CELL) + "," + Math.round(ln / CELL);
+                grid.set(k, (grid.get(k) || 0) + 1); total++;
+              }
+            });
+          } catch (e) {}
+        }
+      }));
+      const counts = []; grid.forEach(v => counts.push(v)); counts.sort((a, b) => a - b);
+      const p90 = counts.length ? counts[Math.floor(counts.length * 0.9)] : 0;
+      const pts = []; grid.forEach((v, k) => { const a = k.split(",").map(Number); pts.push([a[0] * CELL, a[1] * CELL, v]); });
+      const scaleMax = p90 ? Math.round(p90 * 0.73) : 340;
+      const hl = L.heatLayer(pts, { radius: 28, blur: 20, max: scaleMax, minOpacity: 0.25, gradient: { 0.0: "#2c7bb6", 0.2: "#00ccbc", 0.4: "#a6d96a", 0.55: "#fee08b", 0.68: "#fdae61", 0.8: "#f4593a", 1.0: "#b30000" } }).addTo(map);
+      map.on("move zoom moveend zoomend", () => { if (hl && hl._reset) { try { hl._reset(); } catch (e) {} } });   // 줌·이동 매 프레임 canvas 재앵커 — 앱과 동일(줌 시 어긋남 방지)
+      if (pts.length) { fitGG(map, pts.map(p => p[0]), pts.map(p => p[1])); }
+      $("heatnote").textContent = "운행 밀집도(00~24시) — 빨강일수록 자주 · GPS " + total.toLocaleString() + "점";
+    } catch (e) { $("heatnote").textContent = "히트맵 집계 실패: " + e.message; }
+  }
+
+  // 0~24시 시간별 감지 막대 그래프 (SVG, 균일 스케일)
+  function drawChart(hours) {
+    const W = 360, H = 180, padL = 22, padR = 6, padT = 14, padB = 20;
+    const max = Math.max(1, ...hours);
+    const innerH = H - padT - padB, yB = padT + innerH;
+    const bw = (W - padL - padR) / 24;
+    const peak = hours.indexOf(Math.max(...hours));
+    let svg = "";
+    svg += `<line x1="${padL}" y1="${yB}" x2="${W - padR}" y2="${yB}" stroke="#2a2a2a"/>`;
+    svg += `<line x1="${padL}" y1="${padT}" x2="${W - padR}" y2="${padT}" stroke="#1a1a1a"/>`;
+    svg += `<text x="${padL - 4}" y="${padT + 3}" fill="#6a6a6a" font-size="9" text-anchor="end">${max}</text>`;
+    svg += `<text x="${padL - 4}" y="${yB}" fill="#6a6a6a" font-size="9" text-anchor="end">0</text>`;
+    hours.forEach((v, h) => {
+      if (!v) return;
+      const bh = Math.max(1.5, innerH * v / max);
+      const x = padL + h * bw + 1, w = bw - 2;
+      svg += `<rect x="${x.toFixed(1)}" y="${(yB - bh).toFixed(1)}" width="${w.toFixed(1)}" height="${bh.toFixed(1)}" rx="1" fill="${h === peak ? '#f59e0b' : '#4ade80'}"/>`;
+    });
+    for (let h = 0; h <= 24; h += 3) { svg += `<text x="${(padL + h * bw).toFixed(1)}" y="${H - 5}" fill="#6a6a6a" font-size="9" text-anchor="middle">${h}</text>`; }
+    $("chart").innerHTML = svg;
+    $("chartnote").textContent = "오늘 전체 테스터 감지 " + hours.reduce((a, b) => a + b, 0) + "건 · 피크 " + peak + "시(" + hours[peak] + "건)";
+  }
+})();
+</script>
+</body></html>

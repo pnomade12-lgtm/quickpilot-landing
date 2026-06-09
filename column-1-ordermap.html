@@ -1,0 +1,141 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QP 데이터 칼럼 1호 · 오더맵이 말해주는 3가지 진실</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}
+.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}
+h1{font-size:25px;font-weight:800;line-height:1.3;margin:6px 0 22px}
+.sub{font-size:13.5px;color:var(--ts)}
+.rule{height:2px;background:var(--tm);margin:16px 0 22px;opacity:.85}
+.sec{margin-bottom:26px}
+.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:800;font-size:15px;margin-right:8px}
+h2{font-size:18.5px;font-weight:800;display:flex;align-items:center;margin-bottom:10px}
+h2 span.t{flex:1}
+p{font-size:14.5px;margin:8px 0;word-break:keep-all}
+.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0}
+.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:10px}
+.bar{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:13px}
+.bar .lab{width:100px;font-weight:700;flex:0 0 auto;font-size:12px}
+.bar .track{flex:1;background:#efe6d3;border-radius:6px;height:18px;overflow:hidden}
+.bar .fill{height:100%;border-radius:6px}
+.bar .val{width:54px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;flex:0 0 auto}
+.hours{display:flex;align-items:flex-end;gap:2px;height:84px;margin-top:6px}
+.hours .h{flex:1;background:#d8ccb2;border-radius:2px 2px 0 0;position:relative}
+.hours .h.peak{background:var(--red)}
+.hours .h.gold{background:var(--grn)}
+.hlab{display:flex;justify-content:space-between;font-size:10px;color:var(--ts);margin-top:3px}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--ts);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
+.big{font-size:30px;font-weight:800;color:var(--gold);line-height:1}
+.bigwrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.bigwrap .u{font-size:12.5px;color:var(--ts)}
+.strat{background:var(--tm);color:#f3ead7;border-radius:12px;padding:14px 16px;margin:12px 0}
+.strat b{color:#ffd98a}
+.strat .st{display:block;margin:5px 0;font-size:14px}
+.foot{font-size:12.5px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:24px}
+svg{display:block;width:100%;height:auto}
+.omap{height:300px;border-radius:12px;overflow:hidden;border:1px solid var(--bd);margin:2px 0 24px;background:#eee}
+.omap .leaflet-control-attribution{display:none}
+@media print{body{background:#fff}.sheet{box-shadow:none}}
+</style></head><body>
+<div class="sheet">
+  <div class="kicker">QP 데이터 칼럼 #1</div>
+  <h1>오더맵이 우리에게 말해주는<br>3가지 진실</h1>
+  <div id="omap-col" class="omap"></div>
+
+  <div class="sec">
+    <h2><span class="num">1</span><span class="t">경기도가 진짜 금광이다</span></h2>
+    <p>콜 숫자만 보면 <b>서울이 제일 많습니다(47.6%)</b>. 그런데 서울은 들어가는 순간 <span class="hi">교통이 발목을 잡습니다</span>. 아침 7~9시, 저녁 5~7시, 그리고 선배들이 늘 말하는 "오후 4시 전 서울 탈출"이 그 이유입니다. 들어가더라도 머물지 마시고 가로질러 빠져나오시는 게 좋습니다.</p>
+    <p>그래서 실질 금광은 <b>경기도(37.3%)</b>입니다. 막히지 않고 콜이 콜로 이어지는 땅입니다. 인천도 14.8%로 적지 않습니다. 결국 서울·경기도·인천 이 세 곳이 콜의 98%를 가져갑니다. 멀리 보지 마시고 이 안에서 도시는 게 마음 편합니다.</p>
+    <p>그러니 서울은 통과하는 길로 쓰고, 일은 경기도에서 받는다는 그림이 자연스럽습니다. 서울 콜이 좋아 보여도 들어가서 갇히면 그 한 콜에 한두 시간이 묶이기 쉽습니다. 경기도에서 같은 시간에 두세 콜을 도시는 게 결국 더 버는 경우가 많습니다.</p>
+    <div class="card">
+      <h4>출발지 권역 분포 (10일)</h4>
+      <div class="bar"><span class="lab">서울</span><div class="track"><div class="fill" style="width:100%;background:#b9aa86"></div></div><span class="val">47.6%</span></div>
+      <div class="bar"><span class="lab">경기도</span><div class="track"><div class="fill" style="width:78%;background:var(--gold)"></div></div><span class="val">37.3%</span></div>
+      <div class="bar"><span class="lab">인천</span><div class="track"><div class="fill" style="width:31%;background:#b9aa86"></div></div><span class="val">14.8%</span></div>
+      <div class="bar"><span class="lab">강원도·충청도</span><div class="track"><div class="fill" style="width:1%;background:#cdbf9f"></div></div><span class="val">0.3%</span></div>
+    </div>
+    <div class="card">
+      <h4>콜이 몰리는 시간대, 교통피크는 비어 있다</h4>
+      <div class="hours" id="hours"></div>
+      <div class="hlab"><span>0시</span><span>6시</span><span>12시</span><span>18시</span><span>23시</span></div>
+      <div class="legend"><span><i style="background:var(--grn)"></i>골든타임 9~11·13~15시</span><span><i style="background:var(--red)"></i>교통피크 7~9·17~19시</span></div>
+    </div>
+    <p>콜의 흐름도 똑같이 말합니다. <span class="hi">일이 몰리는 황금 시간은 오전 9~11시, 오후 1~3시</span>입니다. 이 시간대 콜이 출퇴근 교통피크의 네 배 가까이 됩니다. 점심 무렵 잠깐 숨을 고르고, 저녁 7시를 넘기면 빠르게 줄어듭니다.</p>
+    <p>그래서 막히는 시간에 무리해서 서울을 관통하기보다, 이 황금 시간에 경기도에서 회전수를 올리는 쪽이 같은 시간을 써도 손에 더 남습니다. 데이터가 말하는 건 단순합니다. 길이 비는 시간에 일하고, 길이 막히는 시간엔 자리를 잡고 다음 콜을 고르는 흐름입니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="num">2</span><span class="t">멀수록 매출은 크지만, 빈차가 무섭다</span></h2>
+    <p>강원도·충청도처럼 멀리 가는 콜은 하루 매출을 한 방에 단단하게 만들어 줍니다. 그런데 <span class="hi">돌아올 복귀 콜이 잡힐 확률이 낮습니다</span>. 실제로 그 먼 지역 콜은 전체의 <b>0.3%</b>밖에 안 뜹니다. 빈차로 두 시간을 달려 내려오면 그날 번 게 기름값으로 빠지기 쉽습니다. 그래서 장거리는 늘 신중하게 고르시는 게 좋습니다.</p>
+    <p>장거리가 나쁘다는 말이 아닙니다. 갈 거면 내려가는 길에 합짐을 한 번 더 챙기거나, 그 지역에서 올라오는 콜이 뜰 때까지 기다릴 각오가 서 있어야 한다는 뜻입니다. 계산 없이 금액만 보고 내려가면, 큰 거 한 방이 그날 회전을 통째로 잡아먹기도 합니다.</p>
+    <div class="strat">
+      <h4 style="color:#caa14a;font-size:12px;font-weight:800;margin-bottom:8px">QP가 데이터로 뽑아낸 기본 코스</h4>
+      <span class="st">① <b>10km · 3만원</b> 자동배차로 바닥을 깐다</span>
+      <span class="st">② <b>경기도 권역 3~5만원 콜</b>을 끊기지 않게 이어 붙인다</span>
+      <span class="st">③ 거리 아까운 건 <b>합짐</b>으로 한 번 더 챙긴다</span>
+    </div>
+    <p>10km에 3만원이면 1km당 3천원, 이게 바닥을 까는 기준선입니다. 그 위에 경기도 권역 3~5만원짜리를 끊기지 않게 이어 붙이면 빈 시간이 사라지고, 거리가 아까운 콜은 합짐으로 한 번 더 태웁니다. 한 방을 노리는 대신 끊기지 않는 회전으로 가는 길입니다.</p>
+    <div class="bigwrap">
+      <div><div class="big">20만원+</div><div class="u">한 달 직접 검증한<br>하루 최소 순이익</div></div>
+      <p style="flex:1;min-width:200px">각자 손에 익은 방법이 언제나 1순위입니다. 다만 <span class="hi">도저히 안 풀리는 날, 기본으로 돌아온다는 느낌</span>으로 이 통계에 한 발 걸쳐 보는 게 가장 안정적인 길이었습니다.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="num">3</span><span class="t">지나온 길과 오더 분포는 어긋난다, 그래도 괜찮다</span></h2>
+    <p>내 동선을 켜놓고 보면 "왜 자꾸 콜도 없는 데만 돌아다니지?" 싶을 때가 있습니다. <span class="hi">자책하실 필요 전혀 없습니다.</span> 차가 빠르게 달리는 전용도로·고속도로는 도심을 가로지르기보다 외곽과 교외로 뻗기 마련이라, 그 길 위에선 콜이 안 잡히는 게 당연합니다.</p>
+    <p>오히려 콜이 없는 길로 빠르게 빠져나오셨다면 그건 잘 달리신 겁니다. 감지가 몰린 도심은 콜이 많은 만큼 막히는 곳이기도 하니까요. 빈 길과 굵은 콜 분포가 어긋나는 건 문제가 아니라 정상입니다.</p>
+    <div class="card">
+      <h4>감지는 도심에, 길은 외곽으로</h4>
+      <svg viewBox="0 0 320 120" aria-label="동선과 감지 분포 도식">
+        <rect x="0" y="0" width="320" height="120" fill="#FAF6EC"/>
+        <circle cx="80" cy="60" r="34" fill="#7FB069" opacity="0.18"/>
+        <circle cx="240" cy="60" r="30" fill="#7FB069" opacity="0.18"/>
+        <g fill="#C9962E"><circle cx="70" cy="52" r="3"/><circle cx="86" cy="64" r="3"/><circle cx="78" cy="46" r="3"/><circle cx="92" cy="56" r="3"/><circle cx="234" cy="54" r="3"/><circle cx="248" cy="66" r="3"/><circle cx="240" cy="48" r="3"/></g>
+        <path d="M80,60 C140,8 200,112 240,60" fill="none" stroke="#2C2416" stroke-width="3" stroke-dasharray="2 5" stroke-linecap="round"/>
+        <circle cx="80" cy="60" r="6" fill="#2C2416"/><circle cx="240" cy="60" r="6" fill="#E0734A"/>
+        <text x="80" y="92" text-anchor="middle" font-size="11" fill="#2C2416" font-weight="700">출발</text>
+        <text x="240" y="92" text-anchor="middle" font-size="11" fill="#E0734A" font-weight="700">도착</text>
+        <text x="160" y="20" text-anchor="middle" font-size="10" fill="#7c6f57">고속·전용도로는 외곽으로 돈다</text>
+      </svg>
+    </div>
+    <p>중요한 건 딱 두 가지, <b>내가 출발하는 곳과 도착하는 곳</b>입니다. 그 사이 외진 길에서 감지가 비는 건 크게 신경 쓰지 않으셔도 됩니다. 오더맵은 "어디서 일이 생기나"를 보는 지도지, "내가 잘 다녔나"를 채점하는 표가 아니니까요.</p>
+    <p>이 지도는 다음에 머리를 어느 쪽으로 두고 계실지 정하는 데 쓰시면 됩니다. 붉게 달아오른 곳 근처에 자리를 잡아두면 다음 콜이 빨리 붙고, 내 궤적이 비어 보이는 건 크게 신경 쓰지 않으셔도 됩니다.</p>
+  </div>
+</div>
+<script>
+// 시간대 막대 (10일 누적)
+var H=[21,2,2,5,2,1,29,155,496,1151,1343,915,796,1258,1415,1186,961,723,444,324,207,75,45,28];
+var mx=Math.max.apply(null,H), gold={9:1,10:1,11:1,13:1,14:1,15:1}, peak={7:1,8:1,17:1,18:1};
+document.getElementById("hours").innerHTML=H.map(function(v,h){
+  var c=peak[h]?" peak":(gold[h]?" gold":"");
+  return '<div class="h'+c+'" style="height:'+Math.max(3,v/mx*100)+'%"></div>';
+}).join("");
+
+// 헤드라인 아래 통합 오더맵. 10일치 헥사 분포(실제 오더맵과 동일 육각 격자)
+fetch("hexdata-col.json",{cache:"no-store"}).then(function(r){return r.json();}).then(function(HEX){
+  var map=L.map("omap-col",{preferCanvas:true,zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,touchZoom:false,boxZoom:false,keyboard:false});
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
+  function draw(){
+    map.invalidateSize();
+    var lat=[],lng=[];
+    HEX.forEach(function(h){ if(!h.b||!h.b.length)return; var op=0.18+0.55*Math.sqrt(h.w||0); L.polygon(h.b,{stroke:false,fillColor:h.col,fillOpacity:op}).addTo(map); h.b.forEach(function(p){lat.push(p[0]);lng.push(p[1]);}); });
+    if(lat.length){
+      var GG={s:37.0,w:126.4,n:37.9,e:127.6};
+      var pts=lat.map(function(la,i){return [la,lng[i]];});
+      var inGG=pts.filter(function(p){return p[0]>=GG.s&&p[0]<=GG.n&&p[1]>=GG.w&&p[1]<=GG.e;});
+      map.fitBounds(inGG.length?inGG:pts,{padding:[10,10]});
+    }
+    setTimeout(function(){map.invalidateSize();},500);
+  }
+  if(document.readyState==="complete") setTimeout(draw,200); else window.addEventListener("load",function(){setTimeout(draw,200);});
+}).catch(function(){});
+</script>
+</body></html>

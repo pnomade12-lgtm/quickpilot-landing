@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QP 서버 운영</title>
+<meta name="theme-color" content="#0a0a0a">
+<meta name="robots" content="noindex,nofollow">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyBoZSnKoTu6nBdE0VfJAiCmWgjfKgLHqus",
+    authDomain: "quickpilot-39d72.firebaseapp.com",
+    databaseURL: "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "quickpilot-39d72",
+    storageBucket: "quickpilot-39d72.firebasestorage.app",
+    messagingSenderId: "530394028123",
+    appId: "1:530394028123:web:ab56e0951f214401d0c77e"
+  });
+  const DB_URL = "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app";
+</script>
+<style>
+  :root { --bg:#0a0a0a; --fg:#f5f5f5; --dim:#8a8a8a; --hot:#ff453a; --line:#1f1f1f; --card:#131313; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { background:var(--bg); color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif; -webkit-text-size-adjust:100%; }
+  main { max-width:760px; margin:0 auto; padding:18px 14px 60px; }
+  h1 { font-size:20px; font-weight:800; }
+  .sub { color:var(--dim); font-size:13px; margin-top:3px; }
+  .top { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .topnav { margin-left:auto; display:flex; gap:6px; }
+  .topnav a { color:var(--dim); text-decoration:none; border:1px solid var(--line); border-radius:9px; padding:6px 11px; font-size:13px; }
+  #login { display:none; text-align:center; padding:80px 20px; }
+  #login button { margin-top:18px; padding:12px 22px; border:0; border-radius:10px; background:#fff; color:#000; font-weight:800; font-size:15px; }
+  #app { display:none; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px; }
+  .card h4 { font-size:12px; color:var(--dim); font-weight:700; margin-bottom:10px; letter-spacing:.04em; }
+  .stat3 { display:flex; gap:10px; }
+  .stat3 > div { flex:1; text-align:center; background:#0e0e0e; border:1px solid var(--line); border-radius:12px; padding:14px 6px; }
+  .stat3 .n { font-size:30px; font-weight:800; }
+  .stat3 .u { color:var(--dim); font-size:12px; margin-top:4px; }
+  .note { color:var(--dim); font-size:12px; line-height:1.6; margin-top:8px; }
+  .caprow { display:flex; justify-content:flex-end; margin-top:10px; }
+  .refreshbtn { background:none; border:1px solid var(--line); color:var(--fg); border-radius:9px; padding:8px 14px; font-size:13px; }
+  .refreshbtn:disabled { color:var(--dim); }
+  .err { color:var(--hot); font-size:13px; margin-top:10px; }
+</style>
+</head>
+<body>
+<main>
+  <div id="login">
+    <h1>QP 서버 운영</h1>
+    <div class="sub">디렉터 전용</div>
+    <button id="login-btn">구글 계정으로 로그인</button>
+    <div class="err" id="login-err"></div>
+  </div>
+
+  <div id="app">
+    <div class="top">
+      <div><h1>서버 운영</h1><div class="sub" id="sub">불러오는 중…</div></div>
+      <div class="topnav">
+        <a href="monitor-all.html">← 모니터</a>
+        <a href="server.html">📊 통계</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>서버 용량</h4>
+      <div class="stat3">
+        <div><div class="n" id="cap">—</div><div class="u">MB 총량</div></div>
+        <div><div class="n" id="percap">—</div><div class="u">1인 평균 MB</div></div>
+        <div><div class="n" id="ucount">—</div><div class="u">테스터</div></div>
+      </div>
+      <div class="note" id="capnote">불러오는 중…</div>
+      <div class="caprow"><button id="cap-refresh" class="refreshbtn">↻ 다시 측정</button></div>
+    </div>
+
+    <div class="card">
+      <h4>예상 월 과금 (Blaze · Realtime DB)</h4>
+      <div class="stat3">
+        <div><div class="n" id="cost-store">—</div><div class="u">저장 $/월</div></div>
+        <div><div class="n" id="cost-won">—</div><div class="u">원/월(대략)</div></div>
+        <div><div class="n" id="cost-read">10GB</div><div class="u">읽기 무료/월</div></div>
+      </div>
+      <div class="note" id="costnote">불러오는 중…</div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  const auth = firebase.auth();
+  const db = firebase.database();
+  const DIRECTORS = ["pnomade12@gmail.com", "pnomade13@gmail.com"];
+  const $ = id => document.getElementById(id);
+
+  $("login-btn").onclick = () => {
+    const p = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(p).catch(e => { $("login-err").textContent = "로그인 실패: " + e.message; });
+  };
+
+  auth.onAuthStateChanged(user => {
+    if (!user) { $("login").style.display = "block"; $("app").style.display = "none"; return; }
+    if (!DIRECTORS.includes(user.email)) { $("login-err").textContent = "권한 없는 계정 (" + user.email + ")."; auth.signOut(); return; }
+    $("login").style.display = "none"; $("app").style.display = "block";
+    start();
+  });
+
+  let UIDS = [], TOKEN = "";
+  async function start() {
+    const u = auth.currentUser; TOKEN = await u.getIdToken();
+    try {
+      const r = await fetch(DB_URL + "/v1/users.json?shallow=true&auth=" + TOKEN);
+      UIDS = Object.keys(await r.json() || {}).filter(k => k !== "director-nuri");
+    } catch (e) { $("sub").textContent = "유저 로드 실패"; return; }
+    $("sub").textContent = "테스터 " + UIDS.length + "명";
+    // 매번 재측정 X — 마지막 측정값(server_stats)을 표시. 재측정은 버튼으로만.
+    try {
+      const ss = (await db.ref("v1/app/server_stats").once("value")).val();
+      if (ss && ss.bytes) displayCap(ss); else $("capnote").textContent = "측정 기록 없음 — '다시 측정'을 눌러주세요.";
+    } catch (e) { $("capnote").textContent = "측정값 로드 실패: " + e.message; }
+    $("cap-refresh").onclick = measureCapacity;
+  }
+
+  function ago(ms) { const d = Date.now() - Number(ms); if (d < 60000) return "방금"; if (d < 3600000) return Math.floor(d / 60000) + "분 전"; if (d < 86400000) return Math.floor(d / 3600000) + "시간 전"; return Math.floor(d / 86400000) + "일 전"; }
+  function displayCap(ss) {
+    const mb = ss.bytes / 1048576;
+    $("cap").textContent = mb.toFixed(0);
+    $("percap").textContent = ss.users ? (mb / ss.users).toFixed(1) : "—";
+    $("ucount").textContent = ss.users || "—";
+    $("capnote").textContent = "마지막 측정 " + (ss.measuredAt ? ago(ss.measuredAt) : "—") + " · 매일 0시 자동 갱신 · 대부분 GPS·덤프가 차지";
+    // Blaze RTDB 단가: 저장 $5/GB(1GB 무료), 읽기 $1/GB(10GB/월 무료)
+    const gb = ss.bytes / 1073741824;
+    const billGb = Math.max(0, gb - 1);
+    const usd = billGb * 5;
+    $("cost-store").textContent = "$" + usd.toFixed(1);
+    $("cost-won").textContent = Math.round(usd * 1400).toLocaleString();
+    $("costnote").innerHTML = "저장 " + gb.toFixed(2) + "GB 중 과금분 " + billGb.toFixed(2) + "GB × $5 = <b>$" + usd.toFixed(1) + "/월</b> (저장 1GB·읽기 10GB 무료). "
+      + "저장 비용은 이렇게 작습니다 — <b>실제로 커질 수 있는 건 읽기(다운로드)</b>이고, 함수·페이지가 데이터를 얼마나 읽느냐에 달립니다. 최근 함수 주기↓·통계 캐시로 읽기를 줄였습니다. 정확한 읽기량·청구액은 Firebase 콘솔 사용량(Usage)에서 확인.";
+  }
+
+  // 서버 용량 정밀 측정 — 노드별 실제 JSON 바이트 합산(느림). 끝나면 server_stats에 저장 → 다음 열람 때 즉시 표시.
+  async function measureCapacity() {
+    const token = TOKEN, uids = UIDS, btn = $("cap-refresh");
+    btn.disabled = true;
+    const fetchSize = async path => { try { const r = await fetch(DB_URL + "/" + path + ".json?auth=" + token); return (await r.blob()).size; } catch (e) { return 0; } };
+    try {
+      let bytes = 0;
+      const root = await (await fetch(DB_URL + "/.json?shallow=true&auth=" + token)).json();
+      for (const k of Object.keys(root || {})) { if (k !== "v1") bytes += await fetchSize(k); }
+      const v1 = await (await fetch(DB_URL + "/v1.json?shallow=true&auth=" + token)).json();
+      for (const k of Object.keys(v1 || {})) { if (k !== "users") bytes += await fetchSize("v1/" + k); }
+      let done = 0;
+      for (const uid of uids) { bytes += await fetchSize("v1/users/" + uid); done++; $("capnote").textContent = "정밀 측정 중… 유저 " + done + "/" + uids.length; }
+      const ss = { bytes, users: uids.length, measuredAt: Date.now() };
+      try { await db.ref("v1/app/server_stats").set(ss); } catch (e) {}
+      displayCap(ss);
+    } catch (e) { $("capnote").textContent = "용량 측정 실패: " + e.message; }
+    btn.disabled = false;
+  }
+})();
+</script>
+</body></html>

@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QuickPilot — 베타 신청 관리</title>
+<meta name="theme-color" content="#0a0a0a">
+<meta name="robots" content="noindex,nofollow">
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyBoZSnKoTu6nBdE0VfJAiCmWgjfKgLHqus",
+    authDomain: "quickpilot-39d72.firebaseapp.com",
+    databaseURL: "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "quickpilot-39d72",
+    storageBucket: "quickpilot-39d72.firebasestorage.app",
+    messagingSenderId: "530394028123",
+    appId: "1:530394028123:web:ab56e0951f214401d0c77e"
+  });
+</script>
+
+<style>
+  :root {
+    --bg:#0a0a0a; --fg:#f5f5f5; --dim:#9a9a9a; --hot:#ff3b30;
+    --line:#1f1f1f; --card:#131313; --ok:#34c759; --warn:#ff9f0a;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { background:var(--bg); color:var(--fg); }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.55; font-size:16px; word-break:keep-all; -webkit-font-smoothing:antialiased;
+  }
+  main { max-width:640px; margin:0 auto; padding:24px 16px 80px; }
+
+  .top { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .top h1 { font-size:20px; font-weight:800; }
+  .top h1 .pop { color:var(--hot); }
+  .top .who { font-size:12px; color:var(--dim); }
+
+  .login { text-align:center; padding:80px 20px; }
+  .login p { color:var(--dim); margin-bottom:24px; font-size:15px; }
+  button.g {
+    background:var(--hot); color:#fff; border:0; border-radius:10px;
+    padding:14px 28px; font-size:16px; font-weight:800; cursor:pointer;
+  }
+  button.signout { background:none; border:1px solid var(--line); color:var(--dim);
+    border-radius:8px; padding:6px 12px; font-size:12px; cursor:pointer; }
+
+  .filter { display:flex; gap:6px; margin-bottom:16px; }
+  .filter button { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:var(--card); border:1px solid var(--line); color:var(--dim);
+    border-radius:10px; padding:11px 4px; cursor:pointer; }
+  .filter button .n { font-size:21px; font-weight:800; line-height:1.1; color:var(--fg); }
+  .filter button .l { font-size:11px; font-weight:600; }
+  .filter button.on { background:var(--fg); border-color:var(--fg); }
+  .filter button.on .n, .filter button.on .l { color:var(--bg); }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:16px; margin-bottom:12px; }
+  .card.expired { opacity:0.55; }
+  .card .row1 { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px; }
+  .card .name { font-size:18px; font-weight:800; }
+  .card .model { font-size:12px; color:var(--dim); }
+  .card .phone { display:inline-block; font-size:16px; color:var(--hot); font-weight:700;
+    text-decoration:none; margin:6px 0; }
+  .card .intro { font-size:14px; color:#cfcfcf; margin:8px 0; line-height:1.6; }
+  .card .meta { font-size:12px; color:var(--dim); margin-top:6px; }
+  .card .timer { font-weight:700; }
+  .card .timer.live { color:var(--warn); }
+  .card .timer.exp { color:var(--hot); }
+
+  .status-tag { display:inline-block; font-size:11px; font-weight:800; padding:2px 8px;
+    border-radius:6px; }
+  .st-pending { background:#2a2a2a; color:var(--dim); }
+  .st-approved { background:#10391d; color:var(--ok); }
+  .st-rejected { background:#3a1f1d; color:var(--hot); }
+
+  .actions { display:flex; gap:6px; margin-top:12px; }
+  .actions button { flex:1; border:1px solid var(--line); background:var(--bg); color:var(--fg);
+    border-radius:8px; padding:8px; font-size:13px; font-weight:700; cursor:pointer; }
+  .actions button.approve.on { background:var(--ok); color:#fff; border-color:var(--ok); }
+  .actions button.reject.on { background:var(--hot); color:#fff; border-color:var(--hot); }
+  .actions button.pending.on { background:#3a3a3a; color:#fff; }
+  .actions button.del { flex:0 0 auto; color:#7a7a7a; }
+  .actions button.harddel { background:var(--hot); color:#fff; border-color:var(--hot); }
+
+  .memo { width:100%; margin-top:10px; background:var(--bg); border:1px solid var(--line);
+    border-radius:8px; color:var(--fg); padding:8px 10px; font-size:13px; font-family:inherit; }
+
+  .empty { text-align:center; color:var(--dim); padding:60px 20px; font-size:14px; }
+  .consent-chk { font-size:11px; color:var(--dim); margin-top:6px; }
+  .consent-chk .bad { color:var(--hot); }
+</style>
+
+</head><body>
+
+<main>
+  <div id="login" class="login">
+    <h1 style="font-size:22px;margin-bottom:8px;">베타 신청 <span style="color:#ff3b30;">관리</span></h1>
+    <p>디렉터 계정으로 로그인해 주세요.</p>
+    <button class="g" id="login-btn">Google 로그인</button>
+    <p id="login-err" style="color:#ff3b30;font-size:13px;margin-top:16px;"></p>
+  </div>
+
+  <div id="app" style="display:none;">
+    <div class="top">
+      <h1>베타 신청 <span class="pop">관리</span></h1>
+      <span class="who"><span id="who-email"></span> <button class="signout" id="signout">로그아웃</button></span>
+    </div>
+
+    <div class="filter">
+      <button data-f="pending" class="on"><span class="n" id="cnt-pending">0</span><span class="l">신규</span></button>
+      <button data-f="approved"><span class="n" id="cnt-approved">0</span><span class="l">승인</span></button>
+      <button data-f="rejected"><span class="n" id="cnt-rejected">0</span><span class="l">거절</span></button>
+      <button data-f="all"><span class="n" id="cnt-total">0</span><span class="l">전체</span></button>
+      <button data-f="deleted"><span class="n" id="cnt-deleted">0</span><span class="l">삭제</span></button>
+    </div>
+
+    <div id="list"></div>
+  </div>
+</main>
+
+<script>
+(function () {
+  const auth = firebase.auth();
+  const db = firebase.database();
+  const DIRECTOR = "pnomade12@gmail.com";
+
+  const $ = id => document.getElementById(id);
+  const loginEl = $("login"), appEl = $("app"), listEl = $("list");
+  let cache = {};       // id -> application
+  let expiredPhones = new Set();   // 미설치 72h 만료자 phone — 재신청 시 승인 페이지에서 경고
+  let expiredNames = new Set();    // 만료자 이름(번호 바꿔 재신청해도 이름으로 대조)
+  let filter = "pending";   // 기본 = 신규 피드. 승인·거절은 각 탭으로.
+  let timerInt = null;
+
+  $("login-btn").onclick = () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(e => {
+      $("login-err").textContent = "로그인 실패: " + e.message;
+    });
+  };
+  $("signout").onclick = () => auth.signOut();
+
+  auth.onAuthStateChanged(user => {
+    if (!user) { loginEl.style.display = "block"; appEl.style.display = "none"; stopTimer(); return; }
+    if (user.email !== DIRECTOR) {
+      $("login-err").textContent = "권한 없는 계정입니다 (" + user.email + ").";
+      auth.signOut();
+      return;
+    }
+    loginEl.style.display = "none";
+    appEl.style.display = "block";
+    $("who-email").textContent = user.email;
+    subscribe();
+  });
+
+  document.querySelectorAll(".filter button").forEach(b => {
+    b.onclick = () => {
+      filter = b.dataset.f;
+      document.querySelectorAll(".filter button").forEach(x => x.classList.remove("on"));
+      b.classList.add("on");
+      render();
+    };
+  });
+
+  function subscribe() {
+    db.ref("applications").on("value", snap => {
+      cache = snap.val() || {};
+      render();
+    }, err => {
+      listEl.innerHTML = '<div class="empty">로드 실패: ' + err.message + '</div>';
+    });
+    // 미설치 72h 만료자 명단 — 같은 번호로 재신청 들어오면 경고하려고 구독
+    db.ref("licenses").on("value", snap => {
+      const lic = snap.val() || {};
+      const exp = Object.keys(lic).map(p => lic[p]).filter(l => l && l.status === "expired");
+      expiredPhones = new Set(exp.map(l => String(l.phone || "").replace(/[^\d]/g, "")).filter(Boolean));
+      expiredNames = new Set(exp.map(l => String(l.name || "").trim()).filter(Boolean));
+      render();
+    }, () => {});
+    startTimer();
+  }
+
+  function startTimer() { stopTimer(); timerInt = setInterval(updateTimers, 1000); }
+  function stopTimer() { if (timerInt) { clearInterval(timerInt); timerInt = null; } }
+
+  function fmtRemain(createdAt) {
+    const deadline = createdAt + 12 * 3600 * 1000;
+    const left = deadline - Date.now();
+    if (left <= 0) return { txt: "회신 기한 만료", cls: "exp", expired: true };
+    const h = Math.floor(left / 3600000);
+    const m = Math.floor((left % 3600000) / 60000);
+    const s = Math.floor((left % 60000) / 1000);
+    return { txt: `회신 마감까지 ${h}시간 ${m}분 ${s}초`, cls: "live", expired: false };
+  }
+
+  function updateTimers() {
+    Object.keys(cache).forEach(id => {
+      const a = cache[id];
+      if (!a || !a.createdAt) return;
+      const el = document.querySelector(`[data-timer="${id}"]`);
+      if (!el) return;
+      const r = fmtRemain(a.createdAt);
+      el.textContent = r.txt;
+      el.className = "timer " + r.cls;
+    });
+  }
+
+  function fmtDate(ms) {
+    const d = new Date(ms);
+    const p = n => String(n).padStart(2, "0");
+    return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+
+  function setStatus(id, status) {
+    if (status === "approved") {
+      const a = cache[id];
+      const ph = a ? (a.phone || "").replace(/[^\d]/g, "") : "";
+      const nm = a ? (a.name || "").trim() : "";
+      const byP = ph && expiredPhones.has(ph), byN = nm && expiredNames.has(nm);
+      if ((byP || byN) &&
+          !confirm("⚠ 주의\n\n이 신청자 (" + nm + " / " + ph + ") 는 과거 '미설치 72시간 만료' 이력이 있습니다 (" + (byP ? "번호" : "") + (byP && byN ? "·" : "") + (byN ? "이름" : "") + " 일치).\n\n그래도 승인(라이선스 발급)하시겠습니까?")) {
+        return;
+      }
+    }
+    db.ref(`applications/${id}/status`).set(status)
+      .then(() => {
+        const a = cache[id];
+        if (!a) return;
+        const phone = (a.phone || "").replace(/[^\d]/g, "");
+        if (!phone) return;
+        if (status === "approved") {
+          // 승인 → 본인 전화번호로 라이선스 자동 발급 (테스트 버전 한정 유효)
+          db.ref(`licenses/${phone}`).set({
+            name: a.name || "",
+            phone: phone,
+            appKey: id,
+            status: "active",
+            build: "test",
+            grantedAt: firebase.database.ServerValue.TIMESTAMP
+          }).then(() => flashLic(`✓ ${a.name} 라이선스 발급 (${phone})`))
+            .catch(e => alert("라이선스 발급 실패: " + e.message));
+        } else {
+          // 승인 외(대기·거절·삭제)로 바꾸면 라이선스 비활성
+          db.ref(`licenses/${phone}/status`).set("revoked").catch(() => {});
+        }
+      })
+      .catch(e => alert("상태 변경 실패: " + e.message));
+  }
+  function flashLic(msg) {
+    let el = document.getElementById("lic-flash");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "lic-flash";
+      el.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#10391d;color:#34c759;border:1px solid #34c759;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;z-index:999;";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = "none"; }, 2500);
+  }
+  let memoTimers = {};
+  function setMemo(id, memo) {
+    clearTimeout(memoTimers[id]);
+    memoTimers[id] = setTimeout(() => {
+      db.ref(`applications/${id}/memo`).set(memo).catch(e => console.error("메모 저장 실패", e));
+    }, 600);
+  }
+
+  function render() {
+    // 회신 마감 임박(가장 먼저 신청한) 순으로 위에 — 오래된 신청이 먼저 마감되므로 오름차순
+    const ids = Object.keys(cache).sort((a, b) => (cache[a].createdAt || 0) - (cache[b].createdAt || 0));
+    let nP = 0, nA = 0, nR = 0;
+    let nDel = 0;
+    ids.forEach(id => {
+      const s = cache[id].status || "pending";
+      if (s === "deleted") nDel++;
+      else if (s === "approved") nA++; else if (s === "rejected") nR++; else nP++;
+    });
+    $("cnt-pending").textContent = nP;
+    $("cnt-approved").textContent = nA;
+    $("cnt-rejected").textContent = nR;
+    $("cnt-total").textContent = nP + nA + nR;   // 활성(삭제 제외) 합계
+    $("cnt-deleted").textContent = nDel;
+
+    const shown = ids.filter(id => {
+      const s = cache[id].status || "pending";
+      if (filter === "deleted") return s === "deleted";
+      if (filter === "all") return s !== "deleted";   // 전체 = 삭제 제외
+      return filter === s;
+    });
+
+    if (shown.length === 0) {
+      listEl.innerHTML = '<div class="empty">해당 신청이 없습니다.</div>';
+      return;
+    }
+
+    listEl.innerHTML = shown.map(id => {
+      const a = cache[id];
+      const s = a.status || "pending";
+      const r = a.createdAt ? fmtRemain(a.createdAt) : { txt: "", cls: "", expired: false };
+      const phone = (a.phone || "").replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3");
+      const stTag = s === "approved" ? '<span class="status-tag st-approved">승인</span>'
+                  : s === "rejected" ? '<span class="status-tag st-rejected">거절</span>'
+                  : s === "deleted" ? '<span class="status-tag st-rejected">삭제됨</span>'
+                  : '<span class="status-tag st-pending">대기</span>';
+      const consentBad = (!a.agreeData || !a.agreeAccessibility || !a.agreeBeta);
+      const consent = consentBad
+        ? '<div class="consent-chk"><span class="bad">⚠ 동의 누락</span></div>'
+        : '<div class="consent-chk">✓ 전 항목 동의</div>';
+      const np = (a.phone || "").replace(/[^\d]/g, "");
+      const byP = np && expiredPhones.has(np), byN = (a.name || "").trim() && expiredNames.has((a.name || "").trim());
+      const expWarn = (byP || byN)
+        ? '<div class="consent-chk"><span class="bad">⚠ 과거 미설치 72h 만료 이력 (' + (byP ? '번호' : '') + (byP && byN ? '·' : '') + (byN ? '이름' : '') + ' 일치) — 승인 전 확인</span></div>'
+        : '';
+      const actionsHtml = s === 'deleted'
+        ? `<button class="pending" onclick="window._st('${id}','pending')">복원</button>
+           <button class="harddel" onclick="window._del('${id}')">영구 삭제</button>`
+        : `<button class="pending ${s==='pending'?'on':''}" onclick="window._st('${id}','pending')">대기</button>
+           <button class="approve ${s==='approved'?'on':''}" onclick="window._st('${id}','approved')">승인</button>
+           <button class="reject ${s==='rejected'?'on':''}" onclick="window._st('${id}','rejected')">거절</button>
+           <button class="del" onclick="window._st('${id}','deleted')">삭제</button>`;
+      return `
+        <div class="card ${r.expired && s==='pending' ? 'expired' : ''}">
+          <div class="row1">
+            <span class="name">${esc(a.name || '(이름없음)')}</span>
+            ${stTag}
+          </div>
+          <div class="model">${esc(a.phoneModel || '')}</div>
+          <a class="phone" href="sms:${(a.phone||'').replace(/[^\d]/g,'')}">${phone || '번호없음'}</a>
+          ${a.intro ? `<div class="intro">${esc(a.intro)}</div>` : ''}
+          ${expWarn}
+          ${consent}
+          <div class="meta">신청 ${a.createdAt ? fmtDate(a.createdAt) : '?'} · <span class="timer ${r.cls}" data-timer="${id}">${r.txt}</span></div>
+          <div class="actions">${actionsHtml}</div>
+          <input class="memo" placeholder="메모 (선택)" value="${esc(a.memo || '')}" oninput="window._memo('${id}', this.value)">
+        </div>`;
+    }).join("");
+  }
+
+  function hardDelete(id) {
+    if (!confirm("영구 삭제하시겠습니까? 되돌릴 수 없습니다.")) return;
+    db.ref(`applications/${id}`).remove().catch(e => alert("영구 삭제 실패: " + e.message));
+  }
+
+  window._st = setStatus;
+  window._memo = setMemo;
+  window._del = hardDelete;
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+})();
+</script>
+
+</body></html>
