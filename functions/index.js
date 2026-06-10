@@ -35,6 +35,9 @@ function lastOrderTs(orders) {
   });
   return mx;
 }
+// [shadow] orderLive 증분과 reconcile 진실 count가 동일 키로 dedup하도록 공통 키.
+// sig 있으면 RTDB키 안전 치환, 없으면 orderId 폴백(dedupBySig의 'sig없음=distinct'와 동일 효과).
+function shadowKey(sig, oid) { return sig ? String(sig).replace(/[.#$/\[\]]/g, "_") : ("_oid_" + oid); }
 // signature 기준 중복제거 — 같은 오더가 여러 키(숫자키+sig키 전환기·재팝)로 들어와도 한 번만. sig 없으면 distinct.
 function dedupBySig(vals) {
   const seen = new Set(); const out = [];
@@ -503,7 +506,9 @@ exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540
   await Promise.all(uids.map(async uid => {
     try {
       const orders = (await db.ref("v1/users/" + uid + "/orders/" + date).once("value")).val() || {};
-      const trueCnt = dedupBySig(Object.values(orders)).length;
+      const seen = new Set();
+      for (const oid of Object.keys(orders)) { if (orders[oid]) seen.add(shadowKey(orders[oid].signature, oid)); }
+      const trueCnt = seen.size;
       const shadowCnt = Number((await db.ref("v1/app/agg_shadow/" + date + "/" + uid).once("value")).val()) || 0;
       if (trueCnt !== shadowCnt) {
         diffs[uid] = { t: trueCnt, s: shadowCnt };
@@ -513,6 +518,7 @@ exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540
     } catch (e) {}
   }));
   await db.ref("v1/app/agg_shadow_recon/" + date).set({ at: Date.now(), nDiff: Object.keys(diffs).length, nUsers: uids.length, diffs });
+  await db.ref("v1/app/agg_shadow_seen/" + date).remove().catch(() => {});   // 어제 seen은 대조 끝나 불필요 — 누적 방지(HQ 6번)
   console.log("reconcileShadow", date, "diffs", Object.keys(diffs).length, "/", uids.length);
   return null;
 });
@@ -522,6 +528,12 @@ exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72
   .ref("/v1/users/{uid}/orders/{date}/{orderId}").onWrite(async (change, ctx) => {
     const after = change.after.val(); if (!after) return null;   // 삭제는 무시
     const date = ctx.params.date;
+    // [shadow] 감지 카운트 — liveKeyParts 게이트 앞(파싱실패 오더도 reconcile dedup엔 포함되므로 정의 일치). 별도 노드, 기존 동작 무관.
+    {
+      const sk = shadowKey(after.signature, ctx.params.orderId);
+      const sc = await db.ref("v1/app/agg_shadow_seen/" + date + "/" + ctx.params.uid + "/" + sk).transaction(c => c ? undefined : 1);
+      if (sc.committed) await db.ref("v1/app/agg_shadow/" + date + "/" + ctx.params.uid).transaction(c => (c || 0) + 1);
+    }
     const p = liveKeyParts(after); if (!p) return null;
     const seenRef = db.ref("v1/app/data_live_seen/" + date + "/" + p.key);
     const liveRef = db.ref("v1/app/data_live/" + date);
@@ -540,13 +552,6 @@ exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72
     if (p.agency) {
       const aRes = await seenRef.child("a").transaction(cur => cur ? undefined : 1);
       if (aRes.committed) await liveRef.update({ ["agencies/" + p.agency]: admin.database.ServerValue.increment(1) });
-    }
-    // [shadow] per-uid 감지 카운트(signature dedup) — 2단계 증분 전환기 풀스캔 대조용. 기존 동작 무관, 별도 노드(v1/app/agg_shadow).
-    const sig = after.signature;
-    if (sig) {
-      const sk = String(sig).replace(/[.#$/\[\]]/g, "_");
-      const sc = await db.ref("v1/app/agg_shadow_seen/" + date + "/" + ctx.params.uid + "/" + sk).transaction(c => c ? undefined : 1);
-      if (sc.committed) await db.ref("v1/app/agg_shadow/" + date + "/" + ctx.params.uid).transaction(c => (c || 0) + 1);
     }
     return null;
   });
