@@ -438,10 +438,8 @@ exports.agencyScan = functions.region(REGION).runWith({ timeoutSeconds: 540, mem
 });
 
 // ===== data_maps — 지도(hex·heat) 오늘만 10분 재계산·고정 노드. 과거는 dataTab. 앱은 탭 열 때/버튼 시 read. =====
-async function computeMaps(y, mo, d) {
-  const ds = dateKey(y, mo, d);
-  const dayStart = Date.UTC(y, mo - 1, d) - 9 * 3600000, dayEnd = dayStart + 86400000;
-  const uids = await listUids();
+// hex(출발동 H3 격자) — orders 기반(작음). dataMapsTick 증분·computeMaps 풀계산 공용.
+async function computeHex(ds, uids) {
   const originCnt = {};
   await Promise.all(uids.map(async uid => {
     try {
@@ -455,10 +453,16 @@ async function computeMaps(y, mo, d) {
     if (c && c.lat) { const h = h3.latLngToCell(c.lat, c.lng, 6); let cell = cells.get(h); if (!cell) { cell = { n: 0, top: "", topN: 0 }; cells.set(h, cell); } cell.n += n; if (n > cell.topN) { cell.topN = n; cell.top = tok; } }
   });
   const maxN = cells.size ? Math.max(...[...cells.values()].map(c => c.n)) : 1;
-  const hex = [...cells.entries()].sort((a, b) => a[1].n - b[1].n).map(([h, c]) => {
+  return [...cells.entries()].sort((a, b) => a[1].n - b[1].n).map(([h, c]) => {
     const idx = Math.min(PAL.length - 1, Math.floor(Math.sqrt(c.n / maxN) * PAL.length));
     return { boundary: h3.cellToBoundary(h), count: c.n, area: c.top, color: PAL[idx] };
   });
+}
+async function computeMaps(y, mo, d) {
+  const ds = dateKey(y, mo, d);
+  const dayStart = Date.UTC(y, mo - 1, d) - 9 * 3600000, dayEnd = dayStart + 86400000;
+  const uids = await listUids();
+  const hex = await computeHex(ds, uids);
   const CELL = 0.03; const bk0 = Math.floor(dayStart / 86400000), bk1 = Math.floor((dayEnd - 1) / 86400000); const grid = new Map();
   await Promise.all(uids.map(async uid => {
     for (let bk = bk0; bk <= bk1; bk++) {
@@ -473,12 +477,52 @@ async function computeMaps(y, mo, d) {
   return { hex, heat, heatMax: p90 ? Math.round(p90 * 0.73) : 340 };
 }
 // 오늘 지도 10분 재계산(과거는 dataTab로 충분·동결). 앱은 v1/app/data_maps/<today> read + updatedAt로 "○○:○○ 기준".
+async function runDataMaps() {
+  const n = Date.now(), kk = new Date(n + 9 * 3600000), y = kk.getUTCFullYear(), mo = kk.getUTCMonth() + 1, d = kk.getUTCDate();
+  const ds = dateKey(y, mo, d);
+  const dayStart = Date.UTC(y, mo - 1, d) - 9 * 3600000, dayEnd = dayStart + 86400000;
+  const uids = await listUids();
+  const hex = await computeHex(ds, uids);   // [HQ#3-2 가드3] hex는 orders 풀(작음, 증분 불필요)
+  // [HQ#3-2 가드1] heat는 gps 증분 — uid×버킷 커서(KST 하루=UTC 버킷2개), 신규 포인트만 read. 야간 tick이 전날 버킷 재read 안 함이 절감 본체.
+  const CELL = 0.03; const bk0 = Math.floor(dayStart / 86400000), bk1 = Math.floor((dayEnd - 1) / 86400000);
+  const stRef = db.ref("v1/app/data_maps_state/" + ds);
+  const st = (await stRef.once("value")).val() || {};
+  const grid = st.grid || {}, cur = st.cur || {};
+  const CHUNK = 6;   // OOM 방지 — 동시 read 유저 수 제한(첫 실행 당일 누적분 대비). 증분 tick은 신규만이라 가벼움.
+  for (let ci = 0; ci < uids.length; ci += CHUNK) {
+    await Promise.all(uids.slice(ci, ci + CHUNK).map(async uid => {
+      for (let bk = bk0; bk <= bk1; bk++) {
+        const ck = uid + "_" + bk; const from = Number(cur[ck]) || (dayStart - 1);   // 첫 실행은 당일 0시부터(전체 버킷 read 회피)
+        try {
+          const snap = await db.ref("v1/users/" + uid + "/gps_track/main/" + bk).orderByKey().startAt(String(from + 1)).once("value");
+          let last = from;
+          snap.forEach(c => {
+            const kn = Number(c.key); if (kn > last) last = kn;
+            const v = c.val(); const t = Number(v && v.ts) || 0, la = Number(v && v.lat), ln = Number(v && v.lng);
+            if (t >= dayStart && t < dayEnd && la && ln && la > 33 && la < 39 && ln > 124 && ln < 131) { const key = Math.round(la / CELL) + "," + Math.round(ln / CELL); grid[key] = (grid[key] || 0) + 1; }
+          });
+          if (last > from) cur[ck] = last;
+        } catch (e) {}
+      }
+    }));
+  }
+  const gv = Object.values(grid).sort((a, b) => a - b); const p90 = gv.length ? gv[Math.floor(gv.length * 0.9)] : 0;
+  const heat = Object.keys(grid).map(key => { const a = key.split(",").map(Number); return { lat: a[0] * CELL, lng: a[1] * CELL, w: grid[key] }; });
+  await db.ref("v1/app/data_maps/" + ds).set({ hex, heat, heatMax: p90 ? Math.round(p90 * 0.73) : 340, updatedAt: n });
+  await stRef.set({ grid, cur });   // 격자·커서 상태(전일분은 reconcile이 정리)
+  console.log("dataMapsTick(증분)", ds, "hex", hex.length, "heat", heat.length, "cells", Object.keys(grid).length);
+  return { ds, hex: hex.length, heat: heat.length, cells: Object.keys(grid).length };
+}
 exports.dataMapsTick = functions.region(REGION).runWith({ timeoutSeconds: 300, memory: "512MB" }).pubsub.schedule("every 1 hours").onRun(async () => {
-  const n = Date.now(), k = new Date(n + 9 * 3600000), y = k.getUTCFullYear(), mo = k.getUTCMonth() + 1, d = k.getUTCDate();
-  const maps = await computeMaps(y, mo, d);
+  const n = Date.now(), kk = new Date(n + 9 * 3600000), y = kk.getUTCFullYear(), mo = kk.getUTCMonth() + 1, d = kk.getUTCDate();
+  const maps = await computeMaps(y, mo, d);   // [HQ#3-2 롤백] 증분 runDataMaps OOM 원인규명까지 풀계산 유지(안전). runDataMaps·dataMapsNow는 디버그용 보존.
   await db.ref("v1/app/data_maps/" + dateKey(y, mo, d)).set(Object.assign(maps, { updatedAt: n }));
-  console.log("data_maps updated", dateKey(y, mo, d), "hex", maps.hex.length, "heat", maps.heat.length);
   return null;
+});
+// [임시 검증] 증분 즉시 실행(?k=). 검증 후 제거 그룹(serverStatsNow·backfillCache와 함께).
+exports.dataMapsNow = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "2GB" }).https.onRequest(async (req, res) => {
+  if (req.query.k !== "qpmon610") { res.status(403).send("no"); return; }
+  res.json(await runDataMaps());
 });
 
 // 서버 용량 — Cloud Monitoring storage/total_bytes 조회로 측정(루트 풀read 제거: OOM·비용 0). 주1회 갱신.
@@ -567,10 +611,18 @@ exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540
     const dp = date.split("-").map(Number);
     try { await db.ref("v1/app/data_cache/" + date).set({ aggregate: await computeAggregate(dp[0], dp[1], dp[2]), builtAt: Date.now() }); } catch (e) {}
   }
+  // [HQ#3-2 가드2] dataMaps 증분 자가대조 — 증분 heat(data_maps) vs 풀 heat(data_cache.aggregate). 비순차 GPS 누락 흡수. drift 기록(절감 끝나도 상시 유지).
+  const incHeat = ((await db.ref("v1/app/data_maps/" + date).once("value")).val() || {}).heat || [];
+  const fullHeat = ((await db.ref("v1/app/data_cache/" + date + "/aggregate").once("value")).val() || {}).heat || [];
+  const sumW = arr => arr.reduce((s, h) => s + (h.w || 0), 0);
+  const incW = sumW(incHeat), fullW = sumW(fullHeat);
+  await db.ref("v1/app/data_maps_recon/" + date).set({ at: Date.now(), incPts: incHeat.length, fullPts: fullHeat.length, incW, fullW, driftPct: fullW ? +(((incW - fullW) / fullW) * 100).toFixed(1) : 0 });
   await db.ref("v1/app/data_maps/" + date).remove().catch(() => {});         // data_maps는 오늘만(과거 조회는 data_cache)
+  await db.ref("v1/app/data_maps_state/" + date).remove().catch(() => {});   // 어제 격자·커서 정리(전일분)
   // data_cache는 영구 요약본(날짜당 KB) — 삭제 안 함. recon 기록만 7일 보존.
   const oldK = kstDate(Date.now() - 8 * 86400000);
   await db.ref("v1/app/agg_shadow_recon/" + oldK).remove().catch(() => {});   // recon 기록 7일 보존
+  await db.ref("v1/app/data_maps_recon/" + oldK).remove().catch(() => {});    // dataMaps 자가대조 기록 7일 보존
   console.log("reconcileShadow", date, "diffs", Object.keys(diffs).length, "/", uids.length);
   return null;
 });
