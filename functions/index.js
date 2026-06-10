@@ -38,6 +38,7 @@ function lastOrderTs(orders) {
 // [shadow] orderLive 증분과 reconcile 진실 count가 동일 키로 dedup하도록 공통 키.
 // sig 있으면 RTDB키 안전 치환, 없으면 orderId 폴백(dedupBySig의 'sig없음=distinct'와 동일 효과).
 function shadowKey(sig, oid) { return sig ? String(sig).replace(/[.#$/\[\]]/g, "_") : ("_oid_" + oid); }
+function sortObj(o) { const r = {}; Object.keys(o || {}).sort().forEach(k => r[k] = o[k]); return r; }   // plat 비교용 키정렬
 // signature 기준 중복제거 — 같은 오더가 여러 키(숫자키+sig키 전환기·재팝)로 들어와도 한 번만. sig 없으면 distinct.
 function dedupBySig(vals) {
   const seen = new Set(); const out = [];
@@ -141,7 +142,7 @@ async function summarizeUser(uid, now) {
   return {
     nick: p.nickname || "", name: p.name || "", phone: p.phone || "", region: p.region || "",
     vt: p.vehicle_type || "", email: p.email || "", ver: verSnap.val() || "",
-    ordCnt: os.cnt, shadowOrdCnt: Number(shadowSnap.val()) || 0, plat: os.plat, lastOrderTs: lastOrderTs(orders),
+    ordCnt: os.cnt, shadow: shadowSnap.val() || null, plat: os.plat, lastOrderTs: lastOrderTs(orders),
     crCnt, lastCrashTs,
     seenTs, lastMoveTs, gpsTs,
     lat: Number.isFinite(lat) ? lat : null, lng: Number.isFinite(lng) ? lng : null,
@@ -472,7 +473,7 @@ async function computeMaps(y, mo, d) {
   return { hex, heat, heatMax: p90 ? Math.round(p90 * 0.73) : 340 };
 }
 // 오늘 지도 10분 재계산(과거는 dataTab로 충분·동결). 앱은 v1/app/data_maps/<today> read + updatedAt로 "○○:○○ 기준".
-exports.dataMapsTick = functions.region(REGION).runWith({ timeoutSeconds: 300, memory: "512MB" }).pubsub.schedule("every 30 minutes").onRun(async () => {
+exports.dataMapsTick = functions.region(REGION).runWith({ timeoutSeconds: 300, memory: "512MB" }).pubsub.schedule("every 1 hours").onRun(async () => {
   const n = Date.now(), k = new Date(n + 9 * 3600000), y = k.getUTCFullYear(), mo = k.getUTCMonth() + 1, d = k.getUTCDate();
   const maps = await computeMaps(y, mo, d);
   await db.ref("v1/app/data_maps/" + dateKey(y, mo, d)).set(Object.assign(maps, { updatedAt: n }));
@@ -522,14 +523,22 @@ exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540
   await Promise.all(uids.map(async uid => {
     try {
       const orders = (await db.ref("v1/users/" + uid + "/orders/" + date).once("value")).val() || {};
-      const seen = new Set();
-      for (const oid of Object.keys(orders)) { if (orders[oid]) seen.add(shadowKey(orders[oid].signature, oid)); }
-      const trueCnt = seen.size;
-      const shadowCnt = Number((await db.ref("v1/app/agg_shadow/" + date + "/" + uid).once("value")).val()) || 0;
-      if (trueCnt !== shadowCnt) {
-        diffs[uid] = { t: trueCnt, s: shadowCnt };
-        if (trueCnt > 0) await db.ref("v1/app/agg_shadow/" + date + "/" + uid).set(trueCnt);
-        else await db.ref("v1/app/agg_shadow/" + date + "/" + uid).remove();
+      const seen = new Set(); let trueCnt = 0; const truePlat = {}; let trueLastTs = 0;
+      for (const oid of Object.keys(orders)) {
+        const o = orders[oid]; if (!o) continue;
+        const dts = Number(o.detected_at) || 0; if (dts > trueLastTs) trueLastTs = dts;   // lastTs는 dedup 무관
+        const k = shadowKey(o.signature, oid);
+        if (seen.has(k)) continue;
+        seen.add(k); trueCnt++;
+        const pf = (o.platform || "기타").replace(/[.#$/\[\]]/g, "_"); truePlat[pf] = (truePlat[pf] || 0) + 1;
+      }
+      const sBase = "v1/app/agg_shadow/" + date + "/" + uid;
+      const sh = (await db.ref(sBase).once("value")).val() || {};
+      const okPlat = JSON.stringify(sortObj(sh.plat || {})) === JSON.stringify(sortObj(truePlat));
+      if ((Number(sh.cnt) || 0) !== trueCnt || !okPlat || (Number(sh.lastTs) || 0) !== trueLastTs) {
+        diffs[uid] = { t: trueCnt, s: Number(sh.cnt) || 0, plat: okPlat ? 1 : 0 };
+        if (trueCnt > 0) await db.ref(sBase).set({ cnt: trueCnt, plat: truePlat, lastTs: trueLastTs });
+        else await db.ref(sBase).remove();
       }
     } catch (e) {}
   }));
@@ -537,9 +546,15 @@ exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540
   await db.ref("v1/app/agg_shadow_seen/" + date).remove().catch(() => {});   // 어제 seen은 대조 끝나 불필요 — 누적 방지(HQ 6번)
   // [HQ6] 누적 dedup·캐시 정리 — 날짜 경로 remove만(read 0). 당일용 seen·오늘전용 maps는 전일, 과거조회 캐시는 7일 보존.
   await db.ref("v1/app/data_live_seen/" + date).remove().catch(() => {});   // 당일 dedup용 — 어제분 불필요(data_live 집계는 유지)
-  await db.ref("v1/app/data_maps/" + date).remove().catch(() => {});         // data_maps는 오늘만 사용(과거 조회는 data_cache)
+  // [HQ#2-2] data_maps(전일) 삭제 전, 과거 히트맵·분포맵 영구소스 data_cache 보장(없으면 computeAggregate 생성 = 일일 자동 백필)
+  const dcExist = (await db.ref("v1/app/data_cache/" + date + "/aggregate").once("value")).val();
+  if (!dcExist) {
+    const dp = date.split("-").map(Number);
+    try { await db.ref("v1/app/data_cache/" + date).set({ aggregate: await computeAggregate(dp[0], dp[1], dp[2]), builtAt: Date.now() }); } catch (e) {}
+  }
+  await db.ref("v1/app/data_maps/" + date).remove().catch(() => {});         // data_maps는 오늘만(과거 조회는 data_cache)
+  // data_cache는 영구 요약본(날짜당 KB) — 삭제 안 함. recon 기록만 7일 보존.
   const oldK = kstDate(Date.now() - 8 * 86400000);
-  await db.ref("v1/app/data_cache/" + oldK).remove().catch(() => {});         // 과거 집계 캐시 7일 보존
   await db.ref("v1/app/agg_shadow_recon/" + oldK).remove().catch(() => {});   // recon 기록 7일 보존
   console.log("reconcileShadow", date, "diffs", Object.keys(diffs).length, "/", uids.length);
   return null;
@@ -553,8 +568,14 @@ exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72
     // [shadow] 감지 카운트 — liveKeyParts 게이트 앞(파싱실패 오더도 reconcile dedup엔 포함되므로 정의 일치). 별도 노드, 기존 동작 무관.
     {
       const sk = shadowKey(after.signature, ctx.params.orderId);
+      const sBase = "v1/app/agg_shadow/" + date + "/" + ctx.params.uid;
       const sc = await db.ref("v1/app/agg_shadow_seen/" + date + "/" + ctx.params.uid + "/" + sk).transaction(c => c ? undefined : 1);
-      if (sc.committed) await db.ref("v1/app/agg_shadow/" + date + "/" + ctx.params.uid).transaction(c => (c || 0) + 1);
+      if (sc.committed) {   // [HQ#2-4] cnt + plat별 cnt (dedup된 오더만)
+        const pf = (after.platform || "기타").replace(/[.#$/\[\]]/g, "_");
+        await db.ref(sBase).update({ cnt: admin.database.ServerValue.increment(1), ["plat/" + pf]: admin.database.ServerValue.increment(1) });
+      }
+      const dts = Number(after.detected_at) || 0;   // lastTs는 dedup 무관 최대 detected_at
+      if (dts) await db.ref(sBase + "/lastTs").transaction(c => (c && c > dts) ? c : dts);
     }
     const p = liveKeyParts(after); if (!p) return null;
     const seenRef = db.ref("v1/app/data_live_seen/" + date + "/" + p.key);
