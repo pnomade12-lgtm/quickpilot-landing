@@ -59,13 +59,14 @@ async function summarizeUser(uid, now) {
   const dayStart = dayStartMs(now);
 
   // 상태(커서+버퍼) 포함, GPS 외 자료를 먼저 병렬로. GPS는 커서가 정해진 뒤 2단계로 읽음(증분).
-  const [profSnap, verSnap, ordSnap, crashSnap, actLastSnap, stateSnap] = await Promise.all([
+  const [profSnap, verSnap, ordSnap, crashSnap, actLastSnap, stateSnap, shadowSnap] = await Promise.all([
     db.ref(base + "/profile").once("value"),
     db.ref(base + "/app_version").once("value"),
     db.ref(base + "/orders/" + date).once("value"),
     db.ref(base + "/crash_logs").once("value"),
     db.ref(base + "/user_actions/" + bucket).orderByKey().limitToLast(1).once("value"),
     db.ref("v1/app/agg_state/" + uid).once("value"),
+    db.ref("v1/app/agg_shadow/" + date + "/" + uid).once("value"),   // [shadow] 증분 카운트 대조용
   ]);
 
   const p = profSnap.val() || {};
@@ -137,7 +138,7 @@ async function summarizeUser(uid, now) {
   return {
     nick: p.nickname || "", name: p.name || "", phone: p.phone || "", region: p.region || "",
     vt: p.vehicle_type || "", email: p.email || "", ver: verSnap.val() || "",
-    ordCnt: os.cnt, plat: os.plat, lastOrderTs: lastOrderTs(orders),
+    ordCnt: os.cnt, shadowOrdCnt: Number(shadowSnap.val()) || 0, plat: os.plat, lastOrderTs: lastOrderTs(orders),
     crCnt, lastCrashTs,
     seenTs, lastMoveTs, gpsTs,
     lat: Number.isFinite(lat) ? lat : null, lng: Number.isFinite(lng) ? lng : null,
@@ -492,6 +493,30 @@ exports.serverStatsTick = functions.region(REGION).runWith({ timeoutSeconds: 540
   return null;
 });
 
+// [shadow] 야간 정합성 대조(3층) — 매일 새벽1시(KST) 어제 orders 전수를 signature dedup으로 다시 세어 진실 count 산출,
+// agg_shadow 증분값과 비교해 드리프트(콜드스타트·재시도 누락)를 원본 기준으로 교정. diff는 agg_shadow_recon에 기록.
+// 취소 반영은 status 정의(AS) 후 추가. 현재는 '감지 개수'만 대조.
+exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "512MB" }).pubsub.schedule("0 1 * * *").timeZone("Asia/Seoul").onRun(async () => {
+  const date = kstDate(Date.now() - 86400000);   // 어제(완료된 날)
+  const uids = await listUids();
+  const diffs = {};
+  await Promise.all(uids.map(async uid => {
+    try {
+      const orders = (await db.ref("v1/users/" + uid + "/orders/" + date).once("value")).val() || {};
+      const trueCnt = dedupBySig(Object.values(orders)).length;
+      const shadowCnt = Number((await db.ref("v1/app/agg_shadow/" + date + "/" + uid).once("value")).val()) || 0;
+      if (trueCnt !== shadowCnt) {
+        diffs[uid] = { t: trueCnt, s: shadowCnt };
+        if (trueCnt > 0) await db.ref("v1/app/agg_shadow/" + date + "/" + uid).set(trueCnt);
+        else await db.ref("v1/app/agg_shadow/" + date + "/" + uid).remove();
+      }
+    } catch (e) {}
+  }));
+  await db.ref("v1/app/agg_shadow_recon/" + date).set({ at: Date.now(), nDiff: Object.keys(diffs).length, nUsers: uids.length, diffs });
+  console.log("reconcileShadow", date, "diffs", Object.keys(diffs).length, "/", uids.length);
+  return null;
+});
+
 // 오더 쓰기마다 증분(라이브) — race-safe 클레임(transaction)으로 유저 교차 동시감지도 1콜만.
 exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72-default-rtdb")
   .ref("/v1/users/{uid}/orders/{date}/{orderId}").onWrite(async (change, ctx) => {
@@ -515,6 +540,13 @@ exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72
     if (p.agency) {
       const aRes = await seenRef.child("a").transaction(cur => cur ? undefined : 1);
       if (aRes.committed) await liveRef.update({ ["agencies/" + p.agency]: admin.database.ServerValue.increment(1) });
+    }
+    // [shadow] per-uid 감지 카운트(signature dedup) — 2단계 증분 전환기 풀스캔 대조용. 기존 동작 무관, 별도 노드(v1/app/agg_shadow).
+    const sig = after.signature;
+    if (sig) {
+      const sk = String(sig).replace(/[.#$/\[\]]/g, "_");
+      const sc = await db.ref("v1/app/agg_shadow_seen/" + date + "/" + ctx.params.uid + "/" + sk).transaction(c => c ? undefined : 1);
+      if (sc.committed) await db.ref("v1/app/agg_shadow/" + date + "/" + ctx.params.uid).transaction(c => (c || 0) + 1);
     }
     return null;
   });
