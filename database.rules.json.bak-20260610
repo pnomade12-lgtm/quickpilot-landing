@@ -1,0 +1,23 @@
+{
+  "rules": {
+    "v1": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "landing": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'pnomade12@gmail.com'"
+    },
+    "applications": {
+      ".read": "auth != null && auth.token.email == 'pnomade12@gmail.com'",
+      "$id": {
+        ".write": "(!data.exists() && newData.child('name').isString() && newData.child('phone').isString() && newData.child('createdAt').exists()) || (auth != null && auth.token.email == 'pnomade12@gmail.com')",
+        ".validate": "newData.hasChildren(['name','phone','phoneModel','agreeData','agreeAccessibility','createdAt'])"
+      }
+    },
+    "licenses": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'pnomade12@gmail.com'"
+    }
+  }
+}

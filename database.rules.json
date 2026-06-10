@@ -1,0 +1,90 @@
+{
+  "rules": {
+    "landing": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'"
+    },
+
+    "applications": {
+      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')",
+      "$id": {
+        ".write": "(!data.exists() && newData.child('name').isString() && newData.child('phone').isString() && newData.child('createdAt').exists()) || (auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com')",
+        ".validate": "newData.hasChildren(['name','phone','phoneModel','agreeData','agreeAccessibility','createdAt']) && newData.child('status').val() === 'pending' && newData.child('name').val().length <= 40 && newData.child('phone').val().length <= 20 && newData.child('agreeData').val() === true && newData.child('agreeAccessibility').val() === true && !newData.hasChild('appKey')"
+      }
+    },
+
+    "licenses": {
+      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'",
+      "$phone": {
+        ".read": "auth != null && data.child('uid').val() === auth.uid"
+      }
+    },
+
+    "v1": {
+      "users": {
+        ".read": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')",
+        "$uid": {
+          ".read": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')))",
+          ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+          "profile": {
+            "phone": {
+              ".validate": "newData.isString() && newData.val().matches(/^[0-9]{10,11}$/) && (!data.exists() || data.val() === newData.val() || auth.token.email == 'pnomade12@gmail.com')"
+            }
+          },
+          "orders": {
+            "$date": {
+              "$orderId": {
+                ".validate": "newData.hasChildren(['platform']) && newData.child('platform').isString()"
+              }
+            }
+          }
+        }
+      },
+
+      "agencies": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'"
+      },
+
+      "buildings": {
+        ".read": "auth != null",
+        "$bid": {
+          "comments": {
+            "$cid": {
+              ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid || auth.token.email == 'pnomade12@gmail.com')",
+              ".validate": "newData.hasChildren(['nickname','msg','ts']) && newData.child('msg').isString() && newData.child('msg').val().length <= 220 && newData.child('uid').val() === auth.uid"
+            }
+          }
+        }
+      },
+
+      "social_feed": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      },
+
+      "reports": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      },
+
+      "app": {
+        ".read": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')",
+        ".write": false,
+        "notice":                      { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'" },
+        "update_notes_override":       { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'" },
+        "update_notes_title_override": { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'" },
+        "board":                       { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'" },
+        "board_list":                  { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'" },
+        "data_live":                   { ".read": "auth != null", ".write": false },
+        "data_maps":                   { ".read": "auth != null", ".write": false },
+        "data_cache":                  { ".read": "auth != null", ".write": false },
+        "server_stats": {
+          ".read":  "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')",
+          ".write": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')"
+        }
+      }
+    }
+  }
+}
