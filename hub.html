@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>QP 페이지 인덱스</title>
+<meta name="theme-color" content="#0a0a0a">
+<style>
+  :root{
+    --bg:#0a0a0a; --card:#161616; --line:#262626; --tx:#ececec; --mut:#8a8a8a;
+    --grn:#2ecc71; --blu:#4aa3ff; --org:#ffb454; --red:#ff6b6b; --pur:#b18cff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);
+    font-family:-apple-system,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.5;-webkit-text-size-adjust:100%}
+  .wrap{max-width:760px;margin:0 auto;padding:22px 16px 64px}
+  h1{font-size:20px;margin:0 0 2px;letter-spacing:-.3px}
+  .lead{color:var(--mut);font-size:12.5px;margin:0 0 20px}
+  .grp{margin:0 0 22px}
+  .gh{display:flex;align-items:baseline;gap:8px;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .gh b{font-size:14.5px}
+  .gh .cnt{color:var(--mut);font-size:12px}
+  .gh .note{color:var(--mut);font-size:11.5px;margin-left:auto}
+  a.row{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;margin:6px 0}
+  a.row:active{background:#1d1d1d}
+  .nm{font-weight:600;font-size:14px;white-space:nowrap}
+  .ds{color:var(--mut);font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dt{color:#666;font-size:11px;white-space:nowrap}
+  .tag{font-size:10.5px;padding:1px 6px;border-radius:6px;white-space:nowrap;border:1px solid transparent}
+  .t-main{color:var(--grn);border-color:#1e5e3a}
+  .t-ops{color:var(--blu);border-color:#1d4a73}
+  .t-arch{color:var(--red);border-color:#6b2a2a}
+  .t-wip{color:var(--org);border-color:#6b4f1d}
+  .t-hidden{color:var(--mut);border-color:#444}
+  /* 하위페이지(자식) */
+  a.row.lv2{margin-left:22px;position:relative;padding:8px 12px}
+  a.row.lv2 .nm{font-size:13px}
+  a.row.lv2::before{content:"└";position:absolute;left:-15px;top:8px;color:#555;font-size:13px}
+  /* 폴더 라벨(자기 페이지 없는 묶음) */
+  .plabel{font-size:12px;color:var(--mut);font-weight:600;margin:12px 0 2px;padding-left:2px}
+  details{margin:0 0 22px}
+  summary{cursor:pointer;font-size:14.5px;font-weight:600;padding:8px 0;
+    border-bottom:1px solid var(--line);list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary .cnt{color:var(--mut);font-size:12px;font-weight:400}
+  summary::before{content:"▸ ";color:var(--mut)}
+  details[open] summary::before{content:"▾ "}
+  .arch a.row{opacity:.62}
+  @media (max-width:430px){
+    .ds{display:none}
+    .nm{font-size:13.5px;white-space:normal}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>QP 페이지 인덱스</h1>
+  <p class="lead">내부 네비게이션 · 유저 공유용 아님 · <span id="cnt">—</span>개 페이지</p>
+
+  <!-- 1. 대외 -->
+  <div class="grp">
+    <div class="gh"><b>대외 — 유저가 보는</b> <span class="cnt">상시</span> <span class="note">내 도메인</span></div>
+    <a class="row" href="landing-v2.html"><span class="nm">랜딩</span><span class="ds">배포 메인 랜딩 (유저에게 뿌리는 링크)</span><span class="tag t-main">★배포</span><span class="dt">6/9</span></a>
+    <a class="row lv2" href="apply.html"><span class="nm">베타 신청</span><span class="ds">베타 테스터 신청 폼</span><span class="dt">6/8</span></a>
+    <a class="row" href="guide.html"><span class="nm">가이드</span><span class="ds">사용자 가이드 · 0.11 업데이트 노트</span><span class="dt">6/9</span></a>
+    <a class="row lv2" href="guide-summary.html"><span class="nm">가이드 요약</span><span class="ds">경력자용 짧은 가이드</span><span class="dt">6/8</span></a>
+    <a class="row" href="vision.html"><span class="nm">유료 비전</span><span class="ds">다음 단계 · 유료 버전 비전</span><span class="tag t-hidden">비공개</span><span class="dt">6/10</span></a>
+    <a class="row" href="qna100/"><span class="nm">100문답</span><span class="ds">퀵 기사 100가지 문답 전자책</span><span class="tag t-wip">제작중</span><span class="dt">5/19</span></a>
+    <div class="plabel">데이터 리포트</div>
+    <a class="row lv2" href="column-1-ordermap.html"><span class="nm">1호 · 오더맵</span><span class="ds">오더맵이 말해주는 3가지</span><span class="dt">6/9</span></a>
+  </div>
+
+  <!-- 2. 운영 -->
+  <div class="grp">
+    <div class="gh"><b>운영 — 모니터·서버</b> <span class="cnt">상시</span> <span class="note">다른 세션 도메인</span></div>
+    <a class="row" href="monitor-all.html"><span class="nm">베타 모니터</span><span class="ds">테스터 현황 (현행)</span><span class="tag t-ops">모니터</span><span class="dt">6/9</span></a>
+    <a class="row" href="server.html"><span class="nm">서버 현황</span><span class="ds">QP 서버 상태 대시보드</span><span class="tag t-ops">서버</span><span class="dt">6/10</span></a>
+    <a class="row lv2" href="serverops.html"><span class="nm">서버 운영</span><span class="ds">서버 운영 콘솔</span><span class="dt">6/8</span></a>
+    <a class="row" href="admin-applications.html"><span class="nm">신청 관리</span><span class="ds">베타 신청 어드민</span><span class="tag t-ops">어드민</span><span class="dt">6/9</span></a>
+  </div>
+
+  <!-- 3. 보관함 (접힘) -->
+  <details class="arch">
+    <summary>보관함 — 시연·도구·일회성·구버전·시안 <span class="cnt">(20)</span></summary>
+    <a class="row" href="study.html"><span class="nm">동 이름 학습</span><span class="ds">지명 학습 플래시카드</span><span class="dt">6/9</span></a>
+    <a class="row" href="app-preview.html"><span class="nm">앱 미리보기</span><span class="ds">앱 화면 미리보기 (시연용)</span><span class="dt">5/31</span></a>
+    <a class="row" href="installer-preview/"><span class="nm">설치 가이드</span><span class="ds">설치 가이드 미리보기 (자동 진행)</span><span class="dt">6/7</span></a>
+    <a class="row" href="damastrong.html"><span class="nm">다마스트롱</span><span class="ds">선배님께 드리는 협력 제안서</span><span class="dt">5/24</span></a>
+    <a class="row" href="v29-insung.html"><span class="nm">인성 콜 상세</span><span class="ds">detail_json 개발 참고</span><span class="dt">5/23</span></a>
+    <a class="row" href="geo_check2.html"><span class="nm">지명검수</span><span class="ds">지명검수 새100 (좌표 보정 도구)</span><span class="dt">6/9</span></a>
+    <a class="row lv2" href="geo_check.html"><span class="nm">지명검수(구)</span><span class="ds">지명검수 100 · 새100으로 대체</span><span class="tag t-arch">구</span><span class="dt">6/8</span></a>
+    <a class="row" href="index.html"><span class="nm">옛 랜딩(index)</span><span class="ds">루트만 서빙 · 다른 세션 작업 중</span><span class="tag t-arch">구</span><span class="dt">5/28</span></a>
+    <a class="row" href="monitor.html"><span class="nm">모니터(구)</span><span class="ds">S22 실시간 미러 · monitor-all로 대체</span><span class="tag t-arch">구</span><span class="dt">5/23</span></a>
+    <a class="row" href="qp-diagnosis.html"><span class="nm">진단</span><span class="ds">QP 지금 어떤 상태인가</span><span class="tag t-arch">일회</span><span class="dt">5/27</span></a>
+    <a class="row" href="qp-audit-27.html"><span class="nm">27차 감사</span><span class="ds">외부감사 리포트 (일회)</span><span class="tag t-arch">일회</span><span class="dt">5/28</span></a>
+    <div class="plabel">1307 · 김태욱 (특정인·일회)</div>
+    <a class="row lv2" href="map-1307-0608.html"><span class="nm">맵</span><span class="ds">콜 방향</span><span class="dt">6/8</span></a>
+    <a class="row lv2" href="report-1307-0608.html"><span class="nm">리포트</span><span class="ds">6/8 감지콜</span><span class="dt">6/8</span></a>
+    <div class="plabel">토스트 시안</div>
+    <a class="row lv2" href="qp-toast.html"><span class="nm">토스트</span><span class="ds">시·동 라벨 초안</span><span class="dt">5/26</span></a>
+    <a class="row lv2" href="qp-toast-compare.html"><span class="nm">비교</span><span class="ds">글씨 크기 3단계</span><span class="dt">5/26</span></a>
+    <a class="row lv2" href="qp-toast-totalcall.html"><span class="nm">통합콜</span><span class="ds">통합콜 토스트 초안</span><span class="dt">5/26</span></a>
+    <a class="row lv2" href="qp-compass.html"><span class="nm">틀</span><span class="ds">토스트 고정 틀</span><span class="dt">5/21</span></a>
+    <div class="plabel">팝업 시안</div>
+    <a class="row lv2" href="popup-preview.html"><span class="nm">통합콜 팝업</span><span class="ds">통합콜 팝업 시안</span><span class="dt">6/2</span></a>
+    <a class="row lv2" href="qp-popup.html"><span class="nm">감지 팝업</span><span class="ds">자동배차 감지 팝업 시안</span><span class="dt">5/26</span></a>
+    <a class="row" href="qp-radar.html"><span class="nm">레이더</span><span class="ds">확장 레이더 설정</span><span class="tag t-arch">시안</span><span class="dt">5/21</span></a>
+  </details>
+
+</div>
+<script>
+  var rows = document.querySelectorAll('a.row[href]');
+  document.getElementById('cnt').textContent = rows.length;
+</script>
+</body>
+</html>
