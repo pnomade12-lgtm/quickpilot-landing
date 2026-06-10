@@ -538,10 +538,10 @@ exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540
   await Promise.all(uids.map(async uid => {
     try {
       const orders = (await db.ref("v1/users/" + uid + "/orders/" + date).once("value")).val() || {};
-      const seen = new Set(); let trueCnt = 0; const truePlat = {}; let trueLastTs = 0;
+      const seen = new Set(); let trueCnt = 0; const truePlat = {};
+      const trueLastTs = lastOrderTs(orders);   // [HQ#3-1] ORDER_TS_FIELDS 4종 max — orderLive lastTs와 일치
       for (const oid of Object.keys(orders)) {
         const o = orders[oid]; if (!o) continue;
-        const dts = Number(o.detected_at) || 0; if (dts > trueLastTs) trueLastTs = dts;   // lastTs는 dedup 무관
         const k = shadowKey(o.signature, oid);
         if (seen.has(k)) continue;
         seen.add(k); trueCnt++;
@@ -589,7 +589,7 @@ exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72
         const pf = (after.platform || "기타").replace(/[.#$/\[\]]/g, "_");
         await db.ref(sBase).update({ cnt: admin.database.ServerValue.increment(1), ["plat/" + pf]: admin.database.ServerValue.increment(1) });
       }
-      const dts = Number(after.detected_at) || 0;   // lastTs는 dedup 무관 최대 detected_at
+      let dts = 0; ORDER_TS_FIELDS.forEach(f => { const v = Number(after[f]) || 0; if (v > dts) dts = v; });   // [HQ#3-1] lastTs = ORDER_TS_FIELDS 4종 max (lastOrderTs와 일치 — 배송중 활동판정 보존). onWrite가 상태갱신마다 발화하므로 transaction max로 누적.
       if (dts) await db.ref(sBase + "/lastTs").transaction(c => (c && c > dts) ? c : dts);
     }
     const p = liveKeyParts(after); if (!p) return null;
