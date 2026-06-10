@@ -139,6 +139,10 @@ async function summarizeUser(uid, now) {
   const newCur = newPts.length ? newPts[newPts.length - 1].t : now;
   await db.ref("v1/app/agg_state/" + uid).set({ cur: newCur, buf, last: lastPt || null });
 
+  // [HQ#6 설계통합] 신규 gps(prevCur 이후)를 당일 격자 delta로 — dataMaps gps 이중리더 제거. 활동판정 buf와 별개.
+  const prevCur = state.cur || 0; const cellDelta = {};
+  newPts.forEach(pt => { if (pt.t > prevCur && pt.la > 33 && pt.la < 39 && pt.ln > 124 && pt.ln < 131) { const key = Math.round(pt.la / 0.03) + "," + Math.round(pt.ln / 0.03); cellDelta[key] = (cellDelta[key] || 0) + 1; } });
+
   return {
     nick: p.nickname || "", name: p.name || "", phone: p.phone || "", region: p.region || "",
     vt: p.vehicle_type || "", email: p.email || "", ver: verSnap.val() || "",
@@ -146,6 +150,7 @@ async function summarizeUser(uid, now) {
     crCnt, lastCrashTs,
     seenTs, lastMoveTs, gpsTs,
     lat: Number.isFinite(lat) ? lat : null, lng: Number.isFinite(lng) ? lng : null,
+    cellDelta,
   };
 }
 
@@ -163,12 +168,18 @@ async function buildSummary() {
   const now = Date.now();
   const uids = await listUids();
 
-  const out = {};
+  const out = {}; const gridAcc = {};
   await Promise.all(uids.map(async uid => {
-    try { out[uid] = await summarizeUser(uid, now); } catch (e) { /* 한 명 실패가 전체를 막지 않음 */ }
+    try { const r = await summarizeUser(uid, now); const cd = r.cellDelta || {}; for (const k in cd) gridAcc[k] = (gridAcc[k] || 0) + cd[k]; delete r.cellDelta; out[uid] = r; } catch (e) { /* 한 명 실패가 전체를 막지 않음 */ }
   }));
-  out._meta = { ts: now, n: Object.keys(out).length };
+  out._meta = { ts: now, n: Object.keys(out).length, gridN: Object.keys(gridAcc).length };
   await db.ref("v1/app/monitor_summary").set(out);
+  // [HQ#6 설계통합] 격자 delta 합산 1회 쓰기(increment). try 분리 — 실패해도 본 기능(요약) 영향 0.
+  try {
+    const ds = kstDate(now); const upd = {};
+    for (const k in gridAcc) upd["grid/" + k.replace(/[.#$/\[\]]/g, "_")] = admin.database.ServerValue.increment(gridAcc[k]);
+    if (Object.keys(upd).length) await db.ref("v1/app/data_maps_state/" + ds).update(upd);
+  } catch (e) {}
   return out._meta;
 }
 
@@ -513,16 +524,29 @@ async function runDataMaps() {
   console.log("dataMapsTick(증분)", ds, "hex", hex.length, "heat", heat.length, "cells", Object.keys(grid).length);
   return { ds, hex: hex.length, heat: heat.length, cells: Object.keys(grid).length };
 }
-exports.dataMapsTick = functions.region(REGION).runWith({ timeoutSeconds: 300, memory: "512MB" }).pubsub.schedule("every 1 hours").onRun(async () => {
+exports.dataMapsTick = functions.region(REGION).runWith({ timeoutSeconds: 120, memory: "256MB" }).pubsub.schedule("every 1 hours").onRun(async () => {
   const n = Date.now(), kk = new Date(n + 9 * 3600000), y = kk.getUTCFullYear(), mo = kk.getUTCMonth() + 1, d = kk.getUTCDate();
-  const maps = await computeMaps(y, mo, d);   // [HQ#3-2 롤백] 증분 runDataMaps OOM 원인규명까지 풀계산 유지(안전). runDataMaps·dataMapsNow는 디버그용 보존.
-  await db.ref("v1/app/data_maps/" + dateKey(y, mo, d)).set(Object.assign(maps, { updatedAt: n }));
+  const ds = dateKey(y, mo, d);
+  // [HQ#6 설계통합] gps read 0 — 격자는 monitorSummary가 누적(data_maps_state.grid). 여기선 grid→heat 변환 + hex(orders, 작음)만.
+  const uids = await listUids();
+  const hex = await computeHex(ds, uids);
+  const grid = (await db.ref("v1/app/data_maps_state/" + ds + "/grid").once("value")).val() || {};
+  const gv = Object.values(grid).sort((a, b) => a - b); const p90 = gv.length ? gv[Math.floor(gv.length * 0.9)] : 0;
+  const heat = Object.keys(grid).map(key => { const a = key.split(",").map(Number); return { lat: a[0] * 0.03, lng: a[1] * 0.03, w: grid[key] }; });
+  await db.ref("v1/app/data_maps/" + ds).set({ hex, heat, heatMax: p90 ? Math.round(p90 * 0.73) : 340, updatedAt: n });
   return null;
 });
 // [임시 검증] 증분 즉시 실행(?k=). 검증 후 제거 그룹(serverStatsNow·backfillCache와 함께).
-exports.dataMapsNow = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "2GB" }).https.onRequest(async (req, res) => {
+exports.dataMapsNow = functions.region(REGION).runWith({ timeoutSeconds: 120, memory: "256MB" }).https.onRequest(async (req, res) => {
   if (req.query.k !== "qpmon610") { res.status(403).send("no"); return; }
-  res.json(await runDataMaps());
+  const n = Date.now(), kk = new Date(n + 9 * 3600000), ds = dateKey(kk.getUTCFullYear(), kk.getUTCMonth() + 1, kk.getUTCDate());
+  const uids = await listUids();
+  const hex = await computeHex(ds, uids);
+  const grid = (await db.ref("v1/app/data_maps_state/" + ds + "/grid").once("value")).val() || {};
+  const gv = Object.values(grid).sort((a, b) => a - b); const p90 = gv.length ? gv[Math.floor(gv.length * 0.9)] : 0;
+  const heat = Object.keys(grid).map(key => { const a = key.split(",").map(Number); return { lat: a[0] * 0.03, lng: a[1] * 0.03, w: grid[key] }; });
+  await db.ref("v1/app/data_maps/" + ds).set({ hex, heat, heatMax: p90 ? Math.round(p90 * 0.73) : 340, updatedAt: n });
+  res.json({ ds, hex: hex.length, heat: heat.length, gridCells: Object.keys(grid).length });
 });
 
 // 서버 용량 — Cloud Monitoring storage/total_bytes 조회로 측정(루트 풀read 제거: OOM·비용 0). 주1회 갱신.
