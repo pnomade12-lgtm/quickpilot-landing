@@ -480,20 +480,36 @@ exports.dataMapsTick = functions.region(REGION).runWith({ timeoutSeconds: 300, m
   return null;
 });
 
-// 서버 용량 매주 일요일 0시(KST) 자동 측정 — serverops.html이 매번 직접 재측정(느림) 대신 이 노드를 읽기만. (비용: 루트 풀read라 매일→주1회로 완화)
-exports.serverStatsTick = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "2GB" }).pubsub.schedule("0 0 * * 0").timeZone("Asia/Seoul").onRun(async () => {
-  const sz = v => v == null ? 0 : Buffer.byteLength(JSON.stringify(v), "utf8");
-  const root = (await db.ref("/").once("value")).val() || {};
-  let bytes = 0;
-  for (const k of Object.keys(root)) { if (k !== "v1") bytes += sz(root[k]); }
-  const v1 = root.v1 || {};
-  for (const k of Object.keys(v1)) { if (k !== "users") bytes += sz(v1[k]); }
-  const usersObj = v1.users || {};
-  const uids = Object.keys(usersObj).filter(u => u !== "director-nuri");
-  for (const u of uids) bytes += sz(usersObj[u]);
-  await db.ref("v1/app/server_stats").set({ bytes, users: uids.length, measuredAt: Date.now() });
-  console.log("server_stats", bytes, "bytes", uids.length, "users");
+// 서버 용량 — Cloud Monitoring storage/total_bytes 조회로 측정(루트 풀read 제거: OOM·비용 0). 주1회 갱신.
+async function fetchDbBytes() {
+  const tokRes = await fetch("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token", { headers: { "Metadata-Flavor": "Google" } });
+  const tok = (await tokRes.json()).access_token;
+  const end = new Date().toISOString();
+  const start = new Date(Date.now() - 6 * 3600000).toISOString();   // 최근 6시간 창에서 최신 포인트
+  const filter = 'metric.type="firebasedatabase.googleapis.com/storage/total_bytes"';
+  const url = "https://monitoring.googleapis.com/v3/projects/quickpilot-39d72/timeSeries"
+    + "?filter=" + encodeURIComponent(filter)
+    + "&interval.startTime=" + encodeURIComponent(start)
+    + "&interval.endTime=" + encodeURIComponent(end);
+  const res = await fetch(url, { headers: { Authorization: "Bearer " + tok } });
+  const data = await res.json();
+  const series = (data.timeSeries || [])[0];
+  const pt = series && series.points && series.points[0];   // points[0] = 최신
+  const v = pt && pt.value;
+  return v ? Number(v.int64Value != null ? v.int64Value : (v.doubleValue || 0)) : 0;
+}
+exports.serverStatsTick = functions.region(REGION).runWith({ timeoutSeconds: 120, memory: "256MB" }).pubsub.schedule("0 0 * * 0").timeZone("Asia/Seoul").onRun(async () => {
+  const bytes = await fetchDbBytes();
+  const uids = await listUids();
+  await db.ref("v1/app/server_stats").set({ bytes, users: uids.length, measuredAt: Date.now(), src: "monitoring" });
+  console.log("server_stats(monitoring)", bytes, uids.length);
   return null;
+});
+// [임시 검증] Cloud Monitoring 측정 즉시 확인용(?k= 게이트). 정상 확인 후 제거 예정.
+exports.serverStatsNow = functions.region(REGION).runWith({ timeoutSeconds: 120, memory: "256MB" }).https.onRequest(async (req, res) => {
+  if (req.query.k !== "qpmon610") { res.status(403).send("no"); return; }
+  const bytes = await fetchDbBytes();
+  res.json({ bytes, gb: +(bytes / 1073741824).toFixed(3) });
 });
 
 // [shadow] 야간 정합성 대조(3층) — 매일 새벽1시(KST) 어제 orders 전수를 signature dedup으로 다시 세어 진실 count 산출,
