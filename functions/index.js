@@ -476,8 +476,8 @@ exports.dataMapsTick = functions.region(REGION).runWith({ timeoutSeconds: 300, m
   return null;
 });
 
-// 서버 용량 매일 0시(KST) 자동 측정 — serverops.html이 매번 직접 재측정(느림) 대신 이 노드를 읽기만.
-exports.serverStatsTick = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "2GB" }).pubsub.schedule("0 0 * * *").timeZone("Asia/Seoul").onRun(async () => {
+// 서버 용량 매주 일요일 0시(KST) 자동 측정 — serverops.html이 매번 직접 재측정(느림) 대신 이 노드를 읽기만. (비용: 루트 풀read라 매일→주1회로 완화)
+exports.serverStatsTick = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "2GB" }).pubsub.schedule("0 0 * * 0").timeZone("Asia/Seoul").onRun(async () => {
   const sz = v => v == null ? 0 : Buffer.byteLength(JSON.stringify(v), "utf8");
   const root = (await db.ref("/").once("value")).val() || {};
   let bytes = 0;

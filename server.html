@@ -127,7 +127,7 @@
   const db = firebase.database();
   const DIRECTORS = ["pnomade12@gmail.com", "pnomade13@gmail.com"];
   const $ = id => document.getElementById(id);
-  let UIDS = [], sel = null, heatMap = null, omapMap = null;   // sel = {y,m,d} 선택 날짜(KST)
+  let UIDS = [], sel = null, heatMap = null, omapMap = null, heatCache = {};   // sel = {y,m,d} 선택 날짜(KST). heatCache = 과거날짜별 히트맵 집계 캐시(재read 방지)
 
   $("login-btn").onclick = () => {
     const p = new firebase.auth.GoogleAuthProvider();
@@ -354,28 +354,36 @@
     setTimeout(() => map.invalidateSize(), 150);
     $("heatnote").textContent = "GPS 집계 중… (시간이 걸릴 수 있습니다)";
     try {
-      const CELL = 0.03;
-      const bk0 = Math.floor(dayStart / 86400000), bk1 = Math.floor((dayEnd - 1) / 86400000);   // 선택일 KST 0~24시가 걸친 UTC 버킷
-      const grid = new Map(); let total = 0;
-      await Promise.all(UIDS.map(async uid => {
-        for (let bk = bk0; bk <= bk1; bk++) {
-          try {
-            const o = (await db.ref("v1/users/" + uid + "/gps_track/main/" + bk).once("value")).val();
-            if (!o) continue;
-            Object.values(o).forEach(pt => {
-              const t = Number(pt && pt.ts) || 0, la = Number(pt && pt.lat), ln = Number(pt && pt.lng);
-              if (t >= dayStart && t < dayEnd && la && ln && la > 33 && la < 39 && ln > 124 && ln < 131) {
-                const k = Math.round(la / CELL) + "," + Math.round(ln / CELL);
-                grid.set(k, (grid.get(k) || 0) + 1); total++;
-              }
-            });
-          } catch (e) {}
-        }
-      }));
-      const counts = []; grid.forEach(v => counts.push(v)); counts.sort((a, b) => a - b);
-      const p90 = counts.length ? counts[Math.floor(counts.length * 0.9)] : 0;
-      const pts = []; grid.forEach((v, k) => { const a = k.split(",").map(Number); pts.push([a[0] * CELL, a[1] * CELL, v]); });
-      const scaleMax = p90 ? Math.round(p90 * 0.73) : 340;
+      const cacheKey = String(dayStart);
+      const live = Date.now() < dayEnd;   // 진행 중(오늘)이면 GPS가 계속 늘어 캐시 안 함
+      let pts, total, scaleMax;
+      if (!live && heatCache[cacheKey]) {
+        ({ pts, total, scaleMax } = heatCache[cacheKey]);   // 과거날짜 재조회 — RTDB 재read 0
+      } else {
+        const CELL = 0.03;
+        const bk0 = Math.floor(dayStart / 86400000), bk1 = Math.floor((dayEnd - 1) / 86400000);   // 선택일 KST 0~24시가 걸친 UTC 버킷
+        const grid = new Map(); total = 0;
+        await Promise.all(UIDS.map(async uid => {
+          for (let bk = bk0; bk <= bk1; bk++) {
+            try {
+              const o = (await db.ref("v1/users/" + uid + "/gps_track/main/" + bk).once("value")).val();
+              if (!o) continue;
+              Object.values(o).forEach(pt => {
+                const t = Number(pt && pt.ts) || 0, la = Number(pt && pt.lat), ln = Number(pt && pt.lng);
+                if (t >= dayStart && t < dayEnd && la && ln && la > 33 && la < 39 && ln > 124 && ln < 131) {
+                  const k = Math.round(la / CELL) + "," + Math.round(ln / CELL);
+                  grid.set(k, (grid.get(k) || 0) + 1); total++;
+                }
+              });
+            } catch (e) {}
+          }
+        }));
+        const counts = []; grid.forEach(v => counts.push(v)); counts.sort((a, b) => a - b);
+        const p90 = counts.length ? counts[Math.floor(counts.length * 0.9)] : 0;
+        pts = []; grid.forEach((v, k) => { const a = k.split(",").map(Number); pts.push([a[0] * CELL, a[1] * CELL, v]); });
+        scaleMax = p90 ? Math.round(p90 * 0.73) : 340;
+        if (!live) heatCache[cacheKey] = { pts, total, scaleMax };   // 과거날짜만 캐시(데이터 고정)
+      }
       const hl = L.heatLayer(pts, { radius: 28, blur: 20, max: scaleMax, minOpacity: 0.25, gradient: { 0.0: "#2c7bb6", 0.2: "#00ccbc", 0.4: "#a6d96a", 0.55: "#fee08b", 0.68: "#fdae61", 0.8: "#f4593a", 1.0: "#b30000" } }).addTo(map);
       map.on("move zoom moveend zoomend", () => { if (hl && hl._reset) { try { hl._reset(); } catch (e) {} } });   // 줌·이동 매 프레임 canvas 재앵커 — 앱과 동일(줌 시 어긋남 방지)
       if (pts.length) { fitGG(map, pts.map(p => p[0]), pts.map(p => p[1])); }
