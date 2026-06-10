@@ -141,7 +141,7 @@ async function summarizeUser(uid, now) {
 
   // [HQ#6 설계통합] 신규 gps(prevCur 이후)를 당일 격자 delta로 — dataMaps gps 이중리더 제거. 활동판정 buf와 별개.
   const prevCur = state.cur || 0; const cellDelta = {};
-  newPts.forEach(pt => { if (pt.t > prevCur && pt.la > 33 && pt.la < 39 && pt.ln > 124 && pt.ln < 131) { const key = Math.round(pt.la / 0.03) + "," + Math.round(pt.ln / 0.03); cellDelta[key] = (cellDelta[key] || 0) + 1; } });
+  newPts.forEach(pt => { if (pt.t > prevCur && pt.t >= dayStart && pt.la > 33 && pt.la < 39 && pt.ln > 124 && pt.ln < 131) { const key = Math.round(pt.la / 0.03) + "," + Math.round(pt.ln / 0.03); cellDelta[key] = (cellDelta[key] || 0) + 1; } });
 
   return {
     nick: p.nickname || "", name: p.name || "", phone: p.phone || "", region: p.region || "",
