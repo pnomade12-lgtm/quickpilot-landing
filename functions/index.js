@@ -512,6 +512,21 @@ exports.serverStatsNow = functions.region(REGION).runWith({ timeoutSeconds: 120,
   const bytes = await fetchDbBytes();
   res.json({ bytes, gb: +(bytes / 1073741824).toFixed(3) });
 });
+// [임시 HQ#2-3] 과거 data_cache 1회 백필(?k=·?days=) — 과거 히트맵/분포맵 복원. 실행 후 제거 예정.
+exports.backfillCache = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "1GB" }).https.onRequest(async (req, res) => {
+  if (req.query.k !== "qpmon610") { res.status(403).send("no"); return; }
+  const days = Math.min(Number(req.query.days) || 12, 30);
+  const out = [];
+  for (let i = 1; i <= days; i++) {
+    const dk = kstDate(Date.now() - i * 86400000);
+    const exist = (await db.ref("v1/app/data_cache/" + dk + "/aggregate").once("value")).val();
+    if (exist) { out.push(dk + ":skip"); continue; }
+    const dp = dk.split("-").map(Number);
+    try { const agg = await computeAggregate(dp[0], dp[1], dp[2]); await db.ref("v1/app/data_cache/" + dk).set({ aggregate: agg, builtAt: Date.now() }); out.push(dk + ":built(heat" + (agg.heat ? agg.heat.length : 0) + ")"); }
+    catch (e) { out.push(dk + ":err"); }
+  }
+  res.json({ days, out });
+});
 
 // [shadow] 야간 정합성 대조(3층) — 매일 새벽1시(KST) 어제 orders 전수를 signature dedup으로 다시 세어 진실 count 산출,
 // agg_shadow 증분값과 비교해 드리프트(콜드스타트·재시도 누락)를 원본 기준으로 교정. diff는 agg_shadow_recon에 기록.
