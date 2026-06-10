@@ -66,7 +66,7 @@ async function summarizeUser(uid, now) {
     db.ref(base + "/profile").once("value"),
     db.ref(base + "/app_version").once("value"),
     db.ref(base + "/orders/" + date).once("value"),
-    db.ref(base + "/crash_logs").once("value"),
+    db.ref(base + "/crash_logs").orderByKey().limitToLast(50).once("value"),   // [HQ6] 5분마다 통째read 방지 — 오늘 크래시 카운트엔 최근 50건이면 충분
     db.ref(base + "/user_actions/" + bucket).orderByKey().limitToLast(1).once("value"),
     db.ref("v1/app/agg_state/" + uid).once("value"),
     db.ref("v1/app/agg_shadow/" + date + "/" + uid).once("value"),   // [shadow] 증분 카운트 대조용

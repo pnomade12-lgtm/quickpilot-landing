@@ -128,7 +128,7 @@
     $("cap").textContent = mb.toFixed(0);
     $("percap").textContent = ss.users ? (mb / ss.users).toFixed(1) : "—";
     $("ucount").textContent = ss.users || "—";
-    $("capnote").textContent = "마지막 측정 " + (ss.measuredAt ? ago(ss.measuredAt) : "—") + " · 매일 0시 자동 갱신 · 대부분 GPS·덤프가 차지";
+    $("capnote").textContent = "마지막 측정 " + (ss.measuredAt ? ago(ss.measuredAt) : "—") + " · 주1회(일요일) 자동 갱신 · 대부분 GPS·덤프가 차지";
     // Blaze RTDB 단가: 저장 $5/GB(1GB 무료), 읽기 $1/GB(10GB/월 무료)
     const gb = ss.bytes / 1073741824;
     const billGb = Math.max(0, gb - 1);
@@ -139,20 +139,14 @@
       + "저장 비용은 이렇게 작습니다 — <b>실제로 커질 수 있는 건 읽기(다운로드)</b>이고, 함수·페이지가 데이터를 얼마나 읽느냐에 달립니다. 최근 함수 주기↓·통계 캐시로 읽기를 줄였습니다. 정확한 읽기량·청구액은 Firebase 콘솔 사용량(Usage)에서 확인.";
   }
 
-  // 서버 용량 정밀 측정 — 노드별 실제 JSON 바이트 합산(느림). 끝나면 server_stats에 저장 → 다음 열람 때 즉시 표시.
+  // [HQ5] 루트/유저별 풀스캔(~2.3GB read, 1클릭 약 $2.3) 폐기 → Cloud Monitoring 측정(serverStatsNow, 무료).
   async function measureCapacity() {
-    const token = TOKEN, uids = UIDS, btn = $("cap-refresh");
-    btn.disabled = true;
-    const fetchSize = async path => { try { const r = await fetch(DB_URL + "/" + path + ".json?auth=" + token); return (await r.blob()).size; } catch (e) { return 0; } };
+    const btn = $("cap-refresh"); btn.disabled = true;
+    $("capnote").textContent = "측정 중…";
     try {
-      let bytes = 0;
-      const root = await (await fetch(DB_URL + "/.json?shallow=true&auth=" + token)).json();
-      for (const k of Object.keys(root || {})) { if (k !== "v1") bytes += await fetchSize(k); }
-      const v1 = await (await fetch(DB_URL + "/v1.json?shallow=true&auth=" + token)).json();
-      for (const k of Object.keys(v1 || {})) { if (k !== "users") bytes += await fetchSize("v1/" + k); }
-      let done = 0;
-      for (const uid of uids) { bytes += await fetchSize("v1/users/" + uid); done++; $("capnote").textContent = "정밀 측정 중… 유저 " + done + "/" + uids.length; }
-      const ss = { bytes, users: uids.length, measuredAt: Date.now() };
+      const r = await fetch("https://asia-southeast1-quickpilot-39d72.cloudfunctions.net/serverStatsNow?k=qpmon610");
+      const j = await r.json();
+      const ss = { bytes: j.bytes, users: UIDS.length, measuredAt: Date.now(), src: "monitoring" };
       try { await db.ref("v1/app/server_stats").set(ss); } catch (e) {}
       displayCap(ss);
     } catch (e) { $("capnote").textContent = "용량 측정 실패: " + e.message; }

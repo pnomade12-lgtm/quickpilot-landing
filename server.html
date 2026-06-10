@@ -127,7 +127,7 @@
   const db = firebase.database();
   const DIRECTORS = ["pnomade12@gmail.com", "pnomade13@gmail.com"];
   const $ = id => document.getElementById(id);
-  let UIDS = [], sel = null, heatMap = null, omapMap = null, heatCache = {};   // sel = {y,m,d} 선택 날짜(KST). heatCache = 과거날짜별 히트맵 집계 캐시(재read 방지)
+  let UIDS = [], sel = null, heatMap = null, omapMap = null;   // sel = {y,m,d} 선택 날짜(KST)
 
   $("login-btn").onclick = () => {
     const p = new firebase.auth.GoogleAuthProvider();
@@ -191,7 +191,7 @@
           renderPlat(o.platform || {}, o.total || 0);
           drawChart(agg.hourly || new Array(24).fill(0));
           drawHexCached(agg.hex || []);
-          drawHeat(dayStart, dayEnd);   // 히트맵은 어제처럼 실시간 GPS 스캔(모양 동일 보장). 분포맵 hex만 캐시.
+          drawHeat(agg.heat, agg.heatMax);   // [HQ4] 히트맵도 캐시 집계(aggregate.heat) 재사용
           return;
         }
       } catch (e) {}
@@ -222,10 +222,10 @@
     if (isToday) { try { maps = (await db.ref("v1/app/data_maps/" + ds).once("value")).val(); } catch (e) {} }
     if (maps && maps.heat) {
       drawHexCached(maps.hex || []);
-      drawHeat(dayStart, dayEnd);   // 히트맵은 실시간 GPS 스캔(어제와 동일). 분포맵 hex만 캐시.
+      drawHeat(maps.heat, maps.heatMax);   // [HQ4] 히트맵도 data_maps.heat 재사용
     } else {
       drawOrderMap(originCnt);
-      drawHeat(dayStart, dayEnd);
+      drawHeat([], 0);   // data_maps 없음 — 히트맵 비움(raw 풀스캔 안 함)
     }
   }
 
@@ -344,7 +344,7 @@
   }
 
   // 운행 히트맵 — 열 때마다 현재 GPS(KST 0시~지금)를 직접 집계해 OSM 위 부드러운 열분포로. 정적 파일 X.
-  async function drawHeat(dayStart, dayEnd) {
+  function drawHeat(heatArr, heatMax) {
     const el = $("heat");
     if (heatMap) { heatMap.remove(); heatMap = null; }   // 날짜 변경 시 재생성
     el.classList.remove("movemode"); const hb = el.querySelector(".movehint"); if (hb) hb.remove();
@@ -352,38 +352,11 @@
     heatMap = map;
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
     setTimeout(() => map.invalidateSize(), 150);
-    $("heatnote").textContent = "GPS 집계 중… (시간이 걸릴 수 있습니다)";
     try {
-      const cacheKey = String(dayStart);
-      const live = Date.now() < dayEnd;   // 진행 중(오늘)이면 GPS가 계속 늘어 캐시 안 함
-      let pts, total, scaleMax;
-      if (!live && heatCache[cacheKey]) {
-        ({ pts, total, scaleMax } = heatCache[cacheKey]);   // 과거날짜 재조회 — RTDB 재read 0
-      } else {
-        const CELL = 0.03;
-        const bk0 = Math.floor(dayStart / 86400000), bk1 = Math.floor((dayEnd - 1) / 86400000);   // 선택일 KST 0~24시가 걸친 UTC 버킷
-        const grid = new Map(); total = 0;
-        await Promise.all(UIDS.map(async uid => {
-          for (let bk = bk0; bk <= bk1; bk++) {
-            try {
-              const o = (await db.ref("v1/users/" + uid + "/gps_track/main/" + bk).once("value")).val();
-              if (!o) continue;
-              Object.values(o).forEach(pt => {
-                const t = Number(pt && pt.ts) || 0, la = Number(pt && pt.lat), ln = Number(pt && pt.lng);
-                if (t >= dayStart && t < dayEnd && la && ln && la > 33 && la < 39 && ln > 124 && ln < 131) {
-                  const k = Math.round(la / CELL) + "," + Math.round(ln / CELL);
-                  grid.set(k, (grid.get(k) || 0) + 1); total++;
-                }
-              });
-            } catch (e) {}
-          }
-        }));
-        const counts = []; grid.forEach(v => counts.push(v)); counts.sort((a, b) => a - b);
-        const p90 = counts.length ? counts[Math.floor(counts.length * 0.9)] : 0;
-        pts = []; grid.forEach((v, k) => { const a = k.split(",").map(Number); pts.push([a[0] * CELL, a[1] * CELL, v]); });
-        scaleMax = p90 ? Math.round(p90 * 0.73) : 340;
-        if (!live) heatCache[cacheKey] = { pts, total, scaleMax };   // 과거날짜만 캐시(데이터 고정)
-      }
+      // [HQ4] raw GPS 풀스캔 제거 — 서버 집계 heat(data_maps/data_cache.aggregate) 그대로 재사용.
+      const pts = (heatArr || []).map(h => [h.lat, h.lng, h.w]).filter(p => Number.isFinite(p[0]) && Number.isFinite(p[1]));
+      const total = pts.reduce((s, p) => s + (p[2] || 0), 0);
+      const scaleMax = heatMax || 340;
       const hl = L.heatLayer(pts, { radius: 28, blur: 20, max: scaleMax, minOpacity: 0.25, gradient: { 0.0: "#2c7bb6", 0.2: "#00ccbc", 0.4: "#a6d96a", 0.55: "#fee08b", 0.68: "#fdae61", 0.8: "#f4593a", 1.0: "#b30000" } }).addTo(map);
       map.on("move zoom moveend zoomend", () => { if (hl && hl._reset) { try { hl._reset(); } catch (e) {} } });   // 줌·이동 매 프레임 canvas 재앵커 — 앱과 동일(줌 시 어긋남 방지)
       if (pts.length) { fitGG(map, pts.map(p => p[0]), pts.map(p => p[1])); }
