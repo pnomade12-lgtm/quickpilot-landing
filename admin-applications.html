@@ -293,6 +293,7 @@
       if (filter === "all") return s !== "deleted";   // 전체 = 삭제 제외
       return filter === s;
     });
+    if (filter !== "pending") shown.reverse();   // 신규=오래된 순(마감 임박 먼저), 그 외 탭=최신 순
 
     if (shown.length === 0) {
       listEl.innerHTML = '<div class="empty">해당 신청이 없습니다.</div>';
