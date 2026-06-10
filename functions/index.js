@@ -535,6 +535,12 @@ exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540
   }));
   await db.ref("v1/app/agg_shadow_recon/" + date).set({ at: Date.now(), nDiff: Object.keys(diffs).length, nUsers: uids.length, diffs });
   await db.ref("v1/app/agg_shadow_seen/" + date).remove().catch(() => {});   // 어제 seen은 대조 끝나 불필요 — 누적 방지(HQ 6번)
+  // [HQ6] 누적 dedup·캐시 정리 — 날짜 경로 remove만(read 0). 당일용 seen·오늘전용 maps는 전일, 과거조회 캐시는 7일 보존.
+  await db.ref("v1/app/data_live_seen/" + date).remove().catch(() => {});   // 당일 dedup용 — 어제분 불필요(data_live 집계는 유지)
+  await db.ref("v1/app/data_maps/" + date).remove().catch(() => {});         // data_maps는 오늘만 사용(과거 조회는 data_cache)
+  const oldK = kstDate(Date.now() - 8 * 86400000);
+  await db.ref("v1/app/data_cache/" + oldK).remove().catch(() => {});         // 과거 집계 캐시 7일 보존
+  await db.ref("v1/app/agg_shadow_recon/" + oldK).remove().catch(() => {});   // recon 기록 7일 보존
   console.log("reconcileShadow", date, "diffs", Object.keys(diffs).length, "/", uids.length);
   return null;
 });
