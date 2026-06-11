@@ -92,6 +92,24 @@
   .empty { text-align:center; color:var(--dim); padding:60px 20px; font-size:14px; }
   .consent-chk { font-size:11px; color:var(--dim); margin-top:6px; }
   .consent-chk .bad { color:var(--hot); }
+
+  /* 문자 문구 설정 패널 */
+  .tpl-btn { position:fixed; bottom:24px; right:24px; z-index:100;
+    background:var(--card); border:1px solid var(--line); color:var(--dim);
+    border-radius:8px; padding:5px 9px; font-size:18px; line-height:1; cursor:pointer; }
+  .tpl-btn:hover { border-color:#555; }
+  .tpl-panel { background:#0e0e0e; border:1px solid var(--line); border-radius:12px;
+    padding:14px; margin-bottom:16px; }
+  .tpl-panel .hint { font-size:12px; color:var(--dim); margin-bottom:8px; }
+  .tpl-panel .hint code { color:var(--warn); font-size:11px; }
+  .tpl-ta { width:100%; min-height:80px; background:var(--bg); border:1px solid var(--line);
+    border-radius:8px; color:var(--fg); padding:8px 10px; font-size:13px;
+    font-family:inherit; resize:vertical; }
+  .tpl-actions { display:flex; gap:8px; margin-top:8px; }
+  .tpl-save { background:var(--ok); color:#fff; border:0; border-radius:8px;
+    padding:8px 18px; font-size:13px; font-weight:700; cursor:pointer; }
+  .tpl-cancel { background:none; border:1px solid var(--line); color:var(--dim);
+    border-radius:8px; padding:8px 14px; font-size:13px; cursor:pointer; }
 </style>
 
 </head><body>
@@ -107,7 +125,16 @@
   <div id="app" style="display:none;">
     <div class="top">
       <h1>베타 신청 <span class="pop">관리</span></h1>
-      <span class="who"><span id="who-email"></span> <button class="signout" id="signout">로그아웃</button></span>
+      <span class="who"><span id="who-email"></span> <button class="tpl-btn" id="tpl-toggle">💬</button> <button class="signout" id="signout">로그아웃</button></span>
+    </div>
+
+    <div id="tpl-panel" class="tpl-panel" style="display:none;">
+      <div class="hint"><code>{이름}</code> 은 신청자 이름 끝 두 글자로 자동 치환됩니다. 가이드 링크 등은 문구 안에 직접 입력하세요.</div>
+      <textarea id="tpl-ta" class="tpl-ta" placeholder="예) {이름}님, QuickPilot 베타 승인됐습니다! 아래 링크에서 설치해 주세요."></textarea>
+      <div class="tpl-actions">
+        <button class="tpl-save" id="tpl-save">저장</button>
+        <button class="tpl-cancel" id="tpl-cancel">닫기</button>
+      </div>
     </div>
 
     <div class="filter">
@@ -131,6 +158,7 @@
   const $ = id => document.getElementById(id);
   const loginEl = $("login"), appEl = $("app"), listEl = $("list");
   let cache = {};       // id -> application
+  let smsTemplate = ""; // RTDB landing/sms_template
   let expiredPhones = new Set();   // 미설치 72h 만료자 phone — 재신청 시 승인 페이지에서 경고
   let expiredNames = new Set();    // 만료자 이름(번호 바꿔 재신청해도 이름으로 대조)
   let filter = "pending";   // 기본 = 신규 피드. 승인·거절은 각 탭으로.
@@ -174,6 +202,12 @@
       listEl.innerHTML = '<div class="empty">로드 실패: ' + err.message + '</div>';
     });
     // 미설치 72h 만료자 명단 — 같은 번호로 재신청 들어오면 경고하려고 구독
+    // 문자 문구 구독
+    db.ref("landing/sms_template").on("value", snap => {
+      smsTemplate = snap.val() || "";
+      const ta = document.getElementById("tpl-ta");
+      if (ta) ta.value = smsTemplate;
+    });
     db.ref("licenses").on("value", snap => {
       const lic = snap.val() || {};
       const exp = Object.keys(lic).map(p => lic[p]).filter(l => l && l.status === "expired");
@@ -225,6 +259,16 @@
           !confirm("⚠ 주의\n\n이 신청자 (" + nm + " / " + ph + ") 는 과거 '미설치 72시간 만료' 이력이 있습니다 (" + (byP ? "번호" : "") + (byP && byN ? "·" : "") + (byN ? "이름" : "") + " 일치).\n\n그래도 승인(라이선스 발급)하시겠습니까?")) {
         return;
       }
+      // SMS 미리채움 — 유저 탭 컨텍스트 안에서 (db.set 이전)
+      if (ph && smsTemplate) {
+        const shortName = nm.slice(1) || "";
+        const body = smsTemplate.replace(/\{이름\}/g, shortName);
+        location.href = "sms:" + ph + "?body=" + encodeURIComponent(body);
+      } else if (!ph) {
+        flashMsg("번호 없음 — 문자 생략, status만 처리합니다.", false);
+      } else {
+        flashMsg("문자 문구 미설정 — 문자 생략. 상단 '문자 문구 설정'에서 입력하세요.", false);
+      }
     }
     db.ref(`applications/${id}/status`).set(status)
       .then(() => {
@@ -250,19 +294,23 @@
       })
       .catch(e => alert("상태 변경 실패: " + e.message));
   }
-  function flashLic(msg) {
+  function flashMsg(msg, ok = true) {
     let el = document.getElementById("lic-flash");
     if (!el) {
       el = document.createElement("div");
       el.id = "lic-flash";
-      el.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#10391d;color:#34c759;border:1px solid #34c759;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;z-index:999;";
+      el.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;z-index:999;max-width:calc(100vw - 32px);text-align:center;";
       document.body.appendChild(el);
     }
+    el.style.background = ok ? "#10391d" : "#3a1a0a";
+    el.style.color = ok ? "#34c759" : "#ff9f0a";
+    el.style.border = ok ? "1px solid #34c759" : "1px solid #ff9f0a";
     el.textContent = msg;
     el.style.display = "block";
     clearTimeout(el._t);
-    el._t = setTimeout(() => { el.style.display = "none"; }, 2500);
+    el._t = setTimeout(() => { el.style.display = "none"; }, 3000);
   }
+  function flashLic(msg) { flashMsg(msg, true); }
   let memoTimers = {};
   function setMemo(id, memo) {
     clearTimeout(memoTimers[id]);
@@ -347,6 +395,25 @@
     if (!confirm("영구 삭제하시겠습니까? 되돌릴 수 없습니다.")) return;
     db.ref(`applications/${id}`).remove().catch(e => alert("영구 삭제 실패: " + e.message));
   }
+
+  // 문구 편집 패널
+  $("tpl-toggle").onclick = () => {
+    const panel = $("tpl-panel");
+    const open = panel.style.display !== "none";
+    panel.style.display = open ? "none" : "block";
+    if (!open) {
+      const ta = $("tpl-ta");
+      ta.value = smsTemplate;
+      ta.focus();
+    }
+  };
+  $("tpl-cancel").onclick = () => { $("tpl-panel").style.display = "none"; };
+  $("tpl-save").onclick = () => {
+    const val = $("tpl-ta").value;
+    db.ref("landing/sms_template").set(val)
+      .then(() => { flashMsg("문구 저장됨", true); $("tpl-panel").style.display = "none"; })
+      .catch(e => flashMsg("저장 실패: " + e.message, false));
+  };
 
   window._st = setStatus;
   window._memo = setMemo;
