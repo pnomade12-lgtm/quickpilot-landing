@@ -629,24 +629,25 @@ exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540
   await db.ref("v1/app/agg_shadow_seen/" + date).remove().catch(() => {});   // 어제 seen은 대조 끝나 불필요 — 누적 방지(HQ 6번)
   // [HQ6] 누적 dedup·캐시 정리 — 날짜 경로 remove만(read 0). 당일용 seen·오늘전용 maps는 전일, 과거조회 캐시는 7일 보존.
   await db.ref("v1/app/data_live_seen/" + date).remove().catch(() => {});   // 당일 dedup용 — 어제분 불필요(data_live 집계는 유지)
-  // [HQ#2-2] data_maps(전일) 삭제 전, 과거 히트맵·분포맵 영구소스 data_cache 보장(없으면 computeAggregate 생성 = 일일 자동 백필)
-  const dcExist = (await db.ref("v1/app/data_cache/" + date + "/aggregate").once("value")).val();
-  if (!dcExist) {
-    const dp = date.split("-").map(Number);
-    try { await db.ref("v1/app/data_cache/" + date).set({ aggregate: await computeAggregate(dp[0], dp[1], dp[2]), builtAt: Date.now() }); } catch (e) {}
-  }
-  // [HQ#3-2 가드2] dataMaps 증분 자가대조 — 증분 heat(data_maps) vs 풀 heat(data_cache.aggregate). 비순차 GPS 누락 흡수. drift 기록(절감 끝나도 상시 유지).
+  // [HQ#3-2 가드2 / HQ 6-12 순서이동] dataMaps 증분 자가대조 + 전일분 정리. 백필 앞으로 이동 — 백필이 죽어도 가드·정리는 보존.
+  // 백필 전이라 fullHeat는 캐시 기존 분만 반영. 백필이 살면 다음 run부터 정합 회복. 첫 회 driftPct=null(0 노출 방지).
   const incHeat = ((await db.ref("v1/app/data_maps/" + date).once("value")).val() || {}).heat || [];
   const fullHeat = ((await db.ref("v1/app/data_cache/" + date + "/aggregate").once("value")).val() || {}).heat || [];
   const sumW = arr => arr.reduce((s, h) => s + (h.w || 0), 0);
   const incW = sumW(incHeat), fullW = sumW(fullHeat);
-  await db.ref("v1/app/data_maps_recon/" + date).set({ at: Date.now(), incPts: incHeat.length, fullPts: fullHeat.length, incW, fullW, driftPct: fullW ? +(((incW - fullW) / fullW) * 100).toFixed(1) : 0 });
+  await db.ref("v1/app/data_maps_recon/" + date).set({ at: Date.now(), incPts: incHeat.length, fullPts: fullHeat.length, incW, fullW, driftPct: fullW ? +(((incW - fullW) / fullW) * 100).toFixed(1) : null });
   await db.ref("v1/app/data_maps/" + date).remove().catch(() => {});         // data_maps는 오늘만(과거 조회는 data_cache)
   await db.ref("v1/app/data_maps_state/" + date).remove().catch(() => {});   // 어제 격자·커서 정리(전일분)
   // data_cache는 영구 요약본(날짜당 KB) — 삭제 안 함. recon 기록만 7일 보존.
   const oldK = kstDate(Date.now() - 8 * 86400000);
   await db.ref("v1/app/agg_shadow_recon/" + oldK).remove().catch(() => {});   // recon 기록 7일 보존
   await db.ref("v1/app/data_maps_recon/" + oldK).remove().catch(() => {});    // dataMaps 자가대조 기록 7일 보존
+  // [HQ#2-2 / HQ 6-12 맨뒤배치] data_cache 영구소스 자동 백필 — 무거움(어제 전체 gps 풀계산). OOM/timeout 시 위 가드·정리는 이미 완료.
+  const dcExist = (await db.ref("v1/app/data_cache/" + date + "/aggregate").once("value")).val();
+  if (!dcExist) {
+    const dp = date.split("-").map(Number);
+    try { await db.ref("v1/app/data_cache/" + date).set({ aggregate: await computeAggregate(dp[0], dp[1], dp[2]), builtAt: Date.now() }); } catch (e) {}
+  }
   console.log("reconcileShadow", date, "diffs", Object.keys(diffs).length, "/", uids.length);
   return null;
 });
