@@ -94,8 +94,9 @@
     <div class="card">
       <h4>감지된 오더 (00시 → 24시)</h4>
       <div class="stat3">
-        <div><div class="n" id="od-total">—</div><div class="u">총 감지</div></div>
+        <div><div class="n" id="od-total">—</div><div class="u">총 감지(이벤트)</div></div>
         <div><div class="n" id="od-avg">—</div><div class="u">1인 평균</div></div>
+        <div><div class="n" id="od-unique">—</div><div class="u">고유 콜(시장)</div></div>
       </div>
       <div class="kv" id="od-plat" style="margin-top:12px;font-size:15px;">계산 중…</div>
       <div class="sharebar" id="od-share"></div>
@@ -178,7 +179,7 @@
     const ds = dateStr(sel);
     const dayStart = Date.UTC(sel.y, sel.m - 1, sel.d) - 9 * 3600000, dayEnd = dayStart + 86400000;   // KST 00:00~24:00
     const isToday = ds === dateStr(todayKST());
-    $("od-total").textContent = "—"; $("od-avg").textContent = "—"; $("od-plat").textContent = "계산 중…"; $("od-share").innerHTML = "";
+    $("od-total").textContent = "—"; $("od-avg").textContent = "—"; $("od-unique").textContent = "—"; $("od-plat").textContent = "계산 중…"; $("od-share").innerHTML = "";
 
     // 과거 날짜 = 서버 캐시(data_cache)만 읽음 — 유저별 풀스캔(특히 GPS) 없이 미리 계산된 집계·지도 그대로 사용.
     if (!isToday) {
@@ -188,6 +189,7 @@
           const o = agg.orders;
           $("od-total").textContent = o.total || 0;
           $("od-avg").textContent = o.avgPerUser != null ? o.avgPerUser : (o.activeUsers ? (o.total / o.activeUsers).toFixed(1) : "0");
+          $("od-unique").textContent = o.distinctCalls != null ? o.distinctCalls : "—";   // 고유 콜(시장 중복제거) — 캐시에 있으면 표시
           renderPlat(o.platform || {}, o.total || 0);
           drawChart(agg.hourly || new Array(24).fill(0));
           drawHexCached(agg.hex || []);
@@ -214,6 +216,7 @@
     }));
     $("od-total").textContent = totalOrd;
     $("od-avg").textContent = activeUsers ? (totalOrd / activeUsers).toFixed(1) : "0";
+    if (isToday) { try { const dl = (await db.ref("v1/app/data_live/" + ds + "/total").once("value")).val(); $("od-unique").textContent = dl != null ? dl : "—"; } catch (e) {} }   // 고유 콜 = data_live total 1회 읽기(과거 캐시 부재 폴백이면 "—" 유지)
     renderPlat(plat, totalOrd);
     drawChart(hours);
 

@@ -702,7 +702,15 @@
   // 상단 박스 탭 → 해당 지표 상세만 토스트로.
   $("stoast").onclick = userCloseTop;
   document.querySelectorAll(".stat .box").forEach(b => {
-    b.onclick = () => { const w = b.dataset.stat; $("st-title").textContent = w; $("st-body").innerHTML = statDetail(w); openLayer("stoast"); };
+    b.onclick = async () => {
+      const w = b.dataset.stat; $("st-title").textContent = w; $("st-body").innerHTML = statDetail(w); openLayer("stoast");
+      if (w === "감지") {   // 박스 탭 시 시장 고유 콜(유저 교차 중복제거) 1회 읽어 병기 — 위 숫자는 감지 이벤트 합
+        try { const t = todayKST(), ds = t.y + "-" + String(t.m).padStart(2, "0") + "-" + String(t.d).padStart(2, "0");
+          const dl = (await db.ref("v1/app/data_live/" + ds + "/total").once("value")).val();
+          if (dl != null) $("st-body").innerHTML += "<br><span style='color:var(--dim)'>시장 고유 콜 " + dl + " (중복제거)</span>";
+        } catch (e) {}
+      }
+    };
   });
   function statDetail(which) {
     const now = Date.now();
