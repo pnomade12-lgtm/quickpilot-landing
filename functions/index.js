@@ -694,23 +694,37 @@ exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72
 // [6/16] 주선사 감지수(cleanCount) 자동 재집계 — data_live(orderLive가 전 유저 일별 중복제거로 누적하는 주선사별 감지) 전 날짜 합산을
 // 기존 cleanCount(과거 1회 백필 base)와 비교해 더 크면 갱신(줄이지 않음). 매시간 → 모니터 열 때 최신·활발 주선사 증가.
 async function recountAgencies() {
-  const dl = (await db.ref("v1/app/data_live").once("value")).val() || {};
-  const agg = {};
-  Object.values(dl).forEach(d => { const a = d && d.agencies; if (a) for (const ph in a) agg[ph] = (agg[ph] || 0) + (Number(a[ph]) || 0); });
+  const uids = await listUids();
+  const byAg = {};   // phone -> Set("출발동|도착동")  — cleanCount 정의 = 주선사별 출발+도착 중복제거 감지수
+  for (const uid of uids) {
+    let days = null;
+    try { days = (await db.ref("v1/users/" + uid + "/orders").once("value")).val(); } catch (e) {}
+    if (!days) continue;
+    for (const d in days) {
+      const o = days[d]; if (!o) continue;
+      for (const k in o) {
+        const r = o[k]; if (!r || !r.agency) continue;
+        const ph = String(r.agency).replace(/[^0-9]/g, ""); if (!ph) continue;
+        const od = dongFrom(r.origin), dd = dongFrom(r.dest);
+        if (!od && !dd) continue;
+        (byAg[ph] = byAg[ph] || new Set()).add((od || "?") + "|" + (dd || "?"));
+      }
+    }
+  }
   const ags = (await db.ref("v1/agencies").once("value")).val() || {};
   const upd = {}; let n = 0;
   for (const key in ags) {
     const a = ags[key]; if (!a) continue;
     const ph = String(a.phone || "").replace(/[^0-9]/g, "");
-    const live = agg[ph] || 0, cur = Number(a.cleanCount) || 0;
-    if (live > cur) { upd[key + "/cleanCount"] = live; n++; }   // 과거 base는 보존(안 줄임), data_live 누적이 넘으면 그 값으로 갱신
+    const cnt = byAg[ph] ? byAg[ph].size : 0;
+    if (cnt > 0 && cnt !== (Number(a.cleanCount) || 0)) { upd[key + "/cleanCount"] = cnt; n++; }   // 전체 orders 재집계 실값으로 갱신(상위 포함 정확)
   }
   if (Object.keys(upd).length) await db.ref("v1/agencies").update(upd);
-  console.log("recountAgencies updated", n, "/", Object.keys(ags).length);
+  console.log("recountAgencies(orders dedup) updated", n, "/", Object.keys(ags).length);
   return n;
 }
-exports.agencyRecountTick = functions.region(REGION).runWith({ timeoutSeconds: 120, memory: "256MB" }).pubsub.schedule("0 * * * *").onRun(async () => { await recountAgencies(); return null; });
-exports.agencyRecountNow = functions.region(REGION).runWith({ timeoutSeconds: 120, memory: "256MB" }).https.onRequest(async (req, res) => {
+exports.agencyRecountTick = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "512MB" }).pubsub.schedule("0 * * * *").timeZone("Asia/Seoul").onRun(async () => { await recountAgencies(); return null; });
+exports.agencyRecountNow = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "512MB" }).https.onRequest(async (req, res) => {
   if (req.query.k !== "qpmon610") { res.status(403).send("no"); return; }
   try { const n = await recountAgencies(); res.json({ updated: n }); } catch (e) { res.status(500).json({ error: String(e && e.message || e) }); }
 });
