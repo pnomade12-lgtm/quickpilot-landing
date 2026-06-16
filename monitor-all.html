@@ -273,7 +273,7 @@
       const dl = (await db.ref("v1/app/data_live").once("value")).val() || {};
       const liveAgg = {};
       Object.values(dl).forEach(d => { const ag = d && d.agencies; if (ag) for (const ph in ag) liveAgg[ph] = (liveAgg[ph] || 0) + (Number(ag[ph]) || 0); });
-      const heartN = a => (a.hearts != null ? Number(a.hearts) : (a.heartedBy ? Object.keys(a.heartedBy).length : 0)) || 0;
+      const heartN = a => { const h = a.hearts; if (h && typeof h === "object") return Object.keys(h).length; if (h != null) return Number(h) || 0; return a.heartedBy ? Object.keys(a.heartedBy).length : 0; };   // hearts={uid:true} 객체면 누른 사람 수, 숫자면 그대로
       const cntN = a => { const ph = (a.phone || "").replace(/[^0-9]/g, ""); const live = liveAgg[ph] || 0, clean = (a.cleanCount != null ? Number(a.cleanCount) : 0) || 0; return Math.max(live, clean); };   // 둘 중 큰 값. data_live(6/12~ 본격, 기간 짧음)가 옛 cleanCount 백필보다 작은 주선사 다수 → 안 줄도록 max. 활발 주선사는 data_live로 갱신. 전 주선사 정확 갱신은 서버 재집계 별건.
       agencyList = Object.values(o).filter(a => a && a.name)
         .map(a => ({ name: a.name, phone: a.phone || "", cnt: cntN(a), heart: heartN(a), lastTs: a.lastTs || 0 }))
