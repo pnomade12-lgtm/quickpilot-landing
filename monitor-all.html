@@ -268,8 +268,13 @@
     const box = $("ag-body"); box.textContent = "불러오는 중…";
     try {
       const o = (await db.ref("v1/agencies").once("value")).val() || {};
+      // [6/16] 주선사 감지수 = 열 때마다 data_live(orderLive가 전 유저 일별 중복제거로 실시간 누적) 전 날짜 합산 → 화면 열 때 갱신.
+      // cleanCount(과거 1회 백필·자동갱신 없어 정체)는 data_live에 없는 주선사만 폴백.
+      const dl = (await db.ref("v1/app/data_live").once("value")).val() || {};
+      const liveAgg = {};
+      Object.values(dl).forEach(d => { const ag = d && d.agencies; if (ag) for (const ph in ag) liveAgg[ph] = (liveAgg[ph] || 0) + (Number(ag[ph]) || 0); });
       const heartN = a => (a.hearts != null ? Number(a.hearts) : (a.heartedBy ? Object.keys(a.heartedBy).length : 0)) || 0;
-      const cntN = a => (a.cleanCount != null ? Number(a.cleanCount) : 0) || 0;   // 정리된 감지수(출발+도착 중복제거). 부풀린 count로 폴백 안 함.
+      const cntN = a => { const ph = (a.phone || "").replace(/[^0-9]/g, ""); const live = liveAgg[ph] || 0, clean = (a.cleanCount != null ? Number(a.cleanCount) : 0) || 0; return Math.max(live, clean); };   // 둘 중 큰 값. data_live(6/12~ 본격, 기간 짧음)가 옛 cleanCount 백필보다 작은 주선사 다수 → 안 줄도록 max. 활발 주선사는 data_live로 갱신. 전 주선사 정확 갱신은 서버 재집계 별건.
       agencyList = Object.values(o).filter(a => a && a.name)
         .map(a => ({ name: a.name, phone: a.phone || "", cnt: cntN(a), heart: heartN(a), lastTs: a.lastTs || 0 }))
         .sort((x, y) => y.cnt - x.cnt || y.heart - x.heart || y.lastTs - x.lastTs);
