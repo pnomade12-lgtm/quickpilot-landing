@@ -656,6 +656,11 @@ exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540
 exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72-default-rtdb")
   .ref("/v1/users/{uid}/orders/{date}/{orderId}").onWrite(async (change, ctx) => {
     const after = change.after.val(); if (!after) return null;   // 삭제는 무시
+    // [다이어트] 주선사 감지건수 = 신규 감지(before 없음)·주선사 있을 때 cleanCount +1. 매시간 풀스캔(agencyRecountTick) 폐기·이벤트 증분으로 다운로드 최소. 기존 cleanCount(재집계 base)에 미래 신규만 누적.
+    if (after.agency && !change.before.exists()) {
+      const aph = String(after.agency).replace(/[^0-9]/g, "");
+      if (aph) await db.ref("v1/agencies/" + aph + "/cleanCount").transaction(c => (Number(c) || 0) + 1);
+    }
     const date = ctx.params.date;
     // [shadow] 감지 카운트 — liveKeyParts 게이트 앞(파싱실패 오더도 reconcile dedup엔 포함되므로 정의 일치). 별도 노드, 기존 동작 무관.
     {
@@ -721,7 +726,7 @@ async function recountAgencies() {
   console.log("recountAgencies(raw count) updated", n, "/", Object.keys(ags).length);
   return n;
 }
-exports.agencyRecountTick = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "512MB" }).pubsub.schedule("0 * * * *").timeZone("Asia/Seoul").onRun(async () => { await recountAgencies(); return null; });
+exports.agencyRecountTick = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "512MB" }).pubsub.schedule("0 3 * * 0").timeZone("Asia/Seoul").onRun(async () => { await recountAgencies(); return null; });   // [다이어트] 매시간 풀스캔 폐기 → 주1회(일 03시) 보정만. 평소 누적은 orderLive 이벤트 증분이 담당.
 exports.agencyRecountNow = functions.region(REGION).runWith({ timeoutSeconds: 540, memory: "512MB" }).https.onRequest(async (req, res) => {
   if (req.query.k !== "qpmon610") { res.status(403).send("no"); return; }
   try { const n = await recountAgencies(); res.json({ updated: n }); } catch (e) { res.status(500).json({ error: String(e && e.message || e) }); }
