@@ -1,0 +1,230 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QP 데이터 리포트 3호 · 콜이 많은 곳은 좋은 곳일까</title>
+<style>
+:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}
+.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}
+h1{font-size:25px;font-weight:800;line-height:1.3;margin:6px 0 22px}
+.sec{margin-bottom:32px}
+.slabel{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--gold);margin-bottom:1px}
+.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:800;font-size:15px;margin-right:8px}
+h2{font-size:18.5px;font-weight:800;display:flex;align-items:center;margin-bottom:10px}
+h2 span.t{flex:1}
+p{font-size:14.5px;margin:8px 0;word-break:keep-all}
+.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0}
+.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:10px}
+.hours{display:flex;align-items:flex-end;gap:2px;height:88px;margin:26px 0 4px;position:relative}
+.hours .h{flex:1;background:#d8ccb2;border-radius:2px 2px 0 0}
+.hours .h.peak{background:var(--gold)}
+.hours .mark{position:absolute;top:-10px;bottom:-8px;border:2.5px solid var(--red);border-radius:16px;pointer-events:none;box-sizing:border-box}
+.hours .mark .ml{position:absolute;top:-19px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--red);font-weight:800;white-space:nowrap;background:var(--card);padding:1px 5px;border-radius:4px;line-height:1.2}
+.hlab{display:flex;gap:2px;font-size:9.5px;color:var(--ts);margin-top:3px;position:relative}
+.hlab span{flex:1;text-align:center;font-variant-numeric:tabular-nums}
+.hlab span.end{position:absolute;right:0;top:0;flex:none}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--ts);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
+.eqrow{display:flex;align-items:center;gap:8px;margin:14px 0}
+.eqrow .ebox{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 10px;text-align:center;font-size:13.5px;font-weight:800;line-height:1.4}
+.eqrow .eq{font-size:20px;font-weight:800;color:var(--gold);flex:0 0 auto}
+.dwell .dl{display:flex;align-items:center;gap:9px;margin:10px 0}
+.dwell .dl .dn{flex:0 0 70px;font-size:12.5px;font-weight:800}
+.dwell .dl .dw{flex:1;height:16px;background:#ece3cf;border-radius:8px;overflow:hidden}
+.dwell .dl .dw i{display:block;height:100%;border-radius:8px}
+.dwell .dl .dtag{flex:0 0 auto;font-size:11px;color:var(--ts);font-weight:700}
+.zones{display:flex;gap:6px;margin:14px 0}
+.zones .z{flex:1;border-radius:10px;padding:13px 8px;text-align:center;color:#fff}
+.zones .z .zt{font-size:13px;font-weight:800;margin-bottom:4px}
+.zones .z .zd{font-size:10.5px;line-height:1.45;opacity:.95}
+.card .cdesc{font-size:13px;margin:2px 0 0;color:var(--tm);line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chips span{background:#efe7d4;color:#6b5d3e;border-radius:14px;padding:3px 11px;font-size:12px;font-weight:700}
+.swap{margin:14px 0}
+.swap .sr{display:flex;align-items:center;gap:10px;margin:9px 0;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:11px 13px}
+.swap .sr .st{flex:0 0 86px;font-weight:800;font-size:13px}
+.swap .sr .sa{color:var(--gold);font-weight:800;font-size:16px}
+.swap .sr .sd{flex:1;font-size:13.5px;font-weight:700}
+.strat{background:var(--tm);color:#f3ead7;border-radius:12px;padding:14px 16px;margin:12px 0}
+.strat h4{color:#caa14a;font-size:12px;font-weight:800;margin-bottom:10px;letter-spacing:.04em}
+.strat .row{display:flex;gap:12px;align-items:flex-start;margin:9px 0;font-size:13.5px;line-height:1.55}
+.strat .row .seg{flex:0 0 64px;font-weight:800;color:#ffd98a}
+.strat .row .ac{flex:1}
+.strat b{color:#ffd98a}
+.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;margin:14px 0;font-size:12.5px;color:#5a4d2e;line-height:1.6}
+.note b{color:var(--tm);font-weight:800}
+.vs{display:flex;gap:10px;margin:14px 0 6px}
+.vs .box{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center}
+.vs .box .vn{font-size:15.5px;font-weight:800;line-height:1.2;margin-bottom:6px}
+.vs .box .vu{font-size:12.5px;color:var(--ts);line-height:1.7}
+.rbar{margin:7px 0}
+.rbar .rt{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:3px}
+.rbar .rt .rp{color:var(--ts);font-weight:800;font-variant-numeric:tabular-nums}
+.rbar .rl{height:9px;background:#ece3cf;border-radius:5px;overflow:hidden}
+.rbar .rl i{display:block;height:100%;border-radius:5px}
+.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:24px;line-height:1.6}
+@media print{body{background:#fff}.sheet{box-shadow:none}}
+</style></head><body>
+<div class="sheet">
+  <div class="kicker">QP 데이터 리포트 #3</div>
+  <h1>콜이 많은 곳,<br>정말 좋은 곳일까</h1>
+
+  <div class="sec">
+    <h2><span class="t">왜 늘 남이 먼저 가져갈까</span></h2>
+    <p>콜이 많이 뜨는 곳, 많이 뜨는 시간을 좋은 자리라 여기고 찾아갑니다. 그런데 막상 가 보면 <span class="hi">좋은 콜은 늘 남이 먼저 가져가고</span> 손에 남는 게 없습니다. 콜이 부족해서일까요. 데이터는 다르게 말합니다. 문제는 콜의 양이 아니라, 다들 같은 곳 같은 시간에 몰린다는 데 있습니다.</p>
+
+    <div class="card">
+      <h4>평일 하루 콜 분포 (1인 기준 상대 밀도)</h4>
+      <div class="hours" id="hoursWd"></div>
+      <div class="hlab" id="lab1"></div>
+      <div class="legend"><span><i style="background:var(--gold)"></i>콜도 기사도 몰리는 낮</span><span><i style="background:#d8ccb2"></i>한산한 시간</span></div>
+    </div>
+
+    <p>낮 시간에 콜이 두 번 산을 이루며 두텁게 쌓입니다. 누가 봐도 일감 많아 보이는 시간입니다. 그런데 <b>같은 그래프가 곧 기사가 가장 많이 몰리는 시간</b>이기도 합니다. 퀵 일을 회사처럼 아홉 시 출근 여섯 시 퇴근으로 묶어 두면, 바로 이 피크에 나를 붙여 두는 셈입니다. 다들 같은 시간에 일하니 <span class="hi">가장 경쟁이 센 창 안으로 스스로 걸어 들어갑니다.</span></p>
+
+    <div class="note">
+      <b>9 to 6의 함정.</b> 정해진 시간에 나와 정해진 시간에 접는 리듬은 안정적으로 느껴집니다. 하지만 그 리듬은 곧 모두의 리듬입니다. 같은 시간에 같이 일하면 같은 콜을 두고 같이 경쟁합니다. 시간을 한 틀에 묶지 않고 폭을 넓게 볼수록, 남들이 비운 자리가 보입니다.
+    </div>
+
+    <p>이 리포트는 세 가지를 봅니다. 좋아 보이는 콜의 정체, 콜이 많은 곳의 함정, 그 안에서 살아남는 움직임입니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="num">1</span><span class="t">좋아 보이는 건 남에게도 좋아 보입니다</span></h2>
+
+    <div class="eqrow">
+      <div class="ebox">내 눈에<br>좋은 콜</div>
+      <div class="eq">=</div>
+      <div class="ebox">남의 눈에도<br>좋은 콜</div>
+    </div>
+
+    <p>콜을 보는 눈은 다 비슷합니다. <span class="hi">나에게 좋아 보이는 건 남에게도 좋아 보이고, 남에게 구려 보이는 건 나에게도 구려 보입니다.</span> 그래서 좋은 콜일수록 경쟁이 셉니다.</p>
+
+    <div class="card">
+      <h4>오더창에 머무는 시간</h4>
+      <div class="dwell">
+        <div class="dl"><div class="dn">좋은 콜</div><div class="dw"><i style="width:18%;background:var(--red)"></i></div><div class="dtag">뜨자마자 사라짐</div></div>
+        <div class="dl"><div class="dn">둥둥 콜</div><div class="dw"><i style="width:90%;background:#c7bca0"></i></div><div class="dtag">계속 떠 있음</div></div>
+      </div>
+    </div>
+
+    <p>오더창에 둥둥 떠 있는 콜은 <b>아무도 안 가져간 콜</b>입니다. 반대로 뜨자마자 사라지는 콜은 <b>누가 봐도 좋은 콜</b>입니다. 화면에 오래 남아 있다는 건 그만큼 매력이 덜하다는 신호입니다. 좋은 콜만 골라 잡겠다고 버티는 동안, 그 좋은 콜은 이미 남의 차에 실려 있습니다.</p>
+
+    <div class="note">
+      <b>오래 떠 있는 콜과 빨리 빠지는 콜.</b> 둘의 차이가 곧 경쟁의 온도입니다. 좋은 것만 노리면 늘 한발 늦고, 그 사이 시간만 흘러갑니다.
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="num">2</span><span class="t">많은 곳을 찾지 말고, 없는 곳을 피하세요</span></h2>
+    <p>그래서 위치를 보는 방향을 뒤집어야 합니다. <span class="hi">콜이 많은 곳이라고 좋아서 찾아갈 게 아니라, 반대로 콜이 대체로 없는 곳을 피해 가야 합니다.</span></p>
+
+    <div class="zones">
+      <div class="z" style="background:var(--red)"><div class="zt">핫스팟</div><div class="zd">콜 많지만<br>기사도 몰림</div></div>
+      <div class="z" style="background:#b3a98f"><div class="zt">사각지대</div><div class="zd">콜이 말라<br>빈손·대기</div></div>
+      <div class="z" style="background:var(--grn)"><div class="zt">길목</div><div class="zd">콜 적당·<br>덜 붐빔</div></div>
+    </div>
+
+    <div class="card">
+      <h4>콜이 몰리는 곳 (평일 출발지 상위 권역)</h4>
+      <div class="rbar"><div class="rt"><span>경기도 광주시</span><span class="rp">5.6%</span></div><div class="rl"><i style="width:100%;background:var(--gold)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>서울 강남구</span><span class="rp">5.3%</span></div><div class="rl"><i style="width:95%;background:var(--gold)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>서울 강서구</span><span class="rp">4.7%</span></div><div class="rl"><i style="width:84%;background:var(--gold)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>서울 성동구</span><span class="rp">4.5%</span></div><div class="rl"><i style="width:80%;background:var(--gold)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>경기도 김포시</span><span class="rp">3.5%</span></div><div class="rl"><i style="width:63%;background:var(--gold)"></i></div></div>
+    </div>
+
+    <div class="card">
+      <h4>콜이 얇은 곳 (출발 물량이 적은 외곽)</h4>
+      <p class="cdesc">도심과 물류 단지에서 먼 외곽 전원·농촌 권역입니다. 표본 안에서는 출발 콜이 거의 잡히지 않습니다. 살기 나쁜 곳이라는 뜻이 아니라, 짐이 출발하는 물량 자체가 얇다는 뜻입니다.</p>
+      <div class="chips"><span>경기도 가평군</span><span>경기도 연천군</span><span>경기도 양평군</span></div>
+    </div>
+
+    <p>위쪽 권역은 콜이 가장 많이 뜨는 곳이지만, 동시에 기사가 가장 많이 모이는 곳입니다. 아래쪽 외곽은 콜 자체가 얇아 <span class="hi">죽치고 기다리면 빈손이 되는 자리</span>입니다. 좋은 곳을 쫓는 욕심보다, 이 두 극단을 피하는 감각이 하루를 지킵니다.</p>
+
+    <p>여기에 시간을 겹치면 방향이 더 또렷해집니다. 같은 자리도 시간에 따라 답이 달라집니다.</p>
+
+    <div class="swap">
+      <div class="sr"><div class="st" style="color:var(--red)">몰리는 시간</div><div class="sa">→</div><div class="sd">한산한 곳으로 빠진다</div></div>
+      <div class="sr"><div class="st" style="color:var(--grn)">한산한 시간</div><div class="sa">→</div><div class="sd">몰리는 곳으로 들어간다</div></div>
+    </div>
+
+    <p>모두가 몰리는 피크에는 핫스팟을 비켜 <b>한산한 길목</b>에서 경쟁 없이 한 건을 잡습니다. 반대로 다들 빠진 한산한 시간에는 <b>물량이 도는 곳</b>으로 들어가 남은 콜을 줍습니다. <span class="hi">붐빌 때 비켜서고, 빌 때 들어가는 엇박자</span>가 같은 하루를 다르게 씁니다.</p>
+
+    <div class="note">
+      <b>쫓기보다 피하기, 그리고 엇박자.</b> 콜이 몰리는 곳을 좇아 들어가면 경쟁만 만나고, 콜이 마른 외곽에 갇히면 시간만 흘립니다. 남들과 시간을 엇갈리게 두는 것만으로도 같은 자리가 다른 자리가 됩니다.
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="num">3</span><span class="t">가볍게 하나 잡고, 움직이세요</span></h2>
+    <p>모두가 구름같이 몰리는 시간에는 <span class="hi">내가 원하는 걸 반드시 잡지 못할 수도 있습니다.</span> 가만히 앉아 좋은 것만 기다리며 시간을 태우고 피크 시간을 다 놓치느니, 효율 좋은 것 하나라도 잡고 움직이는 게 낫습니다.</p>
+
+    <div class="vs">
+      <div class="box"><div class="vn" style="color:var(--ts)">좋은 것만 기다림</div><div class="vu">한복판에서 버팀<br>시간만 흘러감</div></div>
+      <div class="box"><div class="vn" style="color:var(--grn)">하나 잡고 회전</div><div class="vu">가볍게 한 건<br>다음 자리로 이동</div></div>
+    </div>
+
+    <div class="card">
+      <h4>평일 차종 비중</h4>
+      <div class="rbar"><div class="rt"><span>다마스</span><span class="rp">약 65%</span></div><div class="rl"><i style="width:100%;background:var(--gold)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>오토바이</span><span class="rp">약 20%</span></div><div class="rl"><i style="width:31%;background:var(--grn)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>라보·1톤</span><span class="rp">약 7%</span></div><div class="rl"><i style="width:11%;background:#d8ccb2"></i></div></div>
+    </div>
+
+    <p>한 번 회전하면 다음 자리가 열립니다. 무거운 한 건을 기다리며 버티기보다, 가벼운 한 건이 멈춰 선 대기보다 멀리 데려갑니다. 오토바이 오더처럼 빠르게 빠지는 일감은 늘 한쪽에 깔려 있습니다.</p>
+
+    <div class="note">
+      <b>김다마는 붐비는 곳에 가지 않습니다.</b> 오토바이 오더 하나 가볍게 잡고 빠져나갑니다. 무거운 한 건을 노리며 한복판에서 버티는 대신, 가벼운 한 건으로 자리를 옮겨 다음 기회를 먼저 잡습니다.
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="t">자리를 점검하고, 가볍게 움직이세요</span></h2>
+    <p>지금까지를 한 동선으로 꿰면 매일 스스로 던질 질문이 보입니다.</p>
+
+    <div class="strat">
+      <h4>오늘의 점검 포인트</h4>
+      <div class="row"><div class="seg">자리</div><div class="ac">지금 내가 있는 <b>시간과 자리가 경쟁이 센 곳</b>은 아닌지 본다.</div></div>
+      <div class="row"><div class="seg">기다림</div><div class="ac">가볍게 잡고 움직여야 할 상황에서, <b>좋은 것만 잡으려고 기다리며</b> 시간을 버리고 애만 태우고 있는 건 아닌지 본다.</div></div>
+      <div class="row"><div class="seg">회전</div><div class="ac">완벽한 한 건을 노리기보다, <b>효율 좋은 하나를 잡고</b> 흐름을 만든다.</div></div>
+      <div class="row"><div class="seg">유연함</div><div class="ac">시간도 자리도 한 틀에 묶지 않는다. <b>남들이 비는 시간과 자리</b>로 폭을 넓혀 움직인다.</div></div>
+    </div>
+
+    <p>정해진 시간과 정해진 자리에 나를 묶지 않는 것. 남들이 붐빌 때 비켜서고 남들이 비울 때 들어가는 <span class="hi">유연함이 같은 하루에서 더 많은 기회를 만듭니다.</span> 9 to 6의 틀을 벗고 폭넓게 보는 눈이, 콜을 쫓는 발보다 멀리 갑니다.</p>
+
+    <p>데이터는 늘 말합니다. <span class="hi">콜이 없어서 일을 못 하는 게 아니고, 일이 없어서 돈을 못 버는 게 아니라고.</span> 문제는 양이 아니라 자리와 타이밍입니다. 우리는 더 효율적으로 움직이기 위해 QP를 만들고 씁니다.</p>
+  </div>
+
+  <div class="foot">
+    QP 데이터 리포트 3호 · 2026.06 · 평일 표본 (중복 제거 · 전체 시장 데이터 아님) · 콜 양은 사용자 증가 영향을 걷어낸 1인 기준 상대 밀도 · 시간은 콜이 감지된 시각 기준 · 권역은 픽업(출발지) 기준, 서울·인천은 구, 그 외는 시 · 오더창 머무는 시간 그림은 비교를 위한 도식 · 비율은 표본 안의 분포로 큰 흐름만 봅니다
+  </div>
+</div>
+<script>
+var HW=[1,1,0,0,0,0,2,9,46,106,112,96,74,108,111,94,91,60,32,25,14,7,3,3];
+function drawBars(id,A,peak){
+  var mx=Math.max.apply(null,A);
+  document.getElementById(id).innerHTML=A.map(function(v,h){
+    var c=peak&&peak[h]?" peak":"";
+    return '<div class="h'+c+'" style="height:'+Math.max(3,v/mx*100)+'%"></div>';
+  }).join("");
+}
+drawBars("hoursWd",HW,{8:1,9:1,10:1,11:1,12:1,13:1,14:1,15:1,16:1});
+function drawLab(id){
+  var marks={0:1,3:1,6:1,9:1,12:1,15:1,18:1,21:1},out='';
+  for(var h=0;h<24;h++) out+='<span>'+(marks[h]?h:'')+'</span>';
+  out+='<span class="end">24</span>';
+  document.getElementById(id).innerHTML=out;
+}
+drawLab("lab1");
+function addMark(id,s,e,label){
+  var host=document.getElementById(id),m=document.createElement('div');
+  m.className='mark';m.style.left=(s/24*100)+'%';m.style.width=((e-s+1)/24*100)+'%';
+  if(label){var l=document.createElement('div');l.className='ml';l.textContent=label;m.appendChild(l);}
+  host.appendChild(m);
+}
+addMark("hoursWd",9,16,"다 같이 몰리는 시간");
+</script>
+</body></html>
