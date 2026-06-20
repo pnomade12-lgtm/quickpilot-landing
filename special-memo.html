@@ -1,0 +1,223 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QP 특별 분석 · 적요의 미스터리</title>
+<style>
+:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}
+.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--gold)}
+h1{font-size:26px;font-weight:800;line-height:1.32;margin:6px 0 6px}
+.sub{font-size:14px;color:var(--ts);margin-bottom:18px}
+.act{margin:34px 0 6px;border-top:2px solid var(--gold);padding-top:13px}
+.act .an{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--gold)}
+.act .at{font-size:21px;font-weight:800;margin-top:1px;line-height:1.25}
+.sec{margin-bottom:26px}
+h2{font-size:18px;font-weight:800;margin:18px 0 6px;line-height:1.3}
+p{font-size:14.5px;margin:9px 0;word-break:keep-all}
+.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}
+.hero{background:var(--tm);color:#f3ead7;border-radius:16px;padding:24px 20px;text-align:center;margin:16px 0 6px}
+.hero .bn{font-size:54px;font-weight:800;color:#ffd98a;line-height:1;font-variant-numeric:tabular-nums}
+.hero .bt{font-size:13.5px;color:#e9debf;margin-top:8px;font-weight:700;line-height:1.5}
+.hero .bl{font-size:12px;color:#b9ab8a;margin-top:6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:12px 0}
+.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:12px}
+.split{position:relative;height:40px;border-radius:8px;overflow:hidden;background:repeating-linear-gradient(45deg,#e6dcc6,#e6dcc6 7px,#ded3bb 7px,#ded3bb 14px);margin:2px 0}
+.split i{position:absolute;left:0;top:0;height:100%;background:var(--grn);border-radius:8px 0 0 8px}
+.split .lab{position:absolute;top:50%;transform:translateY(-50%);font-size:12px;font-weight:800}
+.split .l1{left:9px;color:#fff} .split .l2{right:12px;color:#6b5d3e}
+.rbar{margin:9px 0}
+.rbar .rt{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:3px}
+.rbar .rt .rp{color:var(--ts);font-weight:800;font-variant-numeric:tabular-nums}
+.rbar .rl{height:11px;background:#ece3cf;border-radius:6px;overflow:hidden}
+.rbar .rl i{display:block;height:100%;border-radius:6px}
+.stat{display:flex;gap:9px;margin:12px 0}
+.stat .b{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 8px;text-align:center}
+.stat .b .n{font-size:27px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.stat .b .l{font-size:11.5px;color:var(--ts);margin-top:6px;font-weight:700;line-height:1.4}
+.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 14px;margin:13px 0;font-size:12.5px;color:#5a4d2e;line-height:1.6}
+.note b{color:var(--tm);font-weight:800}
+.quote{background:var(--card);border:1px dashed var(--bd);border-radius:12px;padding:13px 15px;margin:10px 0;font-size:13.5px;font-weight:700;color:var(--tm);line-height:1.5}
+.quote .ql{display:block;font-size:11px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:5px}
+.symbols{text-align:center;font-size:28px;letter-spacing:5px;color:var(--gold);font-weight:800;margin:8px 0 2px}
+.call{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:15px 16px;margin:12px 0;line-height:1.6}
+.call .who{color:var(--ts);font-size:11.5px;font-weight:800;margin-bottom:5px}
+.call .line{font-size:15.5px;font-weight:800;color:var(--tm)}
+.call .end{font-size:13px;color:var(--red);font-weight:800;margin-top:5px}
+.gal{margin:10px 0}
+.gal .gg{margin:13px 0}
+.gal .gl{font-size:12px;font-weight:800;color:var(--gold);letter-spacing:.04em;margin-bottom:6px}
+.gal .gq{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 13px;margin:6px 0;font-size:13px;font-weight:600;color:var(--tm);line-height:1.5}
+.cloud{padding:8px 2px}
+.cloud .cr{display:flex;flex-wrap:wrap;gap:5px 12px;align-items:center;justify-content:center;margin:3px 0}
+.cloud span{font-weight:800;line-height:1.05}
+.c1{color:var(--gold)} .c2{color:var(--tm)} .c3{color:var(--ts)}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0}
+.chips span{background:#efe7d4;color:#6b5d3e;border-radius:14px;padding:4px 12px;font-size:12.5px;font-weight:700}
+.fun{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.fun .f{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 15px}
+.fun .f .ft{font-size:14.5px;font-weight:800;margin-bottom:4px}
+.fun .f .ft .em{font-size:17px;margin-right:5px}
+.fun .f .fd{font-size:13px;color:#5a4d2e;line-height:1.55}
+.fun .f .fq{font-size:12.5px;color:var(--ts);margin-top:6px;padding-left:9px;border-left:2px solid var(--bd)}
+.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:26px;line-height:1.6}
+@media print{body{background:#fff}.sheet{box-shadow:none}}
+</style></head><body>
+<div class="sheet">
+  <div class="kicker">QP 특별 분석</div>
+  <h1>적요의 미스터리<br><span style="font-size:18px;color:var(--ts)">정작 짐 얘기는 어디에</span></h1>
+  <div class="sub">주선사가 콜에 적어 보내는 한 줄, 적요. 우리 보라고 적는 칸인데 정작 우리가 알아야 할 건 쏙 빠져 있습니다.</div>
+
+  <p>콜이 뜨면 우리는 적요부터 봅니다. <span class="hi">지금 실은 짐 옆에 이걸 더 얹을 수 있는지</span>, 그 한 줄로 정하니까요. 적요는 우리가 쓰는 게 아니라 주선사가 우리 보라고 적는 칸입니다. 그러니 짐이 얼마나 큰지, 부피가 어떤지가 적혀 있어야 정상입니다. 그래야 내 차 남은 자리에 들어갈지 가늠하니까요. 그런데 만 오천 줄을 열어 보니, 정작 그 크기는 없고 별의별 사연만 가득했습니다.</p>
+
+  <div class="hero">
+    <div class="bn">2%</div>
+    <div class="bt">짐 크기·부피가 적힌 적요</div>
+    <div class="bl">박스 몇 개인지는 알아도, 그게 얼마나 큰지는 100개 중 2개뿐</div>
+  </div>
+
+  <div class="sec">
+    <h2>현장의 입버릇</h2>
+    <p>적요에 가장 자주 나오는 말을 크기로 키워 봤습니다. 클수록 많이 적힌 말입니다. 그 어디에도 크기나 부피는 크게 보이지 않습니다.</p>
+    <div class="card">
+      <div class="cloud">
+        <div class="cr">
+          <span class="c3" style="font-size:20px">친절</span>
+          <span class="c3" style="font-size:21px">취급주의</span>
+          <span class="c2" style="font-size:22px">구르마</span>
+          <span class="c3" style="font-size:20px">부탁드립니다</span>
+        </div>
+        <div class="cr">
+          <span class="c1" style="font-size:27px">픽업</span>
+          <span class="c1" style="font-size:27px">도착지</span>
+          <span class="c1" style="font-size:29px">상하차</span>
+        </div>
+        <div class="cr">
+          <span class="c1" style="font-size:31px">박스</span>
+          <span class="c1" style="font-size:56px">급송</span>
+          <span class="c1" style="font-size:31px">전화먼저</span>
+        </div>
+        <div class="cr">
+          <span class="c2" style="font-size:26px">바로</span>
+          <span class="c2" style="font-size:25px">물건</span>
+          <span class="c2" style="font-size:25px">상차</span>
+          <span class="c2" style="font-size:24px">하차</span>
+        </div>
+        <div class="cr">
+          <span class="c2" style="font-size:21px">바로배송</span>
+          <span class="c3" style="font-size:19px">서류</span>
+          <span class="c3" style="font-size:18px">세금계산서</span>
+          <span class="c3" style="font-size:18px">착불</span>
+          <span class="c3" style="font-size:18px">통화먼저</span>
+          <span class="c3" style="font-size:18px">혼적</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>박스 개수를 줘도 못 믿습니다</h2>
+    <p>기사가 제일 먼저 알아야 할 건 부피입니다. 내 차 남은 자리에 이게 들어가느냐. 적요는 박스 개수를 40%나 적어 줍니다. 얼핏 도움 될 것 같지만 함정이 있습니다. <span class="hi">박스 크기에 기준이 없습니다.</span></p>
+    <p>"소박스"라더니 가 보면 큰 박스고, "사과박스", "라면박스"라더니 이삿짐 박스만 합니다. 실제로 "작은박스 21개"라 적어 놓고 괄호 안에 "가로 1미터, 세로 1미터"가 붙기도 합니다. 개수를 세 줘도 그 한 박스가 얼마나 큰지 모르니, 부피는 여전히 깜깜합니다. 박스 개수 40%는 "잘 줬네" 할 정보가 못 됩니다.</p>
+    <div class="stat">
+      <div class="b"><div class="n" style="color:var(--gold)">28%</div><div class="l">픽업 시각을<br>콕 집은 적요</div></div>
+      <div class="b"><div class="n" style="color:var(--gold)">40%</div><div class="l">박스 개수만<br>적은 적요</div></div>
+      <div class="b"><div class="n" style="color:var(--grn)">2%</div><div class="l">박스 크기·부피를<br>적은 적요</div></div>
+    </div>
+    <p>시각은 분 단위로 콕 집으면서, 정작 박스가 얼마나 큰지는 2%만 적힙니다. 무게요? 그건 알아야 할 것 중 가장 뒤인데, 그마저 약 6%로 1순위인 크기·부피보다 더 자주 적힙니다. 순위가 거꾸로입니다. 짐을 같이 실어도 되는지 적은 합짐 메모도 2%, 빈자리에 한 건이라도 더 싣고 싶은 우리한테는 알아서 눈치껏 하라는 모양입니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2>빈자리는 부탁과 으름장이 채웁니다</h2>
+    <p>짐 정보가 빠진 자리를 채운 건 이런 말들입니다. 한 메모에 여러 개가 겹치기도 합니다.</p>
+    <div class="card">
+      <div class="rbar"><div class="rt"><span>빨리 가달라·부탁·친절 (호소)</span><span class="rp">32%</span></div><div class="rl"><i style="width:100%;background:var(--red)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>전화·통화 먼저 하라</span><span class="rp">15%</span></div><div class="rl"><i style="width:47%;background:var(--gold)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>취소·책임·주의 (으름장)</span><span class="rp">8%</span></div><div class="rl"><i style="width:25%;background:var(--gold)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>크기·부피 (정작 1순위)</span><span class="rp">2%</span></div><div class="rl"><i style="width:6%;background:var(--grn)"></i></div></div>
+    </div>
+    <p><span class="hi">빨리 오라는 말이 짐 크기 정보보다 열 배 넘게 많습니다.</span> 정작 빨리 가려면 그게 내 차에 들어갈지부터 알아야 할 텐데, 그 순서는 끝내 거꾸로입니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2>안 되면 다 기사님 책임</h2>
+    <div class="quote"><span class="ql">가장 많이 복사된 한 문장</span>◆꼭 전화먼저◆<br>전화없이 이동 후 취소 시 캔슬비 없음!!</div>
+    <div class="quote">송장 사진 전송 안 하시면 운임 지급 안 됩니다</div>
+    <div class="quote">인수증 사진 안 보내면 운임 처리 안 됨</div>
+    <div class="quote">자바라·호로 안 씌우면 운임 못 받습니다</div>
+    <p>짐 크기는 생략해도 이 한 줄은 빠지지 않습니다. 한데 이건 주선사가 손해 볼 걱정이 아닙니다. 일이 틀어지면 그 책임을 기사에게 넘기겠다는 선언입니다. 전화 없이 갔다 취소되면 캔슬비는 없고, 사진 한 장 빠뜨리면 운임도 없습니다. <span class="hi">헛걸음도 떼인 돈도 전부 기사 몫</span>이 됩니다. 적요의 8%가 이렇게 위험을 기사 쪽으로 미뤄 둡니다.</p>
+    <p>어떤 적요는 한술 더 떠 "이중배차, 취소 잘함"이라고 제 입으로 적어 둡니다. 콜을 두 군데 뿌려 잘 취소된다는 걸 알면서도, 헛걸음 책임은 또 우리 몫입니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2>짐만 가리는 게 아닙니다</h2>
+    <p>적요는 사람도 고릅니다. "무게가 있으니 젊은 분으로 배차해 달라"는 말이 버젓이 적히고, 박스 수십 개를 "기사님 혼자" 상하차하라는 칸도 흔합니다.</p>
+    <div class="quote">3대봉 무게가 있어 젊은 분으로 배차 부탁드립니다</div>
+    <div class="quote">휴지 48박스 / 기사님 혼자 수작업 상하차</div>
+    <div class="quote">27박스, 하차지 혼자 내려주고 가면 됩니다</div>
+    <p>여기까지는 약과입니다. 어떤 적요는 <span class="hi">실명을 콕 집어 "○○○ 기사 배차 금지"</span>라고 적습니다. 누가 볼지 모르는 칸에 특정 기사를 공개로 저격합니다. 짐 크기 한 줄은 아껴도, 사람 거르는 줄은 아끼지 않습니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2>숫자 대신 마음을 적습니다</h2>
+    <div class="symbols">◆ ★ ▶ ! ~</div>
+    <p>크기 같은 숫자는 빼먹어도, 눈에 띄게 꾸미고 마음을 전하는 데는 진심입니다. <span class="hi">적요 아홉 개 중 하나(11%)에 ◆★ 같은 도형 기호</span>가 등장하고, 느낌표는 빠지는 법이 없습니다.</p>
+    <div class="quote">급송 1박스 ★혼적금지★ ★자가용진입금지★</div>
+    <div class="quote">★발주서 수량 확인 + 인수자 싸인 필수★</div>
+    <div class="quote">바로 가주셔야 합니다 !! 꼭 !!</div>
+    <div class="stat">
+      <div class="b"><div class="n" style="color:var(--red)">28</div><div class="l">요구·부탁이<br>담긴 적요</div></div>
+      <div class="b"><div class="n" style="color:var(--grn)">1</div><div class="l">감사가<br>담긴 적요</div></div>
+    </div>
+    <p>적요에 담긴 요구·부탁과 감사는 <span class="hi">28 대 1</span>입니다. 부탁 스물여덟 번에 고맙다는 말은 한 번꼴, "죄송"은 한 번도 없었습니다. ◆로 테두리 두를 그 정성으로 박스 크기 한 줄 적어 주셨다면, 하고 우리는 생각합니다. 사실은 빼고 마음만 적힌 그 한 줄을, 우리는 매일 받아 듭니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2>안 싣는 게 없습니다</h2>
+    <p>적요를 훑으면 별별 게 다 오갑니다. 부품·자재가 가장 많고 서류와 음식이 뒤를 잇습니다. 짐마다 붙는 사연도 제각각입니다. 생물 장어엔 "천막 필요", 냉동식품엔 "햇빛 받으면 안 됨", 전자제품엔 "조심히 다뤄주세요 사장님". 어떤 콜은 "작은 박스에 든 아기 고양이"를 비흡연 조수석에 모셔 달라 합니다.</p>
+    <div class="chips">
+      <span>부품·자재 2.3%</span><span>서류 2.2%</span><span>음식·식품 1.5%</span><span>가구</span><span>의류</span><span>꽃·화분</span><span>약</span><span>새끼 고양이</span>
+    </div>
+    <div class="note">
+      <b>같은 "박스 1개"라도 부품과 꽃은 부피가 천지 차이입니다.</b> 자재 한 트럭과 서류 한 장이 같은 칸에서 콜로 뜨는데, 박스가 얼마나 큰지는 안 적혀 내 차에 들어갈지 가늠이 안 됩니다. 그래서 매번 가 봐야 압니다. 손으로 끌어 달라는 구르마·수작업도 8%인데, 정작 그게 얼마나 큰 짐인지는 또 비밀입니다.
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>사실, 주선사도 모릅니다</h2>
+    <p>읽다 보면 대놓고 모른다고 적힌 칸이 수두룩합니다.</p>
+    <div class="quote">박스 몇 갠지 모름 / 전화먼저 상하차 도와주세요</div>
+    <div class="quote">조조 친절배송 / 물량 모름</div>
+    <p>빈말이 아닙니다. 크기를 안 적는 게 아니라 <span class="hi">못 적는</span> 겁니다. 주선사도 그 짐을 본 적이 없거든요. 고객이 전화나 인터넷으로 접수하면, 사무실은 직접 보지 않고 말로만 듣고 옮겨 적습니다.</p>
+    <div class="call">
+      <div class="who">📞 오래된 단골 사장님</div>
+      <div class="line">"여기 다마스 한 대!"</div>
+      <div class="end">…뚝. (통화 종료)</div>
+    </div>
+    <p>차종만 외치고 끊어 버립니다. 크기는커녕 뭘 싣는지도 안 나옵니다. 사무실도 모르는 걸 옮겨 적자니, 한 칸은 "전화 먼저"인데 옆 칸은 "전화 X 그냥 들어가세요"로 엇갈리고, "카고차늕 안됍니다" 같은 오타까지 더해 칸은 뒤죽박죽이 됩니다. 그래도 우리는 이걸 보고 길을 나서야 합니다.</p>
+    <p>그래도 <span class="hi">우리가 원하는 건 여전히 딱 하나</span>입니다. 뭐가, 얼마나 있는지. 그 한 줄이면 됩니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2>한 글자부터 521자까지</h2>
+    <p>길이는 극과 극입니다. 적요의 <span class="hi">4%는 세 글자도 안 됩니다.</span> 가장 흔한 한 글자짜리는 별표 하나 "*". 그런데 반대편 끝에는 521자짜리가 있습니다.</p>
+    <p>가장 긴 적요는 적요라기보다 사건 경위서에 가깝습니다. 깐생강 한 제품이 엉뚱한 ○○요양원으로 오배송됐다는 상황 공유로 시작합니다. ○기사가 받았는데 알고 보니 ○○국밥으로 갈 물건이었고, 그 ○기사는 부재라 연락이 안 닿고, 미입고 업장은 금일 중 다시 보내 달라 하고, 피킹 오류로 추정되니 고객사 확인 후 후속 처리를 부탁한다는 내용이 1번 2번 번호까지 매겨 가며 빼곡합니다. 부재 연락을 두 번 시도했다는 말, 업장 간 재배송이 가능한지 물어봤다는 말까지 들어가고, 끝은 "확인 부탁드립니다. 감사합니다." 적요 한 칸에 들어갈 분량이 아닙니다. <span class="hi">그런데 이 521자 안에도, 정작 짐이 얼마나 큰지는 없습니다.</span></p>
+  </div>
+
+  <div class="sec">
+    <h2>그래서, 적요 너머를 봅니다</h2>
+    <p>적요 한 줄로는 현장이 다 안 담깁니다. 주선사는 짐을 못 봤고, 우리는 가 봐야 압니다. 그 사이의 빈칸이 매일의 답답함입니다.</p>
+    <p>그런데 한 줄로는 못 해도, 만 오천 줄을 모으면 보입니다. 무엇이 얼마나 급한지, 어디서 어떻게 움직여야 하는지. <span class="hi">한 사람의 적요는 잔소리뿐이어도, 쌓인 적요는 현장을 말합니다.</span></p>
+    <p>그래서 우리는 적요 한 줄 너머를 데이터로 봅니다. 별표와 느낌표가 못 알려주는 걸, 쌓인 데이터가 알려줍니다.</p>
+    <div class="hero">
+      <div class="bt" style="font-size:14px;color:#d9cdb0">우리가 진짜 원하는 적요는 한 줄이면 됩니다</div>
+      <div class="bn" style="font-size:30px;margin-top:10px;line-height:1.25">"박스 ○개,<br>크기는 이만큼"</div>
+      <div class="bl">그거면 내 차에 들어갈지 한눈에 정합니다</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    QP 특별 분석 · 2026.06 · 주선사가 작성한 인성 적요 15,463건 분석 (전체 오더의 35% · 전체 시장 데이터 아님) · 비율은 그 표현이 담긴 적요의 몫이며, 한 메모에 여러 부탁이 겹쳐 갈래끼리 일부 겹침 · 인용 문구는 실제 적요에서 그대로 가져옴
+  </div>
+</div>
+</body></html>
