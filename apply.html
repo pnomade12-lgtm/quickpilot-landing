@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QuickPilot 베타 테스터 신청</title>
+<meta name="theme-color" content="#0b0b0b">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<style>
+  html,body{margin:0;padding:0;background:#0b0b0b;}
+  *{box-sizing:border-box;}
+  ::selection{background:#ff2d1f;color:#fff;}
+  #qpmain input:focus, #qpmain select:focus, #qpmain textarea:focus{border-color:#ff2d1f !important;}
+</style>
+</head>
+<body>
+
+<div style="position:fixed;top:10px;right:10px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:5px;font-family:Pretendard,sans-serif;">
+  <div style="display:flex;gap:6px;">
+    <button onclick="qpFont(-1)" aria-label="글씨 작게" style="background:#141414;border:1px solid #333;color:#f2f0ec;width:46px;height:42px;cursor:pointer;line-height:1;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:1px;"><span style="font-size:13px;font-weight:800;">가</span><span style="font-size:13px;color:#ff2d1f;font-weight:900;">−</span></button>
+    <button onclick="qpFont(1)" aria-label="글씨 크게" style="background:#141414;border:1px solid #333;color:#f2f0ec;width:46px;height:42px;cursor:pointer;line-height:1;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:1px;"><span style="font-size:18px;font-weight:800;">가</span><span style="font-size:13px;color:#4ade80;font-weight:900;">＋</span></button>
+  </div>
+  <div style="font-size:10px;color:#6a6a6a;background:rgba(10,10,10,.6);padding:2px 7px;letter-spacing:.02em;">우리 형님들 노안 방지용</div>
+</div>
+
+<main id="qpmain" style="max-width:560px;margin:0 auto;padding:44px 22px 90px;font-family:Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;color:#c7c4be;font-size:17px;line-height:1.95;word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased;">
+
+  <a href="landing-v2.html" style="display:inline-flex;align-items:center;gap:6px;color:#8c8a85;font-size:13px;margin-bottom:26px;text-decoration:none;font-family:ui-monospace,monospace;letter-spacing:.04em;">← 돌아가기</a>
+
+  <div id="formView">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:18px;">
+      <span style="width:30px;height:2px;background:#ff2d1f;display:block;"></span>
+      <span style="font-family:ui-monospace,monospace;font-size:11.5px;font-weight:700;letter-spacing:.16em;color:#ff2d1f;text-transform:uppercase;">베타 테스터</span>
+    </div>
+    <h1 style="font-weight:900;font-size:30px;letter-spacing:-0.02em;margin:0 0 14px;color:#fff;line-height:1.2;">신청서</h1>
+    <p style="color:#9a968f;font-size:15px;margin:0 0 36px;line-height:1.9;">큐피 베타에 참여 신청해 주셔서 감사합니다. 아래 양식을 작성해 주시면 신청 시간부터 <span style="color:#f2f0ec;font-weight:700;">24시간 이내</span>에 제가 직접 문자로 회신드립니다. 24시간이 지나도 답신이 없으면 죄송하지만 이번 테스트에는 함께하기 어렵다는 뜻입니다. 별도의 거절 메시지를 드리지 못하는 점 양해 부탁드립니다.</p>
+
+    <div style="background:#1a1010;border:1px solid #3a1f1d;border-left:3px solid #ff2d1f;padding:18px 18px 16px;margin-bottom:30px;">
+      <div style="color:#ff2d1f;font-weight:800;font-size:14px;margin-bottom:10px;font-family:ui-monospace,monospace;letter-spacing:.04em;">참여 대상 안내</div>
+      <div style="color:#cfccc6;font-size:14px;line-height:1.85;">본 베타는 <b style="color:#fff;">인성 순정 앱 사용자</b>를 대상으로 합니다. 지지기를 사용 중이시거나, 지지기와 비교 검토 목적으로 신청하시는 경우 죄송하지만 이번 베타에는 함께하기 어렵습니다. 큐피는 인성 순정 앱과 함께 통합콜·카카오퀵을 기본 엔진으로 운영하도록 설계되었습니다.</div>
+    </div>
+
+    <form id="applyForm" autocomplete="on">
+      <div style="margin-bottom:26px;">
+        <label for="name" style="display:block;font-family:ui-monospace,monospace;font-size:12px;color:#8c8a85;margin-bottom:9px;font-weight:700;letter-spacing:.06em;">성명 <span style="color:#ff2d1f;">*</span></label>
+        <input type="text" id="name" name="name" required maxlength="20" placeholder="홍길동" style="width:100%;background:#161616;border:1px solid #2a2a2a;color:#f2f0ec;padding:15px 14px;font-size:16px;font-family:inherit;outline:none;">
+      </div>
+
+      <div style="margin-bottom:26px;">
+        <label for="phone" style="display:block;font-family:ui-monospace,monospace;font-size:12px;color:#8c8a85;margin-bottom:9px;font-weight:700;letter-spacing:.06em;">휴대폰 번호 <span style="color:#ff2d1f;">*</span></label>
+        <input type="tel" id="phone" name="phone" required maxlength="13" placeholder="010-1234-5678" pattern="01[0-9]-?\d{3,4}-?\d{4}" style="width:100%;background:#161616;border:1px solid #2a2a2a;color:#f2f0ec;padding:15px 14px;font-size:16px;font-family:inherit;outline:none;">
+        <div style="color:#7a7873;font-size:13px;margin-top:7px;line-height:1.6;">제가 직접 문자로 회신드리는 번호입니다.</div>
+      </div>
+
+      <div style="margin-bottom:26px;">
+        <label for="phoneModel" style="display:block;font-family:ui-monospace,monospace;font-size:12px;color:#8c8a85;margin-bottom:9px;font-weight:700;letter-spacing:.06em;">사용 휴대폰 기종 <span style="color:#ff2d1f;">*</span></label>
+        <select id="phoneModel" name="phoneModel" required style="width:100%;background:#161616;border:1px solid #2a2a2a;color:#f2f0ec;padding:15px 14px;font-size:16px;font-family:inherit;outline:none;">
+          <option value="">선택해 주세요</option>
+          <option>갤럭시 S26 / S26+ / S26 Ultra</option>
+          <option>갤럭시 S25 / S25+ / S25 Ultra</option>
+          <option>갤럭시 S24 / S24+ / S24 Ultra</option>
+          <option>갤럭시 S23 / S23+ / S23 Ultra</option>
+          <option>갤럭시 S22 / S22+ / S22 Ultra</option>
+          <option>갤럭시 S21 이하</option>
+          <option>갤럭시 노트 시리즈</option>
+          <option>갤럭시 Z 폴드 / 플립</option>
+          <option>기타 안드로이드</option>
+        </select>
+        <div style="color:#7a7873;font-size:13px;margin-top:7px;line-height:1.6;">아이폰은 베타 대상이 아닙니다. 안드로이드만 가능, 갤럭시 시리즈 권장. 검증된 폰은 갤럭시 S22 Ultra입니다.</div>
+      </div>
+
+      <div style="margin-bottom:30px;">
+        <label for="intro" style="display:block;font-family:ui-monospace,monospace;font-size:12px;color:#8c8a85;margin-bottom:9px;font-weight:700;letter-spacing:.06em;">간단한 자기소개 <span style="color:#666;">(선택, 100자 이내)</span></label>
+        <textarea id="intro" name="intro" maxlength="100" placeholder="예: 서울 강남 일대에서 5년차 차량 퀵서비스 운영 중입니다." style="width:100%;background:#161616;border:1px solid #2a2a2a;color:#f2f0ec;padding:15px 14px;font-size:16px;font-family:inherit;outline:none;min-height:84px;resize:vertical;line-height:1.6;"></textarea>
+      </div>
+
+      <div style="background:#111;border:1px solid #262626;padding:18px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:10px;">1. 개인정보 수집·이용 동의 <span style="color:#ff2d1f;">*</span></div>
+        <div style="color:#9a968f;font-size:13px;line-height:1.9;margin-bottom:14px;white-space:pre-line;">수집 항목: 성명, 휴대폰 번호, 휴대폰 기종, 자기소개(선택)
+수집 목적: 베타 테스터 선정 및 안내
+보유 기간: 베타 종료 후 30일 이내 파기 (테스터로 선정되어 정식 가입 전환된 경우 별도 약관 적용)
+동의를 거부할 권리가 있으며, 거부 시 신청이 불가합니다.</div>
+        <label style="display:flex;align-items:center;gap:10px;color:#f2f0ec;font-size:14px;cursor:pointer;"><input id="agree1" type="checkbox" required style="width:18px;height:18px;accent-color:#ff2d1f;"> 위 내용에 동의합니다.</label>
+      </div>
+
+      <div style="background:#111;border:1px solid #262626;padding:18px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:10px;">2. 앱 권한·자료 수집 동의 <span style="color:#ff2d1f;">*</span></div>
+        <div style="color:#9a968f;font-size:13px;line-height:1.9;margin-bottom:14px;white-space:pre-line;">QuickPilot 베타 앱은 정상 작동을 위해 다음 권한을 사용합니다.
+- 접근성 서비스 (콜 앱 오더창의 텍스트 읽기)
+- 다른 앱 위에 표시 (오버레이 토스트)
+- 알림 접근
+- 위치 (운행 기록·동선)
+
+수집되는 자료는 모두 테스터 본인 단위로 격리 저장되며, 저 외에는 접근할 수 없습니다. 자료는 베타 서비스 개선 목적으로만 이용됩니다.</div>
+        <label style="display:flex;align-items:center;gap:10px;color:#f2f0ec;font-size:14px;cursor:pointer;"><input id="agree2" type="checkbox" required style="width:18px;height:18px;accent-color:#ff2d1f;"> 위 내용에 동의합니다.</label>
+      </div>
+
+      <div style="background:#111;border:1px solid #262626;padding:18px;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:10px;">3. 베타 이용 안내 <span style="color:#ff2d1f;">*</span></div>
+        <div style="color:#9a968f;font-size:13px;line-height:1.9;margin-bottom:14px;white-space:pre-line;">- 선정되시면 앱 설치·사용 가이드 링크를 문자로 보내드립니다. 가이드 페이지에서 직접 내려받아 설치하시면 됩니다.
+- 승인 후 24시간 이내에 앱을 설치하고 한 번 이상 실행하지 않으면, 발급된 라이선스는 자동으로 만료됩니다(기회가 다른 분께 돌아갑니다).
+- 최소한의 휴대폰 조작이 가능하셔야 하며, 가이드만으로 설치·운영하실 수 있어야 합니다.
+- 베타 기간 중 발견된 문제·의견은 저에게 직접 전달해 주시면 됩니다.
+- 베타 앱은 정식 서비스가 아니며, 예고 없이 업데이트되거나 일시 중단될 수 있습니다.</div>
+        <label style="display:flex;align-items:center;gap:10px;color:#f2f0ec;font-size:14px;cursor:pointer;"><input id="agree3" type="checkbox" required style="width:18px;height:18px;accent-color:#ff2d1f;"> 위 내용을 확인했습니다.</label>
+      </div>
+
+      <button type="submit" id="submitBtn" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#ff2d1f;color:#fff;font-size:17px;font-weight:900;padding:19px;border:0;cursor:pointer;letter-spacing:.01em;margin-top:12px;">신청 제출</button>
+      <div id="errMsg" style="color:#ff2d1f;font-size:13px;margin-top:10px;min-height:18px;"></div>
+    </form>
+  </div>
+
+  <div id="successView" style="display:none;text-align:center;padding:50px 6px;">
+    <div style="font-family:ui-monospace,monospace;font-size:42px;color:#ff2d1f;font-weight:900;line-height:1;margin-bottom:18px;">✓</div>
+    <h2 style="font-size:24px;font-weight:900;color:#fff;margin:0 0 14px;letter-spacing:-0.01em;">신청이 접수되었습니다</h2>
+    <p style="color:#9a968f;font-size:15px;line-height:1.85;margin:0 0 8px;">신청 시간부터 24시간 이내에<br>제가 직접 문자로 회신드립니다.</p>
+    <div style="background:#111;border:1px solid #262626;border-top:3px solid #ff2d1f;padding:18px;margin-top:26px;text-align:left;">
+      <b style="color:#fff;font-size:14px;font-family:ui-monospace,monospace;letter-spacing:.04em;">다음 단계 안내</b>
+      <div style="color:#9a968f;font-size:13px;line-height:1.9;margin-top:10px;">
+        1. 제 회신 문자를 기다려 주세요.<br>
+        2. 선정 시 설치·사용 가이드 링크를 문자로 보내드립니다.<br>
+        3. 가이드 페이지에서 앱을 내려받아 설치하시면 됩니다.<br>
+        <span style="color:#ff7a70;">※ 승인 후 24시간 이내에 설치·실행하지 않으면 라이선스가 자동 만료됩니다.</span>
+      </div>
+    </div>
+    <p style="margin-top:30px;"><a href="landing-v2.html" style="color:#8c8a85;font-size:13px;text-decoration:none;font-family:ui-monospace,monospace;letter-spacing:.04em;">← 메인으로 돌아가기</a></p>
+  </div>
+
+</main>
+
+<script>
+(function(){
+  var L=[0.9,1.0,1.15,1.3,1.5], i=2, m=document.getElementById('qpmain');
+  try{ var s=localStorage.getItem('qpfont'); if(s!==null) i=Math.min(L.length-1,Math.max(0,parseInt(s,10))); }catch(e){}
+  function ap(){ if(m) m.style.zoom=L[i]; }
+  window.qpFont=function(d){ i=Math.min(L.length-1,Math.max(0,i+d)); ap(); try{localStorage.setItem('qpfont',i);}catch(e){} };
+  ap();
+})();
+
+(function(){
+  var cfg = {
+    apiKey: "AIzaSyBoZSnKoTu6nBdE0VfJAiCmWgjfKgLHqus",
+    authDomain: "quickpilot-39d72.firebaseapp.com",
+    databaseURL: "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "quickpilot-39d72",
+    storageBucket: "quickpilot-39d72.firebasestorage.app",
+    messagingSenderId: "530394028123",
+    appId: "1:530394028123:web:ab56e0951f214401d0c77e"
+  };
+  try{ if(window.firebase && (!firebase.apps || !firebase.apps.length)) firebase.initializeApp(cfg); }catch(e){}
+
+  var form=document.getElementById('applyForm');
+  var btn=document.getElementById('submitBtn');
+  var err=document.getElementById('errMsg');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    err.textContent='';
+    var name=(document.getElementById('name').value||'').trim();
+    var phone=((document.getElementById('phone').value||'').trim()).replace(/[^\d]/g,'');
+    var phoneModel=document.getElementById('phoneModel').value;
+    var intro=(document.getElementById('intro').value||'').trim();
+    var a1=document.getElementById('agree1').checked, a2=document.getElementById('agree2').checked, a3=document.getElementById('agree3').checked;
+    if(!name){ err.textContent='성명을 입력해 주세요.'; return; }
+    if(!/^01[0-9]\d{7,8}$/.test(phone)){ err.textContent='휴대폰 번호 형식이 올바르지 않습니다.'; return; }
+    if(!phoneModel){ err.textContent='휴대폰 기종을 선택해 주세요.'; return; }
+    if(!a1||!a2||!a3){ err.textContent='필수 동의 항목을 모두 체크해 주세요.'; return; }
+    btn.disabled=true; btn.textContent='제출 중...';
+    try{
+      var db=firebase.database();
+      var ref=db.ref('applications').push();
+      await ref.set({
+        name:name, phone:phone, phoneModel:phoneModel, intro:intro||'',
+        agreeData:true, agreeAccessibility:true, agreeBeta:true,
+        status:'pending',
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        userAgent: navigator.userAgent
+      });
+      document.getElementById('formView').style.display='none';
+      document.getElementById('successView').style.display='block';
+      window.scrollTo({ top:0, behavior:'smooth' });
+    }catch(e2){
+      err.textContent='제출 실패: '+e2.message; btn.disabled=false; btn.textContent='신청 제출';
+    }
+  });
+})();
+</script>
+
+</body></html>

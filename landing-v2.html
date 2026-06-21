@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QuickPilot — 운전 중에 콜 하나 더 잡겠다고 뒤질 뻔한 적, 한두 번이 아닙니다</title>
+<meta name="description" content="더럽고 열받아서 내가 만들었다. 현장 기사가 직접 만드는 콜 자동배차·필터·정산 도구.">
+<meta name="theme-color" content="#0b0b0b">
+<meta name="color-scheme" content="dark">
+<meta property="og:title" content="QuickPilot">
+<meta property="og:description" content="콜이 없어서 일을 못 하는 게 아닙니다. OX 게임에서 줄을 잘못 선 것뿐입니다.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#0b0b0b;}
+  *{box-sizing:border-box;}
+  ::selection{background:#ff2d1f;color:#fff;}
+  img{-webkit-user-drag:none;}
+</style>
+</head>
+<body>
+
+<div style="position:fixed;top:10px;right:10px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:5px;font-family:Pretendard,sans-serif;">
+  <div style="display:flex;gap:6px;">
+    <button onclick="qpFont(-1)" aria-label="글씨 작게" style="background:#141414;border:1px solid #333;color:#f2f0ec;width:46px;height:42px;cursor:pointer;line-height:1;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:1px;"><span style="font-size:13px;font-weight:800;">가</span><span style="font-size:13px;color:#ff2d1f;font-weight:900;">−</span></button>
+    <button onclick="qpFont(1)" aria-label="글씨 크게" style="background:#141414;border:1px solid #333;color:#f2f0ec;width:46px;height:42px;cursor:pointer;line-height:1;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:1px;"><span style="font-size:18px;font-weight:800;">가</span><span style="font-size:13px;color:#4ade80;font-weight:900;">＋</span></button>
+  </div>
+  <div style="font-size:10px;color:#6a6a6a;background:rgba(10,10,10,.6);padding:2px 7px;letter-spacing:.02em;">우리 형님들 노안 방지용</div>
+</div>
+
+<main id="qpmain" style="max-width:648px;margin:0 auto;padding:0 22px 120px;font-family:Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;color:#c7c4be;font-size:17px;line-height:1.95;word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased;">
+
+  <!-- ████ 기 ████ -->
+  <header style="padding:64px 0 50px;">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:26px;">
+      <span style="width:30px;height:2px;background:#ff2d1f;display:block;"></span>
+      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;font-weight:700;letter-spacing:.16em;color:#ff2d1f;text-transform:uppercase;">현장 기사가 직접 만드는 도구</span>
+    </div>
+    <h1 style="font-weight:900;font-size:30px;line-height:1.24;letter-spacing:-0.022em;color:#fff;margin:0 0 22px;">운전 중에 좋은 콜 하나 더 잡겠다고 핸드폰 두세 개 세팅해 놓고, 어플 서너 개 돌리다가 <span style="color:#ff2d1f;">뒤질 뻔한 게 한두 번이 아닙니다.</span></h1>
+    <p style="margin:0 0 0;color:#9a968f;font-size:16px;line-height:1.9;">시속 80km로 달리면서 화면에 2초만 시선을 뺏겨도 4~50m를 그냥 밀고 갑니다. 그걸 매일, 하루에도 수십 번씩 합니다.</p>
+
+    <figure style="margin:34px 0 38px;position:relative;width:calc(100% + 44px);margin-left:-22px;margin-right:-22px;">
+      <img src="img/landing/01_hero.png?v=2" alt="" style="display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;">
+      <span style="position:absolute;left:22px;bottom:10px;font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.1em;color:#ff2d1f;background:rgba(0,0,0,.55);padding:3px 7px;">FIG · 01</span>
+    </figure>
+
+    <h2 style="font-weight:900;font-size:24px;line-height:1.36;letter-spacing:-0.015em;color:#fff;margin:0 0 16px;">이렇게 할 수밖에 없는 그지같은 시스템에 화가 치밀어 오를 뿐입니다.</h2>
+    <h2 style="font-weight:900;font-size:24px;line-height:1.36;letter-spacing:-0.015em;color:#fff;margin:0 0 0;">그걸 알면서도 내일 또 해야 한다는 사실이 <span style="color:#ff2d1f;">개빡쳐서 전부 다 뜯어고치기로 마음먹었습니다.</span></h2>
+    <p style="margin:24px 0 0;color:#9a968f;font-size:16px;">이 페이지는 엄청난 분노가 담긴, 한 기사의 앱 개발 이야기입니다. 테스트 사용 신청은 맨 아래 있으니, 눈 아프시면 바로 넘어가셔도 됩니다!</p>
+  </header>
+
+  <!-- ████ 부탁 ████ -->
+  <section style="padding:50px 0;border-top:1px solid #1c1c1c;">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:20px;">
+      <span style="width:30px;height:2px;background:#ff2d1f;display:block;"></span>
+      <span style="font-family:ui-monospace,monospace;font-size:11.5px;font-weight:700;letter-spacing:.16em;color:#ff2d1f;text-transform:uppercase;">먼저 한 가지만</span>
+    </div>
+    <h2 style="font-weight:900;font-size:23px;line-height:1.4;letter-spacing:-0.01em;color:#fff;margin:0 0 26px;"><span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);">지지기냐고 묻지 마세요. 지지기랑 비교도 하지 마세요.</span></h2>
+    <p style="margin:0 0 28px;">제가 꼴랑 불법 매크로나 따라 하자고 몇 달째 매출 반토막 나가며 잠자는 시간 줄여서 하나부터 열까지 직접 부딪히며 검증하고 있는 게 아닙니다. 나름 명품 가방 하나 만들어 보겠다고 한 땀 한 땀 영혼을 갈아 바느질하고 있는데, 지나가면서 "어디 동대문 뒷골목에서 주워온 거냐"고 툭 던지는 거랑 똑같습니다. <span style="color:#ff2d1f;font-weight:700;">전후 사정 다 떠나서 굉장히 무례한 말입니다.</span></p>
+    <p style="margin:0 0 28px;">써 달라고 부탁하는 것도 아닙니다. 설득하고 싶지도 않습니다. 그러니 저도 설득하려 하지 말아 주세요. 자기 고집 지키겠다고 남 생각 꺾으려는 건 민폐입니다. 마음에 안 들면 안 쓰면 그만입니다. 그냥 저 혼자 써도 그만이고(개꿀), 가까운 동료 형님들 깔아드리고 술 한잔 얻어먹어도(더 개꿀) 그만입니다.</p>
+    <p style="margin:0 0 28px;">그러나 이 앱이 꼭 필요한 분께 도움이 되었으면 좋겠습니다. 하루에 순수익 <span style="color:#ff2d1f;font-weight:700;">30만 원 내외</span>로 매일같이 찍던 저만의 경험과 노하우를 가득 담았을 뿐만 아니라, 현장에서 부딪히고 짓밟히며 느꼈던 수많은 부당함과 불합리함을 바로잡고 싶은 마음에 여기까지 왔습니다. 누군가에게는 꼭 필요할 수도 있겠다는 마음 하나로 만들었습니다. <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">그러니 잡음 듣고 싶지 않습니다. 정말 필요하신 분만 신청해 주세요.</span> 이 사람 저 사람 늘수록 가치가 희석된다는 거, 저도 잘 압니다.</p>
+    <p style="margin:0 0 0;">이 앱은 오직 인성 앱 순정 사용자만을 위해 만들어졌습니다. 아니, 반대로 최첨단 테크놀로지 과학 기술 집약체인 지지기를 담을 그릇이 안 됩니다. 그러니 아직도 머릿속에 지지기를 떠올리고 계신다면 정중히 되돌아가 주실 것을 부탁드립니다. 솔직히 말씀드리면, <span style="color:#ff2d1f;font-weight:700;">지지기 사용자들이 바닥에 깔려 있어야 효과가 미친 듯이 좋아지는 로직</span>이기 때문입니다.</p>
+
+    <figure style="margin:36px 0 0;width:calc(100% + 44px);margin-left:-22px;margin-right:-22px;">
+      <img src="img/landing/02_line.png?v=1" alt="" style="display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;">
+    </figure>
+  </section>
+
+  <!-- ████ 승 ████ -->
+  <section style="padding:50px 0;border-top:1px solid #1c1c1c;">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:24px;">
+      <span style="width:30px;height:2px;background:#ff2d1f;display:block;"></span>
+      <span style="font-family:ui-monospace,monospace;font-size:11.5px;font-weight:700;letter-spacing:.16em;color:#ff2d1f;text-transform:uppercase;">정말 비참하고 열받는 포인트</span>
+    </div>
+    <p style="margin:0 0 28px;">우리가 일하려고 반드시 써야 하는 어플들. 생긴 게 제각각이고 기능이 부족한 건 백 번 양보하겠습니다. <span style="color:#fff;border-bottom:2px solid #ff2d1f;padding-bottom:1px;">그런데 가장 중요한 자동배차도 똑바로 안 되고, 금액 필터링 하나 없이 하루 종일 쓸데없는 알림만 울려대는 건 사고 유발 장치, 시한폭탄 그 이상도 이하도 아닙니다.</span> 본인들이 직접 쓰는 앱이었으면 절대 이렇게 안 만들었을 겁니다.</p>
+
+    <h4 style="font-weight:800;font-size:19px;color:#fff;margin:34px 0 14px;">그래서 나타난 게 뭡니까</h4>
+    <p style="margin:0 0 28px;">해리포터 악당마냥 이름조차 입에 올리기 금기시되는 불법 매크로, 지지기입니다. 모 플랫폼 사용자 90% 이상이 쓴다고 합니다. <span style="color:#ff2d1f;font-weight:700;">없으면 일을 못 하고, 안 쓰면 바보</span>라고들 합니다. 기사들 사이 질문이 "쓸까요 말까요"가 아니라 "어떤 걸 써야 하나요"입니다.</p>
+    <p style="margin:0 0 28px;">그런데 지지기가 완벽한 대안도 아닙니다. 제가 5개를 직접 사서, 방귀 좀 뀐다는 시니어 개발자 친구 붙잡고 코드 한 줄부터 작동 원리까지 낱낱이 파헤쳐 봤습니다. 황당해서 말이 안 나왔습니다. 그 어떤 지지기도 더 나은 성능을 가진 게 아니었습니다. <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">메인 서버가 일정 간격으로 쏴주는 신호를 서로 먼저 잡겠다고 난리 치는 게 전부였습니다.</span> 문은 3초에 한 번 열리는데, 그 앞에서 9명이 몸싸움하며 미친 듯이 두드리고 있는 겁니다.</p>
+    <figure style="margin:0 0 0;width:calc(100% + 44px);margin-left:-22px;margin-right:-22px;">
+      <img src="img/landing/06_door.jpg?v=1" alt="" style="display:block;width:100%;height:auto;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;">
+    </figure>
+
+    <h4 style="font-weight:800;font-size:19px;color:#fff;margin:38px 0 14px;">누가 이득을 보고 있습니까</h4>
+    <p style="margin:0 0 30px;"><span style="color:#ff2d1f;font-weight:700;">불법 프로그램을 판매·설치 유도하는 행위는 영구 정지 사유에 해당할 수 있습니다.</span> 우리는 생계를 위해 그 위험을 감수하고, 강제 확정 후 취소를 매일 반복하며 노출 지연 페널티까지 안고 일합니다. 기본 어플은 사고 위험으로, 연간 수십만 원짜리 지지기는 마음의 위로만 주고, 모든 손해와 책임은 그렇게 할 수밖에 없는 형님들 몫이 됩니다.</p>
+
+    <blockquote style="margin:0 0 30px;padding:30px 26px;background:#ede9e0;color:#111;">
+      <span style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.12em;color:#ff2d1f;font-weight:700;">딱 한 가지만 묻겠습니다</span>
+      <div style="font-weight:900;font-size:26px;line-height:1.3;letter-spacing:-0.02em;color:#111;margin-top:12px;">여기서 이득을 보고 있는 건 누구입니까?</div>
+    </blockquote>
+
+    <p style="margin:0 0 0;">매출 바닥치는 건 둘째치고, 매일 이러다가는 진짜 죽게 생겼습니다. 만세 부르는 건 시간문제입니다. 90%가 유료로 불법 매크로를 쓰고, 콜 하나 더 잡겠다고 폰 두세 개에 어플 서너 개 돌리는 게 정상입니까? 그러다 뒤집어지면 진단서 들고 인성, 통합콜, 카카오 본사 돌아다니면서 산재 처리해 달라고 시위할 겁니까? 그래서 해결될 일이었으면 진작 해결됐을 겁니다.</p>
+  </section>
+
+  <!-- ████ 전 ████ -->
+  <section style="padding:50px 0;border-top:1px solid #1c1c1c;">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:22px;">
+      <span style="width:30px;height:2px;background:#ff2d1f;display:block;"></span>
+      <span style="font-family:ui-monospace,monospace;font-size:11.5px;font-weight:700;letter-spacing:.16em;color:#ff2d1f;text-transform:uppercase;">그런데, 진짜 문제는 따로 있습니다</span>
+    </div>
+    <h2 style="font-weight:900;font-size:23px;line-height:1.42;letter-spacing:-0.01em;color:#fff;margin:0 0 26px;"><span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);">콜이 없어서 일을 못 하는 게 아닙니다.</span> 일이 없어서 돈을 못 버는 게 아닙니다. 신규 유입이 많아서 단가가 떨어지는 것도 아닙니다. 전부 엉뚱한 걸 문제 삼아 서로 손가락질만 하고 있습니다.</h2>
+    <p style="margin:0 0 28px;">지금까지 OX 게임 하면서 줄을 잘못 선 것뿐입니다. 남들 우르르 가는 곳에 같이 갔을 뿐입니다. 그게 잘못이 아닙니다. 처음이고 모르면 그럴 수 있습니다. 저도 똑같이 그랬습니다. 그런데 문제는 그다음입니다.</p>
+    <figure style="margin:0 0 28px;width:calc(100% + 44px);margin-left:-22px;margin-right:-22px;">
+      <img src="img/landing/03_ox.png?v=1" alt="" style="display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;">
+    </figure>
+    <p style="margin:0 0 28px;">다행히 우리 일은 OX 게임처럼 틀리면 탈락하는 방식이 아닙니다. 오늘 안 되면 내일 다시 하면 되고, 내일도 안 되면 될 때까지 하면 됩니다. <span style="color:#ff2d1f;font-weight:700;">그걸 인정하지 않는 것이 고집입니다.</span> 틀린 걸 인정하고 받아들이는 건 나이랑 상관이 없습니다.</p>
+
+    <h4 style="font-weight:800;font-size:19px;color:#fff;margin:34px 0 14px;">아직도 운빨이라고 생각하십니까</h4>
+    <p style="margin:0 0 28px;">그럼 고집이 존나 센 겁니다. 저도 반년 동안 그 생각 하나 못 버려서 안 해도 될 개고생을 했습니다. 바닥을 기는 것도, 하늘을 나는 것도, 들쭉날쭉한 것도 다 실력입니다. <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">반복되는 운은 실력입니다.</span> 그걸 인정 안 하니까 계속 반복되는 겁니다.</p>
+    <p style="margin:0 0 0;">실력·경험 중요한 거 맞습니다. 시간당 효율 극단으로 뽑는, 변태같이 잘하는 형님들도 분명 있습니다. 저는 그렇게 못 합니다. 진심으로 대단하다고 생각합니다. <span style="color:#ff2d1f;font-weight:700;">하지만 그건 이 바닥이 개판일 때 얘기입니다.</span></p>
+
+    <figure style="margin:28px 0;background:#ede9e0;padding:18px 18px 16px;width:calc(100% + 44px);margin-left:-22px;margin-right:-22px;">
+      <div style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.1em;color:#ff2d1f;font-weight:700;margin-bottom:12px;">증거 · 자동배차 감지 출발지 히트맵</div>
+      <img src="img/landing/proof_dist.jpg?v=1" alt="오더 분포 — 자동배차 감지 출발지 히트맵" style="display:block;width:100%;max-width:460px;margin:0 auto;height:auto;">
+    </figure>
+
+    <p style="margin:0 0 28px;">전부 목검 들고 싸우면 잘 싸우는 사람이 이깁니다. 그런데 그중에 <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">진검 든 사람이 나타나면 얘기가 달라집니다.</span> 동학농민운동도 죽창 들고 10만 명이 일어났지만, 우금치에서 총 든 일본군 1만 명한테 전멸당했습니다.</p>
+    <p style="margin:0 0 0;">콜은 충분합니다. 또 나오고, 또 나오고, 또 나옵니다. 지금 하나 거른다고 다음이 없는 게 아닙니다. <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">거르고 기다리면 더 좋은 게 옵니다.</span> 제 주장이 아니라 데이터와 통계입니다. 여기서 다 설명하면 너무 길어집니다. 못 믿으시면 안 믿으셔도 됩니다.</p>
+
+    <figure style="margin:28px 0 0;background:#ede9e0;padding:18px 18px 16px;width:calc(100% + 44px);margin-left:-22px;margin-right:-22px;">
+      <div style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.1em;color:#ff2d1f;font-weight:700;margin-bottom:12px;">증거 · 시간별 오더 감지 (오늘 2,041건 · 피크 14시 260건)</div>
+      <img src="img/landing/proof_time.jpg?v=1" alt="시간별 오더 감지" style="display:block;width:100%;max-width:460px;margin:0 auto;height:auto;">
+    </figure>
+  </section>
+
+  <!-- ████ 결·이유 ████ -->
+  <section style="padding:50px 0;border-top:1px solid #1c1c1c;">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:22px;">
+      <span style="width:30px;height:2px;background:#ff2d1f;display:block;"></span>
+      <span style="font-family:ui-monospace,monospace;font-size:11.5px;font-weight:700;letter-spacing:.16em;color:#ff2d1f;text-transform:uppercase;">제가 이 난리를 치는 이유, 딱 하나</span>
+    </div>
+    <h2 style="font-weight:900;font-size:23px;line-height:1.42;letter-spacing:-0.01em;color:#fff;margin:0 0 26px;"><span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);">매일같이 사투를 벌이는 우리 아저씨들, 만 원 한 장이라도 더 벌어서 무사히 집에 들어가셔야 하기 때문입니다.</span></h2>
+    <p style="margin:0 0 28px;">길 가다 흔히 마주치는 그 아저씨, 대충 살아도 되는 사람 절대 아닙니다. 길바닥에서 험한 일 한다고 무시받을 사람들 아닙니다. 허름한 작업복에 평범하다고 우습게 보일 사람들 아닙니다. 매일같이 기다리는 사람들이 있습니다. <span style="color:#ff2d1f;font-weight:700;">그 아저씨가 이 세상 전부인 사람들이 있습니다.</span> 아저씨 한 명 잘 되면 모두가 잘 될 수 있습니다. 반대로 아저씨 한 명 무너지면 작은 세상 하나가 통째로 무너집니다.</p>
+    <figure style="margin:0 0 28px;width:calc(100% + 44px);margin-left:-22px;margin-right:-22px;">
+      <img src="img/landing/05_home.png?v=2" alt="" style="display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;">
+    </figure>
+    <p style="margin:0 0 28px;">아저씨가 우주의 별 같은 아이들이 있습니다. 뭐가 좋다고 여기까지 따라와 준 형수님이 계십니다. 아직도 애같다고 걱정하시는 부모님이 계십니다. 형님들 얼마나 잘생겼고 싸움 잘하는지 관심 하나도 없습니다. 그래 봤자 추성훈 아저씨 못 이깁니다. <span style="color:#ff2d1f;font-weight:700;">그런데 형님들 넘어지면 안 됩니다. 무너지면 절대 안 됩니다. 무조건 다시 일어나셔야 합니다. 당신 한 사람이 누군가에겐 이 세상 전부란 말입니다.</span></p>
+    <p style="margin:0 0 0;">내가 겪은 가난과 아픔은 내 선에서 끊고, 누구에게도 물려주지 않을 수 있습니다. 다시 일어나 보란 듯이 성공해야 지난 모든 일이 드러웠던 상처가 아니라 승리의 서사가 됩니다. 저 같은 놈도 같이 힘내보자고 오지랖 부리는데, 형님들이 못 하실 이유가 없습니다.</p>
+  </section>
+
+  <!-- ████ 결·제품 ████ -->
+  <section style="padding:50px 0;border-top:1px solid #1c1c1c;">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:22px;">
+      <span style="width:30px;height:2px;background:#ff2d1f;display:block;"></span>
+      <span style="font-family:ui-monospace,monospace;font-size:11.5px;font-weight:700;letter-spacing:.16em;color:#ff2d1f;text-transform:uppercase;">그래서 이 앱이 하는 일</span>
+    </div>
+    <p style="margin:0 0 28px;">저는 퀵·화물 기술, 노하우 그런 거 모릅니다. 없어요. 부딪히며 체득한 게 전부입니다. 대학 나와야 하는 것도 아니고, 누구든 적응만 하면 자기 요령 따라 당장 10만 원은 버는 일 아닙니까? 궁금하면 물어보고 모르면 찾아보면 됩니다. 저도 ChatGPT한테 물어봐서 아는 겁니다. 그런데 분명한 건 조금 더 쉽게 할 수 있다는 겁니다.</p>
+    <p style="margin:0 0 0;">이 앱이 형님들께 드리는 건 세 가지입니다.</p>
+    <figure style="margin:30px 0 0;width:calc(100% + 44px);margin-left:-22px;margin-right:-22px;">
+      <img src="img/landing/04_judge.png?v=1" alt="" style="display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;">
+    </figure>
+
+    <div style="display:flex;align-items:baseline;gap:14px;margin:38px 0 14px;">
+      <span style="font-family:ui-monospace,monospace;font-weight:900;font-size:34px;line-height:1;color:#ff2d1f;flex:0 0 auto;">01</span>
+      <h4 style="font-weight:800;font-size:19px;color:#fff;margin:0;line-height:1.35;">불법 매크로 강제 확정 기능, 없습니다.</h4>
+    </div>
+    <p style="margin:0 0 28px;">확정·취소를 반복하며 하루 종일 페널티 받는 것보다 <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">배차 알림이 훨씬 많이 옵니다(원래 그게 정상입니다).</span> 인성·통합콜·카카오를 동시에 잡아 돌리면 바퀴 멈출 일 없습니다. 핸드폰 쳐다볼 일도 거의 없습니다. 울리면 갈지 안 갈지만 판단하세요. <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">터치 한 번이면 됩니다.</span></p>
+    <p style="margin:0 0 22px;">그 마지막 터치는 <span style="color:#ff2d1f;font-weight:700;">반드시 본인이 직접</span> 합니다. 대신 눌러 주면 그게 불법 매크로고, 본인이 직접 누르면 합법적으로 도움받는 보조 도구입니다. <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">영구 정지 걱정 없이, 떳떳하게.</span> 이 한 끗이 전부입니다.</p>
+    <p style="margin:0 0 0;padding:14px 16px;border-left:2px solid #333;color:#8c8a85;font-size:15px;line-height:1.8;">※ 다른 기사님께 먼저 배차된 건 예수님도 못 뺏어옵니다. 애초에 무조건 다 잡아오는 기능은 이 세상에 없습니다.</p>
+
+    <div style="display:flex;align-items:baseline;gap:14px;margin:38px 0 14px;">
+      <span style="font-family:ui-monospace,monospace;font-weight:900;font-size:34px;line-height:1;color:#ff2d1f;flex:0 0 auto;">02</span>
+      <h4 style="font-weight:800;font-size:19px;color:#fff;margin:0;line-height:1.35;">꿀콜인지 똥콜인지, 띄워 드립니다.</h4>
+    </div>
+    <p style="margin:0 0 0;">모든 사용자가 실시간으로 보내주는 데이터로 <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">시간대별·장소별 확률과 통계</span>를 제공합니다. 해당 오더가 꿀콜인지 똥콜인지 판단할 수 있는 팝업이 함께 뜹니다. 구리면 버리세요. 어차피 또 나옵니다. 그리고 다 담아 가지도 못합니다.</p>
+    <figure style="margin:28px 0 0;background:#ede9e0;padding:18px 18px 16px;width:calc(100% + 44px);margin-left:-22px;margin-right:-22px;">
+      <div style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.1em;color:#ff2d1f;font-weight:700;margin-bottom:12px;">기능 · 오더 평가 토스트 (방위표·거리·km당 단가)</div>
+      <img src="img/landing/proof_toast.jpg?v=1" alt="오더 평가 토스트" style="display:block;width:100%;max-width:460px;margin:0 auto;height:auto;">
+    </figure>
+
+    <div style="display:flex;align-items:baseline;gap:14px;margin:38px 0 14px;">
+      <span style="font-family:ui-monospace,monospace;font-weight:900;font-size:34px;line-height:1;color:#ff2d1f;flex:0 0 auto;">03</span>
+      <h4 style="font-weight:800;font-size:19px;color:#fff;margin:0;line-height:1.35;">결국 일하는 건 본인입니다.</h4>
+    </div>
+    <p style="margin:0 0 0;">더 좋은 판단을 하시려면 정보가 생명입니다. <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">주 단위로 데이터 리포트를 발송합니다.</span> 언제든 자신의 패턴과 통계를 대조해 뭐가 문제인지, 어떻게 해야 하는지 답을 찾아드립니다.</p>
+    <figure style="margin:28px 0 0;background:#ede9e0;padding:18px 18px 16px;width:calc(100% + 44px);margin-left:-22px;margin-right:-22px;">
+      <div style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.1em;color:#ff2d1f;font-weight:700;margin-bottom:12px;">기능 · 운행 히트맵 (전체 테스터 GPS)</div>
+      <img src="img/landing/proof_heat.jpg?v=1" alt="운행 히트맵" style="display:block;width:100%;max-width:460px;margin:0 auto;height:auto;">
+    </figure>
+
+    <p style="margin:34px 0 28px;">이 정도까지 해드려도 안 된다면, 농담이 아니라 다른 일을 알아보셔야 합니다. 그만큼 제가 현장에서 보고 듣고 느낀 불편함을 어떻게 풀까 오래 고민하고, 만들면서 하나하나 직접 검증했기에 드리는 말씀입니다.</p>
+    <p style="margin:0 0 0;">그리고 이 모든 것은 시간이 지날수록, 사용자가 많아질수록 압도적인 위력을 만들어냅니다. 단, <span style="color:#ff2d1f;font-weight:700;">무분별하게 많아지면 차별성이 사라집니다.</span> 그래서 다섯 가지 지표로 평균·중위 기댓값을 유지하며 사용자 수를 조절합니다. 많이 써 주시면 좋지만, 너무 몰리면 안 하느니만 못합니다. 앱 잘 돼서 대기업 회장 되는 건 나중에 생각하겠습니다.</p>
+  </section>
+
+  <!-- ████ 신청 ████ -->
+  <section style="padding:50px 0 0;border-top:1px solid #1c1c1c;">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:22px;">
+      <span style="width:30px;height:2px;background:#ff2d1f;display:block;"></span>
+      <span style="font-family:ui-monospace,monospace;font-size:11.5px;font-weight:700;letter-spacing:.16em;color:#ff2d1f;text-transform:uppercase;">베타 테스터 모집</span>
+    </div>
+    <h2 style="font-weight:900;font-size:26px;line-height:1.34;letter-spacing:-0.015em;color:#fff;margin:0 0 26px;">아무나 막 쓰는 도구로 만들지 않습니다.</h2>
+    <p style="margin:0 0 28px;">사업과 사기는 한 끗 차이입니다. <span style="color:#ff2d1f;font-weight:700;">먼저 제안하고 확신 주는 놈 99% 사기입니다.</span> 이재용 형님도 자기 앞날 모르고, 젠슨 황 아저씨도 함부로 단정 안 합니다. 그러니 저도 부탁드리지도 않고, 확신도 드리지도 못합니다.</p>
+    <p style="margin:0 0 28px;">지지기 쓰다 이거 쓰고 "매출 떨어졌네, 효율 망가졌네" 하실 거면 제발 그냥 하던 대로 해주세요. 저도 나름 이 바닥 짬밥이 있어서 무슨 말이 나올지 뻔히 압니다. <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">징징대고 투덜거리면 제가 먼저 잘라내고 차단할 겁니다.</span> 저보고 말 띠껍게 한다고, 태도가 재수없다고 하셔도 상관 없습니다. 성과보다 예의범절이 중요한 사대부 어르신은 제가 담기엔 너무 큰 분이십니다.</p>
+    <p style="margin:0 0 0;">저는 그런 거 따질 여유가 없습니다. 여기까지 오신 분들도 그럴 것입니다. 꼭 앞으로 가셔야 하는 분만 신청해 주세요. 반드시 밀고 나아가셔야만 하는 분들이 함께해야 시너지가 생깁니다. 네거티브에 일일이 상대해줄 생각도 여력도 없습니다.</p>
+
+    <div style="margin-top:30px;background:#111;border:1px solid #262626;border-top:3px solid #ff2d1f;padding:30px 24px;">
+      <p style="margin:0 0 18px;">무료로 드리는 이유는 하나입니다. <span style="background:linear-gradient(transparent 58%, rgba(255,45,31,.32) 58%);color:#fff;font-weight:700;">저와 형님들이 큐피(앱)를 사용하며 쏘아 올리는 데이터가, 계속해서 큐피를 더 똑똑하게 만들기 때문입니다.</span> 대기업에서 괜히 비싼 땅에 거대한 데이터 센터 짓는 거 아닙니다. 그래서 신청해 주신 분 한 분 한 분 직접 확인하고 등록해 드립니다. 모든 기록과 데이터가 소중한 자산이 됩니다.</p>
+      <ul style="margin:0 0 6px;padding:0;list-style:none;">
+        <li style="position:relative;padding-left:18px;margin-bottom:14px;line-height:1.8;"><span style="position:absolute;left:0;color:#ff2d1f;">—</span>본인 인증된 핸드폰 번호로 라이선스가 발급됩니다. 등록된 본인만 쓸 수 있습니다.</li>
+        <li style="position:relative;padding-left:18px;margin-bottom:0;line-height:1.8;"><span style="position:absolute;left:0;color:#ff2d1f;">—</span><span style="color:#ff2d1f;font-weight:700;">애초에 인성 순정 앱 사용자만 호환됩니다.</span> 지지기 갈아타라는 거 절대 아닙니다. 그거 만들어 파는 형님들도 먹고살아야 됩니다. "남은 기간이 얼마"라는 둥 저한테 말하지 말아주세요.</li>
+      </ul>
+      <a href="apply.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;text-align:center;background:#ff2d1f;color:#fff;font-size:18px;font-weight:900;padding:21px;text-decoration:none;letter-spacing:.01em;margin-top:26px;">베타 테스터 신청하기 <span style="font-family:ui-monospace,monospace;">→</span></a>
+    </div>
+  </section>
+
+  <footer style="text-align:center;color:#5a5a5a;font-size:13px;padding:48px 0 0;margin-top:40px;border-top:1px solid #1c1c1c;font-family:ui-monospace,monospace;letter-spacing:.04em;">© QuickPilot · 현장 기사가 직접 만드는 도구</footer>
+
+</main>
+
+<script>
+(function(){
+  var L=[0.9,1.0,1.15,1.3,1.5], i=2, m=document.getElementById('qpmain');
+  try{ var s=localStorage.getItem('qpfont'); if(s!==null) i=Math.min(L.length-1,Math.max(0,parseInt(s,10))); }catch(e){}
+  function ap(){ if(m) m.style.zoom=L[i]; }
+  window.qpFont=function(d){ i=Math.min(L.length-1,Math.max(0,i+d)); ap(); try{ localStorage.setItem('qpfont',i); }catch(e){} };
+  ap();
+})();
+</script>
+
+</body></html>
