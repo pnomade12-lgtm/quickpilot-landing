@@ -25,7 +25,8 @@
       "qp-toast-compare.html",
       "qp-toast-totalcall.html",
       "qp-toast.html",
-      "v29-insung.html"
+      "v29-insung.html",
+      "qp-gwanje.apk"
     ],
     "headers": [
       { "source": "**/*.html", "headers": [ { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" } ] },
