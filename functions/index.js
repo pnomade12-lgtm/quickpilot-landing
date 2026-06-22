@@ -656,11 +656,7 @@ exports.reconcileShadow = functions.region(REGION).runWith({ timeoutSeconds: 540
 exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72-default-rtdb")
   .ref("/v1/users/{uid}/orders/{date}/{orderId}").onWrite(async (change, ctx) => {
     const after = change.after.val(); if (!after) return null;   // 삭제는 무시
-    // [다이어트] 주선사 감지건수 = 신규 감지(before 없음)·주선사 있을 때 cleanCount +1. 매시간 풀스캔(agencyRecountTick) 폐기·이벤트 증분으로 다운로드 최소. 기존 cleanCount(재집계 base)에 미래 신규만 누적.
-    if (after.agency && !change.before.exists()) {
-      const aph = String(after.agency).replace(/[^0-9]/g, "");
-      if (aph) await db.ref("v1/agencies/" + aph + "/cleanCount").transaction(c => (Number(c) || 0) + 1);
-    }
+    // [중복제거] 주선사 감지건수 cleanCount는 아래 data_live agency 클레임(콜 단위 1회) 안에서 +1 — 한 콜이 여러 기사에게 뿌려져도 1로만 센다(유저 교차 중복 제거).
     const date = ctx.params.date;
     // [shadow] 감지 카운트 — liveKeyParts 게이트 앞(파싱실패 오더도 reconcile dedup엔 포함되므로 정의 일치). 별도 노드, 기존 동작 무관.
     {
@@ -691,7 +687,11 @@ exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72
     // agency 클레임(나중에 채워질 수 있어 별도)
     if (p.agency) {
       const aRes = await seenRef.child("a").transaction(cur => cur ? undefined : 1);
-      if (aRes.committed) await liveRef.update({ ["agencies/" + p.agency]: admin.database.ServerValue.increment(1) });
+      if (aRes.committed) {
+        await liveRef.update({ ["agencies/" + p.agency]: admin.database.ServerValue.increment(1) });
+        const aph = String(p.agency).replace(/[^0-9]/g, "");   // [중복제거] 주선사 감지건수도 콜 단위 1회만(같은 콜 N명 → +1)
+        if (aph) await db.ref("v1/agencies/" + aph + "/cleanCount").transaction(c => (Number(c) || 0) + 1);
+      }
     }
     return null;
   });
@@ -700,7 +700,8 @@ exports.orderLive = functions.region(REGION).database.instance("quickpilot-39d72
 // 기존 cleanCount(과거 1회 백필 base)와 비교해 더 크면 갱신(줄이지 않음). 매시간 → 모니터 열 때 최신·활발 주선사 증가.
 async function recountAgencies() {
   const uids = await listUids();
-  const byAg = {};   // phone -> 감지 건수(유저가 그 주선사 콜을 감지한 총 횟수, 중복제거 X = 활동량·데이터 쌓일수록 증가)
+  const byAg = {};   // phone -> 서로 다른 콜 수(유저 교차·재팝 중복 제거 = data_live와 동일 콜 단위). 한 콜이 N명에게 뿌려져도 1.
+  const seenCall = {};   // phone -> Set(날짜|콜키) — 같은 콜 중복 제거
   for (const uid of uids) {
     let days = null;
     try { days = (await db.ref("v1/users/" + uid + "/orders").once("value")).val(); } catch (e) {}
@@ -710,7 +711,10 @@ async function recountAgencies() {
       for (const k in o) {
         const r = o[k]; if (!r || !r.agency) continue;
         const ph = String(r.agency).replace(/[^0-9]/g, ""); if (!ph) continue;
-        byAg[ph] = (byAg[ph] || 0) + 1;   // 매 감지 +1
+        const p = liveKeyParts(r); const ck = d + "|" + (p ? p.key : ("_n_" + uid + "_" + k));   // 라이브와 동일 콜키(파싱 실패분은 노드 단위로 보존)
+        const s = seenCall[ph] || (seenCall[ph] = new Set());
+        if (s.has(ck)) continue; s.add(ck);
+        byAg[ph] = (byAg[ph] || 0) + 1;
       }
     }
   }
@@ -720,7 +724,7 @@ async function recountAgencies() {
     const a = ags[key]; if (!a) continue;
     const ph = String(a.phone || "").replace(/[^0-9]/g, "");
     const cnt = byAg[ph] || 0;
-    if (cnt > 0 && cnt !== (Number(a.cleanCount) || 0)) { upd[key + "/cleanCount"] = cnt; n++; }   // 감지 건수로 갱신(데이터 쌓일수록 증가)
+    if (cnt > 0 && cnt !== (Number(a.cleanCount) || 0)) { upd[key + "/cleanCount"] = cnt; n++; }   // 서로 다른 콜 수로 갱신(중복 제거라 기존 부풀림은 내려갈 수 있음·잔존 오더 기준)
   }
   if (Object.keys(upd).length) await db.ref("v1/agencies").update(upd);
   console.log("recountAgencies(raw count) updated", n, "/", Object.keys(ags).length);
