@@ -1,0 +1,158 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QP 데이터 리포트 5호 · 짐을 많이 실을수록 요금을 많이 줄까?</title>
+<style>
+:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}
+.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}
+h1{font-size:26px;font-weight:800;line-height:1.3;margin:6px 0 4px}
+.subhead{font-size:14px;font-weight:800;color:var(--ts);margin-bottom:22px}
+.lead{font-size:15px;line-height:1.75;margin:10px 0;word-break:keep-all}
+.sec{margin-bottom:30px}
+.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:800;font-size:15px;margin-right:8px;flex:0 0 30px}
+h2{font-size:18.5px;font-weight:800;display:flex;align-items:center;margin-bottom:10px;line-height:1.3}
+h2 span.t{flex:1}
+p{font-size:14.5px;margin:8px 0;word-break:keep-all}
+.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:12px 0}
+.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:12px}
+.stat{display:flex;gap:10px;margin:13px 0}
+.stat .b{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:15px 10px;text-align:center}
+.stat .b .bn2{font-size:13px;font-weight:800;margin-bottom:7px;line-height:1.35}
+.stat .b .n{font-size:22px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums}
+.stat .b .l{font-size:12px;color:var(--ts);margin-top:4px;font-weight:700;line-height:1.4}
+.rbar{margin:9px 0}
+.rbar .rt{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;margin-bottom:3px}
+.rbar .rt .rp{color:var(--ts);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rbar .rl{height:11px;background:#ece3cf;border-radius:6px;overflow:hidden}
+.rbar .rl i{display:block;height:100%;border-radius:6px}
+.dtable{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0}
+.dtable th{background:var(--tm);color:#f3ead7;font-weight:800;padding:8px 5px;font-size:11px;line-height:1.3}
+.dtable td{padding:7px 5px;border-bottom:1px solid var(--bd);text-align:center;font-variant-numeric:tabular-nums}
+.dtable td:first-child{font-weight:800;text-align:left}
+.dtable tr.hl td{background:#f3e2a8;font-weight:800}
+.dtable td .vt{font-size:11px;color:var(--ts)}
+.vs{display:flex;gap:10px;margin:14px 0 6px}
+.vs .box{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center}
+.vs .box .vn{font-size:15px;font-weight:800;line-height:1.25;margin-bottom:7px}
+.vs .box .vu{font-size:12.5px;color:var(--ts);line-height:1.8}
+.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 14px;margin:14px 0;font-size:12.5px;color:#5a4d2e;line-height:1.6}
+.note b{color:var(--tm);font-weight:800}
+.ex{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+.ex .e{background:#fffdf5;border:1px solid var(--bd);border-radius:8px;padding:10px 12px}
+.ex .e b{display:block;font-size:12px;margin-bottom:3px;color:var(--tm)}
+.ex .e span{display:block;font-size:12.5px;color:#5a4d2e;line-height:1.55}
+.wrap{margin-top:28px}
+.wrap .lead{font-size:15px}
+.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:24px;line-height:1.6}
+@media(max-width:430px){.sheet{padding:26px 18px 54px}h1{font-size:24px}.stat,.vs{gap:8px}.stat .b{padding:13px 7px}.stat .b .n{font-size:20px}.dtable{font-size:11.5px}.dtable th,.dtable td{padding-left:3px;padding-right:3px}}
+@media print{body{background:#fff}.sheet{box-shadow:none}}
+</style></head><body>
+<div class="sheet">
+  <div class="kicker">QP 데이터 리포트 #5</div>
+  <h1>짐을 많이 실을수록<br>요금을 많이 줄까?</h1>
+  <div class="subhead">큰 짐 단독과 작은 짐 합짐 비교</div>
+
+  <p class="lead">궁금한 건 단순합니다. 짐이 많으면 정말 돈을 더 줄까요. 큰 짐 하나를 싣는 게, 작은 짐 여러 개를 동선 맞춰 묶는 것보다 나을까요.</p>
+  <p class="lead">그래서 적요란에 짐 정보가 있는 오더만 골랐습니다. 서류·봉투처럼 작은 짐, 박스 몇 개짜리 중간 짐, 파렛트·상하차가 붙은 큰 짐으로 나눠 평균 요금과 거리, km당 단가를 봤습니다.</p>
+  <p class="lead">다만 이 숫자는 현장을 그대로 보여주는 사진이 아닙니다. 적요란에 적힌 말과 실제 현장에서 만나는 짐 사이에는 자주 차이가 납니다. 이번 리포트는 그 차이가 왜 생기는지도 같이 봅니다.</p>
+
+  <div class="sec">
+    <h2><span class="num">1</span><span class="t">적요란에 짐 정보가 있는 오더만 봤다</span></h2>
+    <p>이번 표본은 적요란에 서류, 봉투, 박스, 상자, 파렛트, 포대, 롤, 상하차 같은 말이 적힌 오더입니다. 실제 저울로 무게를 잰 건 아닙니다. <span class="hi">기사님이 오더창에서 읽는 짐 정보를 기준으로 나눈 비교</span>입니다.</p>
+    <div class="card">
+      <h4>짐 정보가 있는 오더의 구성</h4>
+      <div class="rbar"><div class="rt"><span>작고 적은 짐</span><span class="rp">6.8%</span></div><div class="rl"><i style="width:14%;background:#c7bca0"></i></div></div>
+      <div class="rbar"><div class="rt"><span>중간 짐</span><span class="rp">49.9%</span></div><div class="rl"><i style="width:100%;background:var(--grn)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>크고 많은 짐</span><span class="rp">43.3%</span></div><div class="rl"><i style="width:87%;background:var(--gold)"></i></div></div>
+    </div>
+    <p>나누는 기준은 어렵지 않습니다. 손에 들고 바로 움직일 만하면 작고 적은 짐, 박스 몇 개 정도면 중간 짐, 차 공간을 많이 쓰거나 상하차가 붙을 것 같으면 크고 많은 짐으로 봤습니다.</p>
+    <div class="ex">
+      <div class="e"><b>작고 적은 짐</b><span>서류, 봉투 1개, 쇼핑백 1개, 소박스 1개, 샘플처럼 차 공간을 거의 안 쓰는 짐입니다.</span></div>
+      <div class="e"><b>중간 짐</b><span>컵 5박스, 부자재 2박스, 택배박스, 노트북 박스처럼 일반적인 박스 배송에 가까운 짐입니다.</span></div>
+      <div class="e"><b>크고 많은 짐</b><span>파렛트, 박스 수십 개, 공파렛트 30개, 중량 250키로, 지게차 상하차처럼 공간이나 작업 부담이 보이는 짐입니다.</span></div>
+    </div>
+    <div class="note">
+      <b>읽는 기준.</b> 적요란은 사람이 적는 말이라 실제 부피와 무게를 그대로 보여주진 않습니다. 이번 리포트는 실측 자료가 아니라, 기사님이 오더창에서 보는 짐 정보가 요금에 어떻게 묻어나는지 본 자료입니다.
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="num">2</span><span class="t">적요란은 현장을 직접 본 말이 아니다</span></h2>
+    <p>퀵서비스나 화물 오더는 대부분 비대면으로 접수됩니다. 고객이 전화나 문자로 설명하고, 주선사는 그 말을 듣고 오더를 올립니다. 문제는 주선사가 짐을 직접 보고 쓰는 게 아니라는 점입니다.</p>
+    <p>고객도 항상 정확하게 말하지는 않습니다. 요금을 줄이고 싶어서 짐을 작게 말하는 경우도 있고, 고객은 별것 아니라고 생각했는데 막상 기사님이 보면 차에 싣기 어려운 경우도 있습니다. 주선사가 짐 크기를 자세히 묻지 않거나, 적요란에 충분히 적지 않는 경우도 있습니다.</p>
+    <div class="note">
+      <b>현장에서 난감한 이유.</b> 적요란에는 작은 짐처럼 보였는데, 막상 도착하면 박스가 너무 많거나 물건이 너무 크거나 상하차가 필요한 경우가 생깁니다. 그때 과적 문제, 추가 요금 협의, 대기 시간, 고객 설명까지 기사님 에너지가 한꺼번에 들어갑니다. 표에 적힌 숫자와 현장에서 몸으로 겪는 일이 다르게 느껴지는 이유가 여기 있습니다.
+    </div>
+    <p>요금 구조도 단순하지 않습니다. 고객은 가능하면 적게 내고 싶고, 주선사는 접수한 정보를 바탕으로 요금을 맞춥니다. 그 사이에서 기사님에게 내려오는 운임은 고객이 낸 요금과 다를 수 있습니다. 현장에서는 중간 수수료가 23%라고 알려져 있어도 실제 체감은 그보다 더 빠지는 것 같다는 말도 많습니다. 이 리포트가 수수료율을 검증한 건 아닙니다. 다만 기사님 입장에서는 짐은 크고 많은데 내려온 운임은 충분하지 않다고 느끼는 상황이 생길 수 있습니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="num">3</span><span class="t">평균으로 보면 큰 짐이 조금 더 높다</span></h2>
+    <p>먼저 평균 총요금을 봤습니다. <span class="hi">큰 짐 쪽이 돈을 조금 더 주긴 했습니다.</span></p>
+    <div class="stat">
+      <div class="b"><div class="bn2">작고 적은 짐</div><div class="n" style="color:var(--ts)">38,627</div><div class="l">평균 총요금</div></div>
+      <div class="b"><div class="bn2">중간 짐</div><div class="n" style="color:var(--grn)">38,686</div><div class="l">평균 총요금</div></div>
+      <div class="b"><div class="bn2">크고 많은 짐</div><div class="n" style="color:var(--gold)">41,400</div><div class="l">평균 총요금</div></div>
+    </div>
+    <p>큰 짐 쪽이 작고 적은 짐보다 평균 약 2,800원 높았습니다. 차이는 있습니다. 그런데 짐이 커진 만큼 요금이 확 뛰는 그림은 아닙니다. 오더창에 짐이 많아 보여도, 총액만 보고 좋은 콜이라고 판단하긴 어렵습니다.</p>
+    <div class="note">
+      <b>평균으로 봤습니다.</b> 짐 정보가 있는 오더를 작고 적은 짐, 중간 짐, 크고 많은 짐으로 나눠 평균 요금을 비교했습니다.
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="num">4</span><span class="t">돈은 조금 더, 거리는 조금 짧게</span></h2>
+    <p>큰 짐은 돈을 조금 더 줬고, 거리는 오히려 조금 짧았습니다. 그래서 km당 단가도 높게 나왔습니다.</p>
+    <div class="card">
+      <table class="dtable">
+        <tr><th>구분</th><th>비중</th><th>평균 거리</th><th>평균 km당</th><th>평균 총요금</th></tr>
+        <tr><td>작고 적은 짐</td><td>6.8%</td><td>43.4km</td><td>1,072원</td><td>38,627원</td></tr>
+        <tr><td>중간 짐</td><td>49.9%</td><td>41.5km</td><td>1,311원</td><td>38,686원</td></tr>
+        <tr class="hl"><td>크고 많은 짐</td><td>43.3%</td><td>40.8km</td><td>1,620원</td><td>41,400원</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h4>km당 단가 비교</h4>
+      <div class="rbar"><div class="rt"><span>작고 적은 짐</span><span class="rp">1,072원/km</span></div><div class="rl"><i style="width:66%;background:#c7bca0"></i></div></div>
+      <div class="rbar"><div class="rt"><span>중간 짐</span><span class="rp">1,311원/km</span></div><div class="rl"><i style="width:81%;background:var(--grn)"></i></div></div>
+      <div class="rbar"><div class="rt"><span>크고 많은 짐</span><span class="rp">1,620원/km</span></div><div class="rl"><i style="width:100%;background:var(--gold)"></i></div></div>
+    </div>
+    <p>여기까지만 보면 큰 짐이 좋아 보입니다. 돈도 조금 더 주고, 거리 대비 단가도 높습니다. 하지만 이 숫자에는 빠진 게 있습니다. <span class="hi">상하차, 대기, 검수에 걸리는 시간</span>입니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="num">5</span><span class="t">얼마를 받느냐보다, 얼마나 걸리느냐다</span></h2>
+    <p>큰 짐은 km당 단가가 좋아 보일 수 있습니다. 하지만 현장에서 시간이 길어지면 얘기가 달라집니다. <span class="hi">이 오더 하나가 끝날 때까지 내 시간을 얼마나 묶는지</span>를 같이 봐야 합니다.</p>
+    <div class="vs">
+      <div class="box"><div class="vn" style="color:var(--ts)">작고 적은 짐</div><div class="vu">평균 총요금 38,627원<br>평균 거리 43.4km<br>km당 1,072원</div></div>
+      <div class="box"><div class="vn" style="color:var(--gold)">크고 많은 짐</div><div class="vu">평균 총요금 41,400원<br>평균 거리 40.8km<br>km당 1,620원</div></div>
+    </div>
+    <div class="vs">
+      <div class="box"><div class="vn" style="color:var(--gold)">km당 단가</div><div class="vu">요금 ÷ 거리<br>길 위의 값<br>작업 시간은 빠짐</div></div>
+      <div class="box"><div class="vn" style="color:var(--grn)">시간당 효율</div><div class="vu">요금 ÷ 완료 시간<br>실제로 묶인 시간<br>하루 수익에 가까움</div></div>
+    </div>
+    <p>예를 들어 큰 짐 하나를 잡았습니다. 숫자로는 좋아 보입니다. 그런데 출발지에서 상차 기다리고, 도착지에서 하차 기다리고, 물건 확인까지 받느라 20분, 30분이 더 걸릴 수 있습니다. 그러면 길 위에서 본 단가는 좋아도, 실제로 한 시간에 남는 돈은 줄어듭니다.</p>
+    <div class="vs">
+      <div class="box"><div class="vn" style="color:var(--gold)">큰 짐 단독</div><div class="vu">단가는 높아 보임<br>대기·상하차 변수<br>한 오더에 시간 묶임</div></div>
+      <div class="box"><div class="vn" style="color:var(--grn)">작은·중간 짐 합짐</div><div class="vu">동선으로 묶기 쉬움<br>작업 변수 적음<br>회전으로 효율 보완</div></div>
+    </div>
+    <p>그래서 작은 짐과 중간 짐을 동선 맞춰 합짐하는 쪽이 더 나을 수 있습니다. 큰 짐 하나가 좋아 보여도, 같은 시간에 작은 짐과 중간 짐을 두세 건 무리 없이 끝낼 수 있다면 손에 남는 효율은 달라집니다. 특히 작은 짐은 차 공간을 많이 쓰지 않아서, 이미 가는 방향에 얹기 좋습니다.</p>
+    <p>차량 기사님한테는 오토바이에 뜨는 작은 오더도 이런 의미에서 기회가 됩니다. 서류, 봉투, 쇼핑백, 작은 박스처럼 가볍고 작은 짐은 차 안에서 자리를 거의 차지하지 않습니다. 출발지와 도착지가 기존 동선과 크게 벗어나지 않는다면, 짐 걱정 없이 수익을 보태는 오더가 될 수 있습니다.</p>
+    <div class="note">
+      <b>합짐할 때 지켜야 할 것.</b> 합짐은 약속 시간을 지킬 수 있을 때만 해야 합니다. 몇 건 더 묶겠다고 규정 시간이나 배송 약속을 어기면 안 됩니다. 고객이 기다리게 되거나, 주선사가 항의를 받게 되거나, 물건에 문제가 생기면 그건 수익을 올린 게 아니라 신뢰를 깎은 겁니다. 동선이 맞고, 시간 안에 끝낼 수 있고, 짐끼리 서로 방해되지 않을 때만 합짐이 의미가 있습니다.
+    </div>
+  </div>
+
+  <div class="wrap">
+    <p class="lead">이번 데이터가 보여준 건 단순합니다. 큰 짐은 평균 요금과 km당 단가가 조금 더 높았습니다. 하지만 기사님 수익은 km당 단가에서 끝나지 않습니다.</p>
+    <p class="lead">큰 짐을 단독으로 가져갈 때는 이 오더가 몇 분을 잡아먹는지 봐야 합니다. 단가가 좋아도 오래 걸리면 효율은 떨어집니다. 반대로 작은 짐, 중간 짐, 짐 걱정이 적은 오토바이 오더는 동선과 시간이 맞으면 합짐으로 더 나은 선택이 될 수 있습니다. 다만 합짐은 항상 약속 시간을 지킬 수 있을 때만 해야 합니다.</p>
+  </div>
+
+  <div class="foot">
+    QP 데이터 리포트 5호 · 2026.07 · 2026.06.01~2026.06.30 전 사용자 인성 오더 표본 기반 (전체 시장 데이터 아님) · 경유·왕복 제외 · 거리 있는 편도 오더 중 적요에 짐 정보가 잡힌 오더만 비교 · 실제 무게·부피 실측 아님 · 거리와 km당 단가는 직선거리 기준 · 작고 적은 짐 구간은 표본이 얇아 방향만 봅니다
+  </div>
+</div>
+</body></html>
