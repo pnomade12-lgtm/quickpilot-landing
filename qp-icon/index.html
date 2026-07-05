@@ -3,15 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QP 실제 앱 아이콘 표시 미리보기</title>
+  <title>QP 앱 아이콘 폰트 샘플</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Black+Ops+One&family=Bungee&family=Chivo:wght@900&family=Exo+2:wght@900&family=League+Spartan:wght@900&family=Lilita+One&family=Montserrat:wght@900&family=Rubik+Mono+One&family=Teko:wght@700&display=swap" rel="stylesheet">
   <style>
     :root {
-      color-scheme: light;
-      font-family: Pretendard, "Apple SD Gothic Neo", "Segoe UI", Arial, sans-serif;
-      background: #eef2f7;
-      color: #101010;
+      color-scheme: dark;
       --lime: #b7ff2a;
       --black: #070707;
+      --text: #f8fafc;
+      font-family: Pretendard, "Apple SD Gothic Neo", "Segoe UI", Arial, sans-serif;
+      background: #08111f;
+      color: var(--text);
     }
 
     * {
@@ -20,167 +24,135 @@
 
     body {
       margin: 0;
-      padding: 20px 13px 34px;
+      min-height: 100vh;
+      padding: 18px 12px 36px;
       background:
-        linear-gradient(180deg, #ffffff 0%, #eef2f7 44%, #dbe4ee 100%);
+        radial-gradient(circle at 18% 8%, rgba(60, 130, 255, 0.42), transparent 27%),
+        radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.18), transparent 24%),
+        linear-gradient(180deg, #07101e 0%, #101a2d 48%, #030711 100%);
     }
 
     main {
-      width: min(100%, 980px);
+      width: min(100%, 920px);
       margin: 0 auto;
     }
 
     header {
-      padding: 4px 4px 16px;
+      padding: 2px 4px 14px;
     }
 
     h1 {
       margin: 0 0 8px;
-      font-size: 23px;
+      font-size: 22px;
       line-height: 1.18;
       letter-spacing: 0;
     }
 
     p {
       margin: 0;
-      color: #4b5563;
+      color: rgba(248, 250, 252, 0.72);
       font-size: 14px;
-      line-height: 1.5;
+      line-height: 1.48;
     }
 
-    .notice {
-      margin: 0 4px 16px;
-      padding: 12px;
+    .home-preview {
+      margin: 0 0 18px;
+      padding: 14px 8px 16px;
       border-radius: 8px;
-      background: #101010;
-      color: #f8fafc;
-      font-size: 13px;
-      line-height: 1.45;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .grid {
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px 10px;
+      align-items: start;
+    }
+
+    .home-item {
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .app-icon {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: min(68px, 15.2vw);
+      aspect-ratio: 1;
+      border-radius: 26%;
+      overflow: hidden;
+      background: var(--lime);
+      color: var(--black);
+      box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.22),
+        0 10px 16px rgba(0, 0, 0, 0.32);
+      isolation: isolate;
+      container-type: inline-size;
+    }
+
+    .app-icon::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 34%),
+        linear-gradient(180deg, transparent 56%, rgba(0, 0, 0, 0.13));
+      pointer-events: none;
+    }
+
+    .qp {
+      position: relative;
+      z-index: 2;
+      display: block;
+      width: 82%;
+      text-align: center;
+      white-space: nowrap;
+      color: var(--black);
+      font-size: 42cqw;
+      font-weight: 900;
+      line-height: 0.86;
+      letter-spacing: 0;
+      transform: translateY(1%) scaleX(var(--sx, 1));
+    }
+
+    .label {
+      max-width: 100%;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 11px;
+      line-height: 1.16;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+    }
+
+    .large-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      gap: 13px;
     }
 
     .sample {
       padding: 12px;
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid rgba(15, 23, 42, 0.08);
       border-radius: 8px;
-      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .stage {
-      display: grid;
-      place-items: center;
+    .sample .app-icon {
       width: 100%;
-      aspect-ratio: 1;
-      padding: 8%;
-      border-radius: 8px;
-      background:
-        linear-gradient(45deg, #e5e7eb 25%, transparent 25%),
-        linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, #e5e7eb 75%),
-        linear-gradient(-45deg, transparent 75%, #e5e7eb 75%),
-        #f8fafc;
-      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
-      background-size: 20px 20px;
+      max-width: 150px;
+      margin: 0 auto;
     }
 
-    .icon {
-      position: relative;
-      display: grid;
-      place-items: center;
-      width: 100%;
-      aspect-ratio: 1;
-      overflow: hidden;
-      background: var(--lime);
-      color: var(--black);
-      isolation: isolate;
-      container-type: inline-size;
-      box-shadow:
-        inset 0 0 0 1px rgba(0, 0, 0, 0.18),
-        0 10px 18px rgba(15, 23, 42, 0.18);
-    }
-
-    .icon::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.5), transparent 28%),
-        linear-gradient(180deg, transparent 56%, rgba(0, 0, 0, 0.1));
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    .letters {
-      position: relative;
-      z-index: 2;
-      display: block;
-      width: 72%;
-      text-align: center;
-      white-space: nowrap;
-      font-family: Impact, Pretendard, "Arial Black", Arial, sans-serif;
-      font-size: clamp(38px, 42cqw, 102px);
-      font-weight: 1000;
-      line-height: 0.88;
-      letter-spacing: 0;
-      transform: scaleX(1.02);
-    }
-
-    .source .icon {
-      border-radius: 0;
-    }
-
-    .play .icon {
-      border-radius: 30%;
-    }
-
-    .android-round .icon {
-      border-radius: 24%;
-    }
-
-    .pixel .icon {
-      border-radius: 50%;
-    }
-
-    .squircle .icon {
-      border-radius: 34%;
-    }
-
-    .samsung .icon {
-      border-radius: 27%;
-    }
-
-    .tight-circle .icon {
-      border-radius: 50%;
-      transform: scale(0.92);
-    }
-
-    .teardrop .icon {
-      border-radius: 52% 52% 52% 18%;
-      transform: rotate(-45deg) scale(0.92);
-    }
-
-    .teardrop .letters {
-      transform: rotate(45deg) scaleX(1.02);
-    }
-
-    .small .stage {
-      padding: 19%;
-    }
-
-    .small .icon {
-      border-radius: 28%;
-    }
-
-    .mono .icon {
-      background: #101010;
-      color: var(--lime);
-      border-radius: 50%;
+    .sample .qp {
+      font-size: 43cqw;
     }
 
     .meta {
@@ -192,32 +164,50 @@
     }
 
     .name {
-      color: #101010;
       font-size: 14px;
-      font-weight: 850;
-      line-height: 1.25;
+      font-weight: 800;
+      line-height: 1.22;
     }
 
-    .note {
-      color: #64748b;
+    .tone {
+      color: rgba(248, 250, 252, 0.62);
       font-size: 11px;
-      line-height: 1.25;
+      line-height: 1.2;
       text-align: right;
       white-space: nowrap;
     }
 
+    .f1 { font-family: "Anton", Impact, sans-serif; --sx: 1.02; }
+    .f2 { font-family: "Archivo Black", "Arial Black", sans-serif; --sx: 0.98; }
+    .f3 { font-family: "Black Ops One", Impact, sans-serif; --sx: 0.92; }
+    .f4 { font-family: "Bungee", Impact, sans-serif; --sx: 0.88; font-size: 38cqw; }
+    .f5 { font-family: "Chivo", "Arial Black", sans-serif; --sx: 0.96; }
+    .f6 { font-family: "Exo 2", "Arial Black", sans-serif; --sx: 1; }
+    .f7 { font-family: "League Spartan", "Arial Black", sans-serif; --sx: 1.08; font-size: 45cqw; }
+    .f8 { font-family: "Lilita One", Impact, sans-serif; --sx: 1; font-size: 44cqw; }
+    .f9 { font-family: "Montserrat", "Arial Black", sans-serif; --sx: 0.96; }
+    .f10 { font-family: "Rubik Mono One", "Arial Black", sans-serif; --sx: 0.82; font-size: 35cqw; }
+
     @media (min-width: 720px) {
       body {
-        padding: 32px 24px 48px;
-      }
-
-      .grid {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 16px;
+        padding: 30px 22px 48px;
       }
 
       h1 {
         font-size: 30px;
+      }
+
+      .home-grid {
+        gap: 18px 18px;
+      }
+
+      .app-icon {
+        width: 74px;
+      }
+
+      .large-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
       }
     }
   </style>
@@ -225,64 +215,36 @@
 <body>
   <main>
     <header>
-      <h1>QP 실제 앱 아이콘 표시 미리보기</h1>
-      <p>실제 앱 아이콘은 원본 하나가 그대로 보이는 게 아니라, Play Store와 각 안드로이드 런처가 마스크를 씌워서 보여줍니다.</p>
+      <h1>QP 앱 아이콘 폰트 샘플 10개</h1>
+      <p>라임 배경과 검정 글자는 고정했습니다. 선생님 폰 홈 화면처럼 둥근 사각 아이콘 모양에 맞춰서 폰트만 바꿔 봅니다.</p>
     </header>
 
-    <div class="notice">
-      결론: 라임 배경은 끝까지 꽉 채우고, QP 글자는 중앙 안전영역 안에 둬야 합니다. 아이콘 자체를 미리 둥글게 깎아 넣으면 실제 기기에서 한 번 더 잘려서 이상해질 수 있습니다.
-    </div>
+    <section class="home-preview" aria-label="홈 화면 크기 미리보기">
+      <div class="home-grid">
+        <div class="home-item"><div class="app-icon"><span class="qp f1">QP</span></div><div class="label">Anton</div></div>
+        <div class="home-item"><div class="app-icon"><span class="qp f2">QP</span></div><div class="label">Archivo</div></div>
+        <div class="home-item"><div class="app-icon"><span class="qp f3">QP</span></div><div class="label">Ops</div></div>
+        <div class="home-item"><div class="app-icon"><span class="qp f4">QP</span></div><div class="label">Bungee</div></div>
+        <div class="home-item"><div class="app-icon"><span class="qp f5">QP</span></div><div class="label">Chivo</div></div>
+        <div class="home-item"><div class="app-icon"><span class="qp f6">QP</span></div><div class="label">Exo</div></div>
+        <div class="home-item"><div class="app-icon"><span class="qp f7">QP</span></div><div class="label">Spartan</div></div>
+        <div class="home-item"><div class="app-icon"><span class="qp f8">QP</span></div><div class="label">Lilita</div></div>
+        <div class="home-item"><div class="app-icon"><span class="qp f9">QP</span></div><div class="label">Montserrat</div></div>
+        <div class="home-item"><div class="app-icon"><span class="qp f10">QP</span></div><div class="label">Rubik</div></div>
+      </div>
+    </section>
 
-    <section class="grid" aria-label="QP 실제 앱 아이콘 표시 미리보기">
-      <article class="sample source">
-        <div class="stage"><div class="icon"><div class="letters">QP</div></div></div>
-        <div class="meta"><div class="name">원본 512</div><div class="note">정사각형</div></div>
-      </article>
-
-      <article class="sample play">
-        <div class="stage"><div class="icon"><div class="letters">QP</div></div></div>
-        <div class="meta"><div class="name">Play Store</div><div class="note">30% 라운드</div></div>
-      </article>
-
-      <article class="sample android-round">
-        <div class="stage"><div class="icon"><div class="letters">QP</div></div></div>
-        <div class="meta"><div class="name">기본 런처</div><div class="note">라운드</div></div>
-      </article>
-
-      <article class="sample pixel">
-        <div class="stage"><div class="icon"><div class="letters">QP</div></div></div>
-        <div class="meta"><div class="name">원형 마스크</div><div class="note">픽셀 계열</div></div>
-      </article>
-
-      <article class="sample squircle">
-        <div class="stage"><div class="icon"><div class="letters">QP</div></div></div>
-        <div class="meta"><div class="name">스쿼클</div><div class="note">둥근 사각</div></div>
-      </article>
-
-      <article class="sample samsung">
-        <div class="stage"><div class="icon"><div class="letters">QP</div></div></div>
-        <div class="meta"><div class="name">갤럭시 느낌</div><div class="note">One UI형</div></div>
-      </article>
-
-      <article class="sample tight-circle">
-        <div class="stage"><div class="icon"><div class="letters">QP</div></div></div>
-        <div class="meta"><div class="name">작은 원형</div><div class="note">여백 확인</div></div>
-      </article>
-
-      <article class="sample teardrop">
-        <div class="stage"><div class="icon"><div class="letters">QP</div></div></div>
-        <div class="meta"><div class="name">물방울형</div><div class="note">구형 마스크</div></div>
-      </article>
-
-      <article class="sample small">
-        <div class="stage"><div class="icon"><div class="letters">QP</div></div></div>
-        <div class="meta"><div class="name">홈화면 축소</div><div class="note">작게 보임</div></div>
-      </article>
-
-      <article class="sample mono">
-        <div class="stage"><div class="icon"><div class="letters">QP</div></div></div>
-        <div class="meta"><div class="name">강제 테마</div><div class="note">색 반전 확인</div></div>
-      </article>
+    <section class="large-grid" aria-label="확대 폰트 비교">
+      <article class="sample"><div class="app-icon"><span class="qp f1">QP</span></div><div class="meta"><div class="name">Anton</div><div class="tone">강함</div></div></article>
+      <article class="sample"><div class="app-icon"><span class="qp f2">QP</span></div><div class="meta"><div class="name">Archivo Black</div><div class="tone">무난함</div></div></article>
+      <article class="sample"><div class="app-icon"><span class="qp f3">QP</span></div><div class="meta"><div class="name">Black Ops</div><div class="tone">기계적</div></div></article>
+      <article class="sample"><div class="app-icon"><span class="qp f4">QP</span></div><div class="meta"><div class="name">Bungee</div><div class="tone">간판 느낌</div></div></article>
+      <article class="sample"><div class="app-icon"><span class="qp f5">QP</span></div><div class="meta"><div class="name">Chivo Black</div><div class="tone">단단함</div></div></article>
+      <article class="sample"><div class="app-icon"><span class="qp f6">QP</span></div><div class="meta"><div class="name">Exo 2</div><div class="tone">테크 느낌</div></div></article>
+      <article class="sample"><div class="app-icon"><span class="qp f7">QP</span></div><div class="meta"><div class="name">League Spartan</div><div class="tone">큼직함</div></div></article>
+      <article class="sample"><div class="app-icon"><span class="qp f8">QP</span></div><div class="meta"><div class="name">Lilita One</div><div class="tone">둥글둥글</div></div></article>
+      <article class="sample"><div class="app-icon"><span class="qp f9">QP</span></div><div class="meta"><div class="name">Montserrat</div><div class="tone">깔끔함</div></div></article>
+      <article class="sample"><div class="app-icon"><span class="qp f10">QP</span></div><div class="meta"><div class="name">Rubik Mono</div><div class="tone">묵직함</div></div></article>
     </section>
   </main>
 </body>
