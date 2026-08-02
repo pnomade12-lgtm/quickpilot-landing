@@ -15,6 +15,8 @@
     main{display:flex;flex-direction:column;width:100%;height:100vh;height:100dvh;min-height:0;max-width:1100px;margin:0 auto;padding:12px 18px 12px;background:var(--bg);overflow:hidden}
     .kicker{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.08em}
     h1{margin:5px 0 4px;font-size:24px;line-height:1.3}
+    .page-title-input{display:block;width:100%;margin:5px 0 4px;padding:0;border:0;border-bottom:1px solid transparent;border-radius:0;background:transparent;color:var(--tm);font:800 24px/1.3 -apple-system,"Noto Sans KR",sans-serif;outline:0}
+    .page-title-input:focus{border-bottom-color:var(--grn)}
     .desc{display:none}
     .back{display:inline-block;flex:0 0 auto;margin:0 0 8px;color:var(--ts);font-size:13px;text-decoration:none}
     .back:active{color:var(--tm)}
@@ -56,7 +58,7 @@
   <main>
     <a class="back" href="report-editor.html">← 전체 목록</a>
     <div class="kicker">데이터 리포트 · 편집 전용</div>
-    <h1 id="pageTitle">리포트 편집</h1>
+    <input id="pageTitle" class="page-title-input" type="text" value="리포트 편집" aria-label="리포트 제목" disabled>
     <div class="status" id="status" aria-live="polite">리포트를 고르세요.</div>
     <div class="blocks" id="editorBlocks"></div>
     <div class="toolbar">
@@ -150,6 +152,7 @@
 
     function refreshControls() {
       const ready = Boolean(selected);
+      pageTitle.disabled = !ready;
       saveButton.disabled = !ready;
       resetButton.disabled = !ready;
       editorBlocks.querySelectorAll("textarea").forEach((field) => { field.disabled = !ready; });
@@ -300,6 +303,7 @@
       const document = new DOMParser().parseFromString(html, "text/html");
       const blocks = [];
       let visualNumber = 0;
+      let titleFound = false;
 
       function walk(element) {
         if (isVisualRoot(element)) {
@@ -311,7 +315,11 @@
         }
         if (isEditableElement(element)) {
           const text = plainText(element);
-          if (text) blocks.push({ kind: "text", value: markdownPrefix(element) + text });
+          if (text) {
+            const isTitle = element.tagName.toLowerCase() === "h1" && !titleFound;
+            if (isTitle) titleFound = true;
+            blocks.push({ kind: "text", value: markdownPrefix(element) + text, role: isTitle ? "title" : "" });
+          }
           return;
         }
         for (const child of element.children) walk(child);
@@ -359,6 +367,7 @@
     function renderBlocks(model, savedNotes = {}) {
       editorModel = model;
       notesByVisual = savedNotes && typeof savedNotes === "object" ? savedNotes : {};
+      pageTitle.value = String(selected?.title || "").replace(/^QP\s+/, "").replace(/^데이터 리포트\s+\d+호\s*·\s*/, "").replace(/^특별분석\s*·\s*/, "");
       editorBlocks.replaceChildren();
       model.blocks.forEach((block) => {
         if (block.kind === "text") {
@@ -366,8 +375,11 @@
           field.className = "text-block";
           field.spellcheck = false;
           field.value = block.value;
+          if (block.role) field.dataset.role = block.role;
+          if (block.role === "title") pageTitle.value = block.value.replace(/^#\s+/, "");
           field.addEventListener("input", () => {
             growTextarea(field);
+            if (field.dataset.role === "title") pageTitle.value = field.value.replace(/^#\s+/, "");
             markDirty();
           });
           editorBlocks.appendChild(field);
@@ -403,6 +415,15 @@
       hasUnsavedChanges = false;
       refreshControls();
     }
+
+    pageTitle.addEventListener("input", () => {
+      const titleField = editorBlocks.querySelector('.text-block[data-role="title"]');
+      if (titleField) {
+        titleField.value = `# ${pageTitle.value}`;
+        growTextarea(titleField);
+      }
+      markDirty();
+    });
 
     window.addEventListener("resize", () => requestAnimationFrame(resizeEditorFields));
 
@@ -472,7 +493,7 @@
 
     async function loadReport(report) {
       selected = report;
-      pageTitle.textContent = `${report.number} · ${String(report.title).replace(/^QP\s+/, "").replace(/^데이터 리포트\s+\d+호\s*·\s*/, "").replace(/^특별분석\s*·\s*/, "")}`;
+      pageTitle.value = String(report.title).replace(/^QP\s+/, "").replace(/^데이터 리포트\s+\d+호\s*·\s*/, "").replace(/^특별분석\s*·\s*/, "");
       refreshControls();
       setStatus("초안을 불러오는 중입니다.");
       try {
