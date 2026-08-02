@@ -110,6 +110,10 @@
     ];
     const storageKey = (id) => `quickpilot-report-editor:${id}`;
     const notesKey = (id) => `quickpilot-report-editor-notes:${id}`;
+    const storageMetaKey = (id) => `quickpilot-report-editor:${id}:updated`;
+    const autoStorageKey = (id) => `quickpilot-report-editor-autosave:${id}`;
+    const autoNotesKey = (id) => `quickpilot-report-editor-autosave-notes:${id}`;
+    const autoMetaKey = (id) => `quickpilot-report-editor-autosave:${id}:updated`;
     const status = document.getElementById("status");
     const editorBlocks = document.getElementById("editorBlocks");
     const saveButton = document.getElementById("saveButton");
@@ -127,6 +131,8 @@
     let hasUnsavedChanges = false;
     let pendingExit = null;
     let exitInProgress = false;
+    let autoSaveTimer = null;
+    let editRevision = 0;
     let authReadyResolve;
     const authReady = new Promise((resolve) => { authReadyResolve = resolve; });
     let authReadyDone = false;
@@ -138,7 +144,9 @@
 
     function markDirty() {
       hasUnsavedChanges = true;
+      editRevision += 1;
       setStatus("수정 내용이 있습니다. 저장하세요.", true);
+      scheduleAutoSave();
     }
 
     function draftRef(report) {
@@ -439,6 +447,84 @@
         .join("\n\n");
     }
 
+    function saveLocalDraft(html, notes, automatic) {
+      const htmlKey = automatic ? autoStorageKey(selected.id) : storageKey(selected.id);
+      const noteKey = automatic ? autoNotesKey(selected.id) : notesKey(selected.id);
+      const metaKey = automatic ? autoMetaKey(selected.id) : storageMetaKey(selected.id);
+      localStorage.setItem(htmlKey, html);
+      localStorage.setItem(noteKey, JSON.stringify(notes));
+      localStorage.setItem(metaKey, String(Date.now()));
+    }
+
+    function clearLocalDraft(automatic) {
+      const htmlKey = automatic ? autoStorageKey(selected.id) : storageKey(selected.id);
+      const noteKey = automatic ? autoNotesKey(selected.id) : notesKey(selected.id);
+      const metaKey = automatic ? autoMetaKey(selected.id) : storageMetaKey(selected.id);
+      localStorage.removeItem(htmlKey);
+      localStorage.removeItem(noteKey);
+      localStorage.removeItem(metaKey);
+    }
+
+    async function writeDraftToServer(html, notes) {
+      if (!currentUser) return false;
+      const actor = currentUser.email || currentUser.uid || "editor";
+      const noteData = {};
+      Object.entries(notes).forEach(([visualId, value]) => {
+        noteData[visualId] = {
+          text: value.text,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP,
+          updatedBy: actor,
+        };
+      });
+      await db.ref("v1").update({
+        [`report_editor_drafts/${selected.id}`]: {
+          html,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP,
+          updatedBy: actor,
+        },
+        [`report_editor_notes/${selected.id}`]: noteData,
+      });
+      return true;
+    }
+
+    function buildAutoDraftLocally() {
+      if (!selected || !sourceHtml || !hasUnsavedChanges) return false;
+      const html = buildSavedHtml(true);
+      if (!html) return false;
+      saveLocalDraft(html, collectNotes(), true);
+      return true;
+    }
+
+    async function autoSaveCurrentReport(revision) {
+      if (!selected || !sourceHtml || !hasUnsavedChanges || revision !== editRevision) return;
+      const html = buildSavedHtml(true);
+      if (!html) return;
+      const notes = collectNotes();
+      saveLocalDraft(html, notes, true);
+      if (revision === editRevision) {
+        hasUnsavedChanges = false;
+        setStatus("자동 저장되었습니다. 이 기기에 보관했습니다.");
+      }
+      let serverSaved = false;
+      if (currentUser && revision === editRevision) {
+        try {
+          serverSaved = await writeDraftToServer(html, notes);
+        } catch (error) {
+          serverSaved = false;
+        }
+      }
+      if (revision !== editRevision) return;
+      if (serverSaved) setStatus("자동 저장되었습니다.");
+    }
+
+    function scheduleAutoSave() {
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        autoSaveTimer = null;
+        void autoSaveCurrentReport(editRevision);
+      }, 900);
+    }
+
     auth.onAuthStateChanged((user) => {
       currentUser = user || null;
       if (!authReadyDone) {
@@ -490,15 +576,21 @@
     async function loadReport(report) {
       selected = report;
       pageTitle.textContent = `${report.number} · ${String(report.title).replace(/^QP\s+/, "").replace(/^데이터 리포트\s+\d+호\s*·\s*/, "").replace(/^특별분석\s*·\s*/, "")}`;
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = null;
+      hasUnsavedChanges = false;
       refreshControls();
       setStatus("초안을 불러오는 중입니다.");
       try {
         let serverHtml = "";
         let serverNotes = {};
+        let serverUpdatedAt = 0;
         if (currentUser) {
           try {
             const snapshot = await draftRef(report).once("value");
-            serverHtml = snapshot.val()?.html || "";
+            const record = snapshot.val() || {};
+            serverHtml = record.html || "";
+            serverUpdatedAt = Number(record.updatedAt) || 0;
           } catch (error) {
             serverHtml = "";
           }
@@ -510,18 +602,40 @@
           }
         }
         const saved = localStorage.getItem(storageKey(report.id));
+        const autoSaved = localStorage.getItem(autoStorageKey(report.id));
+        const savedAt = Number(localStorage.getItem(storageMetaKey(report.id))) || 0;
+        const autoSavedAt = Number(localStorage.getItem(autoMetaKey(report.id))) || 0;
         let localNotes = {};
+        let autoNotes = {};
         try {
           localNotes = JSON.parse(localStorage.getItem(notesKey(report.id)) || "{}");
         } catch (error) {
           localNotes = {};
         }
-        if (serverHtml) {
+        try {
+          autoNotes = JSON.parse(localStorage.getItem(autoNotesKey(report.id)) || "{}");
+        } catch (error) {
+          autoNotes = {};
+        }
+
+        const serverIsNewest = serverHtml && serverUpdatedAt >= Math.max(savedAt, autoSavedAt);
+        const autoIsNewest = autoSaved && autoSavedAt >= savedAt && autoSavedAt > serverUpdatedAt;
+        if (serverIsNewest) {
           sourceHtml = serverHtml;
           setStatus("서버에 저장된 수정본을 열었습니다.");
+          notesByVisual = serverNotes;
+        } else if (autoIsNewest) {
+          sourceHtml = autoSaved;
+          setStatus("자동 저장된 수정본을 열었습니다.");
+          notesByVisual = autoNotes;
         } else if (saved) {
           sourceHtml = saved;
           setStatus("이 휴대폰에 저장한 수정본을 열었습니다.");
+          notesByVisual = localNotes;
+        } else if (serverHtml) {
+          sourceHtml = serverHtml;
+          setStatus("서버에 저장된 수정본을 열었습니다.");
+          notesByVisual = serverNotes;
         } else {
           sourceHtml = window.REPORT_DRAFTS[report.source] || "";
           if (!sourceHtml) {
@@ -530,9 +644,10 @@
             sourceHtml = await response.text();
           }
           setStatus("원본 초안을 열었습니다.");
+          notesByVisual = {};
         }
         const model = buildBlockModel(sourceHtml);
-        renderBlocks(model, Object.keys(serverNotes).length ? serverNotes : localNotes);
+        renderBlocks(model, notesByVisual);
         refreshControls();
       } catch (error) {
         sourceHtml = "";
@@ -543,13 +658,13 @@
       }
     }
 
-    function buildSavedHtml() {
+    function buildSavedHtml(silent = false) {
       if (!selected || !sourceHtml) return "";
       const result = applyMarkdownToHtml(sourceHtml, collectTextMarkdown());
       const structureMessage = result.expected === result.received
         ? "마크다운 내용을 저장할 수 있습니다."
         : `제목·문단 수가 원본과 다릅니다. 반영 ${Math.min(result.expected, result.received)}개 / 원본 ${result.expected}개`;
-      setStatus(structureMessage, result.expected !== result.received);
+      if (!silent) setStatus(structureMessage, result.expected !== result.received);
       return result.html;
     }
 
@@ -558,39 +673,19 @@
       const html = buildSavedHtml();
       if (!html) return false;
       const notes = collectNotes();
-      let saveMessage = "이 기기에 저장했습니다.";
+      let serverSaved = false;
       try {
-        if (currentUser) {
-          const actor = currentUser.email || currentUser.uid || "editor";
-          const noteData = {};
-          Object.entries(notes).forEach(([visualId, value]) => {
-            noteData[visualId] = {
-              text: value.text,
-              updatedAt: firebase.database.ServerValue.TIMESTAMP,
-              updatedBy: actor,
-            };
-          });
-          await db.ref("v1").update({
-            [`report_editor_drafts/${selected.id}`]: {
-              html,
-              updatedAt: firebase.database.ServerValue.TIMESTAMP,
-              updatedBy: actor,
-            },
-            [`report_editor_notes/${selected.id}`]: noteData,
-          });
-          saveMessage = "서버에 저장했습니다. 아직 공개되지 않았습니다.";
-        }
-        localStorage.setItem(storageKey(selected.id), html);
-        localStorage.setItem(notesKey(selected.id), JSON.stringify(notes));
+        saveLocalDraft(html, notes, false);
+        serverSaved = await writeDraftToServer(html, notes);
+        clearLocalDraft(true);
         sourceHtml = html;
       } catch (error) {
-        localStorage.setItem(storageKey(selected.id), html);
-        localStorage.setItem(notesKey(selected.id), JSON.stringify(notes));
+        try { saveLocalDraft(html, notes, false); } catch (localError) { /* keep the editor open */ }
+        clearLocalDraft(true);
         sourceHtml = html;
-        saveMessage = "서버 연결 없이 이 기기에 저장했습니다.";
       }
       hasUnsavedChanges = false;
-      setStatus(saveMessage);
+      setStatus(serverSaved ? "서버에 저장했습니다. 아직 공개되지 않았습니다." : "서버 연결 없이 이 기기에 저장했습니다.");
       return true;
     }
 
@@ -599,8 +694,8 @@
     resetButton.addEventListener("click", async () => {
       if (!selected || !confirm("이 휴대폰에 저장한 수정본을 지우고 원본 초안으로 돌아갈까요?")) return;
       try {
-        localStorage.removeItem(storageKey(selected.id));
-        localStorage.removeItem(notesKey(selected.id));
+        clearLocalDraft(false);
+        clearLocalDraft(true);
         if (currentUser) {
           await draftRef(selected).remove();
           await notesRef(selected).remove();
@@ -651,6 +746,7 @@
 
     exitDiscardButton.addEventListener("click", () => {
       const exit = pendingExit;
+      if (selected) clearLocalDraft(true);
       hasUnsavedChanges = false;
       navigateAfterExit(exit);
     });
@@ -696,6 +792,12 @@
       exitInProgress = true;
       history.go(-1);
     });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") buildAutoDraftLocally();
+    });
+
+    window.addEventListener("pagehide", buildAutoDraftLocally);
 
     window.addEventListener("beforeunload", (event) => {
       if (!hasUnsavedChanges || exitInProgress) return;
