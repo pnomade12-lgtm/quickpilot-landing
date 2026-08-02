@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>데이터 리포트 편집</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <style>
+    :root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}
+    *{box-sizing:border-box}
+    html,body{height:100%;overflow:hidden}
+    body{margin:0;background:#e8dec9;color:var(--tm);font-family:-apple-system,"Noto Sans KR",sans-serif;line-height:1.55}
+    main{display:flex;flex-direction:column;width:100%;height:100vh;height:100dvh;min-height:0;max-width:1100px;margin:0 auto;padding:12px 18px 12px;background:var(--bg);overflow:hidden}
+    .kicker{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.08em}
+    h1{margin:5px 0 4px;font-size:24px;line-height:1.3}
+    .desc{display:none}
+    .back{display:inline-block;flex:0 0 auto;margin:0 0 8px;color:var(--ts);font-size:13px;text-decoration:none}
+    .back:active{color:var(--tm)}
+    .notice{display:none}
+    .list{display:grid;gap:8px;margin:14px 0}
+    .report{display:flex;align-items:center;gap:10px;width:100%;padding:13px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tm);font:inherit;text-align:left;cursor:pointer}
+    .report.active{border-color:#779d63;background:#f4f8ef}
+    .num{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:8px;background:var(--tm);color:#fff;font-size:13px;font-weight:800}
+    .report.active .num{background:var(--grn)}
+    .report b,.report span{display:block;word-break:keep-all}
+    .report b{font-size:14px;line-height:1.35}
+    .report span{margin-top:2px;color:var(--ts);font-size:12px}
+    .toolbar{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;flex:0 0 auto;margin:8px -18px -12px;padding:10px 18px;background:rgba(245,238,224,.98);border-top:1px solid var(--bd)}
+    button{min-height:44px;border:1px solid var(--bd);border-radius:7px;background:var(--card);color:var(--tm);font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+    button.primary{border-color:#668c53;background:var(--grn);color:#fff}
+    button.warn{border-color:#d9a18d;color:#9a4429}
+    button:disabled{opacity:.45;cursor:default}
+    .status{flex:0 0 auto;min-height:19px;margin:5px 2px;color:var(--ts);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .status.editing{color:#9a4429;font-weight:800}
+    .block-label{flex:0 0 auto;margin:3px 2px -3px;color:var(--gold);font-size:11px;font-weight:800}
+    .blocks{display:flex;flex:1 1 auto;min-height:0;flex-direction:column;gap:10px;overflow:auto;padding:2px 2px 10px}
+    .text-block{display:block;flex:0 0 auto;width:100%;min-height:74px;padding:12px;border:1px solid var(--bd);border-radius:8px;background:#fffdf8;color:var(--tm);font:14px/1.75 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono","Noto Sans Mono",monospace;resize:none;overflow:hidden;overflow-wrap:anywhere}
+    .text-block:focus,.visual-note:focus{outline:2px solid rgba(127,176,105,.45);outline-offset:1px}
+    .visual-block{flex:0 0 auto;border:1px solid var(--bd);border-radius:8px;background:var(--card);overflow:hidden}
+    .visual-caption{padding:7px 10px;color:var(--ts);font-size:11px;font-weight:800}
+    .visual-frame{display:block;width:100%;height:120px;border:0;background:#fff;overflow:hidden}
+    .visual-note{display:block;width:100%;min-height:48px;padding:9px 10px;border:0;border-top:1px dashed var(--bd);background:#fffdf8;color:var(--tm);font:13px/1.5 -apple-system,"Noto Sans KR",sans-serif;resize:none;overflow:hidden}
+    .visual-note::placeholder{color:#a39a89}
+    .exit-modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:18px;background:rgba(44,36,22,.38)}
+    .exit-modal[hidden]{display:none}
+    .exit-dialog{width:min(100%,360px);padding:18px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);box-shadow:0 12px 30px rgba(44,36,22,.2)}
+    .exit-dialog h2{margin:0 0 7px;font-size:18px;line-height:1.35}
+    .exit-dialog p{margin:0 0 15px;color:var(--ts);font-size:13px;line-height:1.55}
+    .exit-actions{display:grid;gap:8px}
+    .exit-actions button{width:100%}
+    @media(max-width:430px){main{padding:10px 10px 8px}h1{font-size:21px}.toolbar{margin-left:-10px;margin-right:-10px;padding-left:10px;padding-right:10px}.toolbar button{font-size:13px}.text-block{font-size:13px;padding:11px}}
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="report-editor.html">← 전체 목록</a>
+    <div class="kicker">데이터 리포트 · 편집 전용</div>
+    <h1 id="pageTitle">리포트 편집</h1>
+    <div class="status" id="status" aria-live="polite">리포트를 고르세요.</div>
+    <div class="blocks" id="editorBlocks"></div>
+    <div class="toolbar">
+      <button id="saveButton" class="primary" type="button" disabled>저장</button>
+      <button id="resetButton" class="warn" type="button" disabled>저장본 지우기</button>
+    </div>
+  </main>
+  <div class="exit-modal" id="exitModal" hidden>
+    <div class="exit-dialog" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
+      <h2 id="exitTitle">편집을 종료할까요?</h2>
+      <p>저장하지 않은 수정 내용이 있습니다. 어떻게 할까요?</p>
+      <div class="exit-actions">
+        <button id="exitSaveButton" class="primary" type="button">저장하고 종료</button>
+        <button id="exitDiscardButton" class="warn" type="button">저장 없이 종료</button>
+        <button id="exitCancelButton" type="button">계속 편집</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORT_DRAFT_DATA_START -->
+<script>window.REPORT_DRAFTS = {"column-1-ordermap.html":"<!doctype html><html lang=\"ko\"><head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>QP 데이터 리포트 1호 · 오더맵이 말해주는 3가지 진실</title>\n<link rel=\"stylesheet\" href=\"https://unpkg.com/leaflet@1.9.4/dist/leaflet.css\"/>\n<script src=\"https://unpkg.com/leaflet@1.9.4/dist/leaflet.js\"><\/script>\n<style>\n:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n*{box-sizing:border-box;margin:0;padding:0}\nbody{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}\n.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}\n.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}\nh1{font-size:25px;font-weight:800;line-height:1.3;margin:6px 0 22px}\n.sub{font-size:13.5px;color:var(--ts)}\n.rule{height:2px;background:var(--tm);margin:16px 0 22px;opacity:.85}\n.sec{margin-bottom:26px}\n.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:800;font-size:15px;margin-right:8px}\nh2{font-size:18.5px;font-weight:800;display:flex;align-items:center;margin-bottom:10px}\nh2 span.t{flex:1}\np{font-size:14.5px;margin:8px 0;word-break:keep-all}\n.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}\n.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0}\n.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:10px}\n.bar{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:13px}\n.bar .lab{width:100px;font-weight:700;flex:0 0 auto;font-size:12px}\n.bar .track{flex:1;background:#efe6d3;border-radius:6px;height:18px;overflow:hidden}\n.bar .fill{height:100%;border-radius:6px}\n.bar .val{width:54px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;flex:0 0 auto}\n.hours{display:flex;align-items:flex-end;gap:2px;height:84px;margin-top:6px}\n.hours .h{flex:1;background:#d8ccb2;border-radius:2px 2px 0 0;position:relative}\n.hours .h.peak{background:var(--red)}\n.hours .h.gold{background:var(--grn)}\n.hlab{display:flex;justify-content:space-between;font-size:10px;color:var(--ts);margin-top:3px}\n.legend{display:flex;gap:14px;font-size:11.5px;color:var(--ts);margin-top:8px;flex-wrap:wrap}\n.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}\n.big{font-size:30px;font-weight:800;color:var(--gold);line-height:1}\n.bigwrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:6px}\n.bigwrap .u{font-size:12.5px;color:var(--ts)}\n.strat{background:var(--tm);color:#f3ead7;border-radius:12px;padding:14px 16px;margin:12px 0}\n.strat b{color:#ffd98a}\n.strat .st{display:block;margin:5px 0;font-size:14px}\n.foot{font-size:12.5px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:24px}\nsvg{display:block;width:100%;height:auto}\n.omap{height:300px;border-radius:12px;overflow:hidden;border:1px solid var(--bd);margin:2px 0 24px;background:#eee}\n.omap .leaflet-control-attribution{display:none}\n@media print{body{background:#fff}.sheet{box-shadow:none}}\n</style></head><body>\n<div class=\"sheet\">\n  <div class=\"kicker\">QP 데이터 리포트 #1</div>\n  <h1>오더맵이 우리에게 말해주는<br>3가지 진실</h1>\n  <div id=\"omap-col\" class=\"omap\"></div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">1</span><span class=\"t\">경기도가 진짜 금광이다</span></h2>\n    <p>콜 숫자만 보면 <b>서울이 제일 많습니다(47.6%)</b>. 그런데 서울은 들어가는 순간 <span class=\"hi\">교통이 발목을 잡습니다</span>. 아침 7~9시, 저녁 5~7시, 그리고 선배들이 늘 말하는 \"오후 4시 전 서울 탈출\"이 그 이유입니다. 들어가더라도 머물지 마시고 가로질러 빠져나오시는 게 좋습니다.</p>\n    <p>그래서 실질 금광은 <b>경기도(37.3%)</b>입니다. 막히지 않고 콜이 콜로 이어지는 땅입니다. 인천도 14.8%로 적지 않습니다. 결국 서울·경기도·인천 이 세 곳이 콜의 98%를 가져갑니다. 멀리 보지 마시고 이 안에서 도시는 게 마음 편합니다.</p>\n    <p>그러니 서울은 통과하는 길로 쓰고, 일은 경기도에서 받는다는 그림이 자연스럽습니다. 서울 콜이 좋아 보여도 들어가서 갇히면 그 한 콜에 한두 시간이 묶이기 쉽습니다. 경기도에서 같은 시간에 두세 콜을 도시는 게 결국 더 버는 경우가 많습니다.</p>\n    <div class=\"card\">\n      <h4>출발지 권역 분포 (10일)</h4>\n      <div class=\"bar\"><span class=\"lab\">서울</span><div class=\"track\"><div class=\"fill\" style=\"width:100%;background:#b9aa86\"></div></div><span class=\"val\">47.6%</span></div>\n      <div class=\"bar\"><span class=\"lab\">경기도</span><div class=\"track\"><div class=\"fill\" style=\"width:78%;background:var(--gold)\"></div></div><span class=\"val\">37.3%</span></div>\n      <div class=\"bar\"><span class=\"lab\">인천</span><div class=\"track\"><div class=\"fill\" style=\"width:31%;background:#b9aa86\"></div></div><span class=\"val\">14.8%</span></div>\n      <div class=\"bar\"><span class=\"lab\">강원도·충청도</span><div class=\"track\"><div class=\"fill\" style=\"width:1%;background:#cdbf9f\"></div></div><span class=\"val\">0.3%</span></div>\n    </div>\n    <div class=\"card\">\n      <h4>콜이 몰리는 시간대, 교통피크는 비어 있다</h4>\n      <div class=\"hours\" id=\"hours\"></div>\n      <div class=\"hlab\"><span>0시</span><span>6시</span><span>12시</span><span>18시</span><span>23시</span></div>\n      <div class=\"legend\"><span><i style=\"background:var(--grn)\"></i>골든타임 9~11·13~15시</span><span><i style=\"background:var(--red)\"></i>교통피크 7~9·17~19시</span></div>\n    </div>\n    <p>콜의 흐름도 똑같이 말합니다. <span class=\"hi\">일이 몰리는 황금 시간은 오전 9~11시, 오후 1~3시</span>입니다. 이 시간대 콜이 출퇴근 교통피크의 네 배 가까이 됩니다. 점심 무렵 잠깐 숨을 고르고, 저녁 7시를 넘기면 빠르게 줄어듭니다.</p>\n    <p>그래서 막히는 시간에 무리해서 서울을 관통하기보다, 이 황금 시간에 경기도에서 회전수를 올리는 쪽이 같은 시간을 써도 손에 더 남습니다. 데이터가 말하는 건 단순합니다. 길이 비는 시간에 일하고, 길이 막히는 시간엔 자리를 잡고 다음 콜을 고르는 흐름입니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">2</span><span class=\"t\">멀수록 매출은 크지만, 빈차가 무섭다</span></h2>\n    <p>강원도·충청도처럼 멀리 가는 콜은 하루 매출을 한 방에 단단하게 만들어 줍니다. 그런데 <span class=\"hi\">돌아올 복귀 콜이 잡힐 확률이 낮습니다</span>. 실제로 그 먼 지역 콜은 전체의 <b>0.3%</b>밖에 안 뜹니다. 빈차로 두 시간을 달려 내려오면 그날 번 게 기름값으로 빠지기 쉽습니다. 그래서 장거리는 늘 신중하게 고르시는 게 좋습니다.</p>\n    <p>장거리가 나쁘다는 말이 아닙니다. 갈 거면 내려가는 길에 합짐을 한 번 더 챙기거나, 그 지역에서 올라오는 콜이 뜰 때까지 기다릴 각오가 서 있어야 한다는 뜻입니다. 계산 없이 금액만 보고 내려가면, 큰 거 한 방이 그날 회전을 통째로 잡아먹기도 합니다.</p>\n    <div class=\"strat\">\n      <h4 style=\"color:#caa14a;font-size:12px;font-weight:800;margin-bottom:8px\">QP가 데이터로 뽑아낸 기본 코스</h4>\n      <span class=\"st\">① <b>10km · 3만원</b> 자동배차로 바닥을 깐다</span>\n      <span class=\"st\">② <b>경기도 권역 3~5만원 콜</b>을 끊기지 않게 이어 붙인다</span>\n      <span class=\"st\">③ 거리 아까운 건 <b>합짐</b>으로 한 번 더 챙긴다</span>\n    </div>\n    <p>10km에 3만원이면 1km당 3천원, 이게 바닥을 까는 기준선입니다. 그 위에 경기도 권역 3~5만원짜리를 끊기지 않게 이어 붙이면 빈 시간이 사라지고, 거리가 아까운 콜은 합짐으로 한 번 더 태웁니다. 한 방을 노리는 대신 끊기지 않는 회전으로 가는 길입니다.</p>\n    <div class=\"bigwrap\">\n      <div><div class=\"big\">20만원+</div><div class=\"u\">한 달 직접 검증한<br>하루 최소 순이익</div></div>\n      <p style=\"flex:1;min-width:200px\">각자 손에 익은 방법이 언제나 1순위입니다. 다만 <span class=\"hi\">도저히 안 풀리는 날, 기본으로 돌아온다는 느낌</span>으로 이 통계에 한 발 걸쳐 보는 게 가장 안정적인 길이었습니다.</p>\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">3</span><span class=\"t\">지나온 길과 오더 분포는 어긋난다, 그래도 괜찮다</span></h2>\n    <p>내 동선을 켜놓고 보면 \"왜 자꾸 콜도 없는 데만 돌아다니지?\" 싶을 때가 있습니다. <span class=\"hi\">자책하실 필요 전혀 없습니다.</span> 차가 빠르게 달리는 전용도로·고속도로는 도심을 가로지르기보다 외곽과 교외로 뻗기 마련이라, 그 길 위에선 콜이 안 잡히는 게 당연합니다.</p>\n    <p>오히려 콜이 없는 길로 빠르게 빠져나오셨다면 그건 잘 달리신 겁니다. 감지가 몰린 도심은 콜이 많은 만큼 막히는 곳이기도 하니까요. 빈 길과 굵은 콜 분포가 어긋나는 건 문제가 아니라 정상입니다.</p>\n    <div class=\"card\">\n      <h4>감지는 도심에, 길은 외곽으로</h4>\n      <svg viewBox=\"0 0 320 120\" aria-label=\"동선과 감지 분포 도식\">\n        <rect x=\"0\" y=\"0\" width=\"320\" height=\"120\" fill=\"#FAF6EC\"/>\n        <circle cx=\"80\" cy=\"60\" r=\"34\" fill=\"#7FB069\" opacity=\"0.18\"/>\n        <circle cx=\"240\" cy=\"60\" r=\"30\" fill=\"#7FB069\" opacity=\"0.18\"/>\n        <g fill=\"#C9962E\"><circle cx=\"70\" cy=\"52\" r=\"3\"/><circle cx=\"86\" cy=\"64\" r=\"3\"/><circle cx=\"78\" cy=\"46\" r=\"3\"/><circle cx=\"92\" cy=\"56\" r=\"3\"/><circle cx=\"234\" cy=\"54\" r=\"3\"/><circle cx=\"248\" cy=\"66\" r=\"3\"/><circle cx=\"240\" cy=\"48\" r=\"3\"/></g>\n        <path d=\"M80,60 C140,8 200,112 240,60\" fill=\"none\" stroke=\"#2C2416\" stroke-width=\"3\" stroke-dasharray=\"2 5\" stroke-linecap=\"round\"/>\n        <circle cx=\"80\" cy=\"60\" r=\"6\" fill=\"#2C2416\"/><circle cx=\"240\" cy=\"60\" r=\"6\" fill=\"#E0734A\"/>\n        <text x=\"80\" y=\"92\" text-anchor=\"middle\" font-size=\"11\" fill=\"#2C2416\" font-weight=\"700\">출발</text>\n        <text x=\"240\" y=\"92\" text-anchor=\"middle\" font-size=\"11\" fill=\"#E0734A\" font-weight=\"700\">도착</text>\n        <text x=\"160\" y=\"20\" text-anchor=\"middle\" font-size=\"10\" fill=\"#7c6f57\">고속·전용도로는 외곽으로 돈다</text>\n      </svg>\n    </div>\n    <p>중요한 건 딱 두 가지, <b>내가 출발하는 곳과 도착하는 곳</b>입니다. 그 사이 외진 길에서 감지가 비는 건 크게 신경 쓰지 않으셔도 됩니다. 오더맵은 \"어디서 일이 생기나\"를 보는 지도지, \"내가 잘 다녔나\"를 채점하는 표가 아니니까요.</p>\n    <p>이 지도는 다음에 머리를 어느 쪽으로 두고 계실지 정하는 데 쓰시면 됩니다. 붉게 달아오른 곳 근처에 자리를 잡아두면 다음 콜이 빨리 붙고, 내 궤적이 비어 보이는 건 크게 신경 쓰지 않으셔도 됩니다.</p>\n  </div>\n</div>\n<script>\n// 시간대 막대 (10일 누적)\nvar H=[21,2,2,5,2,1,29,155,496,1151,1343,915,796,1258,1415,1186,961,723,444,324,207,75,45,28];\nvar mx=Math.max.apply(null,H), gold={9:1,10:1,11:1,13:1,14:1,15:1}, peak={7:1,8:1,17:1,18:1};\ndocument.getElementById(\"hours\").innerHTML=H.map(function(v,h){\n  var c=peak[h]?\" peak\":(gold[h]?\" gold\":\"\");\n  return '<div class=\"h'+c+'\" style=\"height:'+Math.max(3,v/mx*100)+'%\"></div>';\n}).join(\"\");\n\n// 헤드라인 아래 통합 오더맵. 10일치 헥사 분포(실제 오더맵과 동일 육각 격자)\nfetch(\"hexdata-col.json\",{cache:\"no-store\"}).then(function(r){return r.json();}).then(function(HEX){\n  var map=L.map(\"omap-col\",{preferCanvas:true,zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,touchZoom:false,boxZoom:false,keyboard:false});\n  L.tileLayer(\"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png\",{maxZoom:19}).addTo(map);\n  function draw(){\n    map.invalidateSize();\n    var lat=[],lng=[];\n    HEX.forEach(function(h){ if(!h.b||!h.b.length)return; var op=0.18+0.55*Math.sqrt(h.w||0); L.polygon(h.b,{stroke:false,fillColor:h.col,fillOpacity:op}).addTo(map); h.b.forEach(function(p){lat.push(p[0]);lng.push(p[1]);}); });\n    if(lat.length){\n      var GG={s:37.0,w:126.4,n:37.9,e:127.6};\n      var pts=lat.map(function(la,i){return [la,lng[i]];});\n      var inGG=pts.filter(function(p){return p[0]>=GG.s&&p[0]<=GG.n&&p[1]>=GG.w&&p[1]<=GG.e;});\n      map.fitBounds(inGG.length?inGG:pts,{padding:[10,10]});\n    }\n    setTimeout(function(){map.invalidateSize();},500);\n  }\n  if(document.readyState===\"complete\") setTimeout(draw,200); else window.addEventListener(\"load\",function(){setTimeout(draw,200);});\n}).catch(function(){});\n<\/script>\n</body></html>\n","column-2-worktime.html":"<!doctype html><html lang=\"ko\"><head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>QP 데이터 리포트 2호 · 몇 시에 출근하고 몇 시에 퇴근해야 할까</title>\n<style>\n:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n*{box-sizing:border-box;margin:0;padding:0}\nbody{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}\n.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}\n.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}\nh1{font-size:25px;font-weight:800;line-height:1.3;margin:6px 0 22px}\n.sec{margin-bottom:30px}\n.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:800;font-size:15px;margin-right:8px}\nh2{font-size:18.5px;font-weight:800;display:flex;align-items:center;margin-bottom:10px}\nh2 span.t{flex:1}\np{font-size:14.5px;margin:8px 0;word-break:keep-all}\n.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}\n.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0}\n.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:10px}\n.hours{display:flex;align-items:flex-end;gap:2px;height:96px;margin:26px 0 4px;position:relative}\n.hours .h{flex:1;background:#d8ccb2;border-radius:2px 2px 0 0}\n.hours .h.peak{background:var(--gold)}\n.hours .mark{position:absolute;top:-10px;bottom:-8px;border:2.5px solid var(--red);border-radius:16px;pointer-events:none;box-sizing:border-box}\n.hours .mark .ml{position:absolute;top:-19px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--red);font-weight:800;white-space:nowrap;background:var(--card);padding:1px 5px;border-radius:4px;line-height:1.2}\n.hlab{display:flex;gap:2px;font-size:9.5px;color:var(--ts);margin-top:3px;position:relative}\n.hlab span{flex:1;text-align:center;font-variant-numeric:tabular-nums}\n.hlab span.end{position:absolute;right:0;top:0;flex:none}\n.legend{display:flex;gap:14px;font-size:11.5px;color:var(--ts);margin-top:8px;flex-wrap:wrap}\n.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}\n.strat{background:var(--tm);color:#f3ead7;border-radius:12px;padding:14px 16px;margin:12px 0}\n.strat h4{color:#caa14a;font-size:12px;font-weight:800;margin-bottom:10px;letter-spacing:.04em}\n.strat .row{display:flex;gap:12px;align-items:flex-start;margin:9px 0;font-size:13.5px;line-height:1.55}\n.strat .row .seg{flex:0 0 92px;font-weight:800;color:#ffd98a}\n.strat .row .ac{flex:1}\n.strat b{color:#ffd98a}\n.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;margin:14px 0;font-size:12.5px;color:#5a4d2e;line-height:1.6}\n.note b{color:var(--tm);font-weight:800}\n.vs{display:flex;gap:10px;margin:14px 0 6px}\n.vs .box{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center}\n.vs .box .vn{font-size:16px;font-weight:800;line-height:1.2;margin-bottom:6px}\n.vs .box .vu{font-size:12.5px;color:var(--ts);line-height:1.7}\n.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:24px;line-height:1.6}\n@media print{body{background:#fff}.sheet{box-shadow:none}}\n</style></head><body>\n<div class=\"sheet\">\n  <div class=\"kicker\">QP 데이터 리포트 #2</div>\n  <h1>몇 시에 출근하고<br>몇 시에 퇴근해야 할까</h1>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">1</span><span class=\"t\">시장은 하루에 두 번 열린다</span></h2>\n    <p>콜의 흐름을 그래프로 그리면 봉우리가 <b>두 개</b> 보입니다. 오전에 한 번, 오후에 한 번. 그 사이엔 점심 골짜기가 있습니다.</p>\n\n    <div class=\"card\">\n      <h4>하루 콜 분포 (10일 표본 · 상대 밀도)</h4>\n      <div class=\"hours\" id=\"hours\"></div>\n      <div class=\"hlab\" id=\"hlab1\"></div>\n      <div class=\"legend\"><span><i style=\"background:var(--gold)\"></i>피크 구간 (오전·오후 각 1회)</span></div>\n    </div>\n\n    <p><b>피크 구간 6시간 안에 하루 전체의 약 65%가 흐릅니다.</b> 일하러 나가 있는 시간을 통째로 풀로 굴릴 필요가 없다는 뜻입니다. 어디에 힘을 모으느냐가 어디에 머무느냐보다 먼저 정해져야 합니다.</p>\n\n    <div class=\"note\">\n      <b>그래프의 함정.</b> 봉우리는 <b>콜이 발생하는 시간</b>이지 내가 <b>콜을 수행하는 시간이 아닙니다.</b> 9시에 피크가 온다면, 9시에 새 콜을 잡으려면 그 직전에 차가 비어 있어야 합니다. 7시에 일찍 출발해 첫 콜을 잡으면 9시 피크가 시작될 때 이미 운행 중이라 그 파도를 그대로 흘려보냅니다. 통계를 따라가는 게 아니라 <span class=\"hi\">한 박자 앞에서 비워두는 게 통계를 활용하는 길</span>입니다.\n    </div>\n\n    <p>이 분포 위에 두 가지 길이 있습니다. 피크에 정확히 자리를 잡아 한 번에 몰아치는 길, 피크는 비켜주고 그 옆을 길게 가는 길. 어느 길을 가도 흐름을 이해한 사람과 모르는 사람의 차이가 하루 끝에 남습니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">2</span><span class=\"t\">짧고 굵게, 합짐 모아 두 사이클</span></h2>\n    <p>핵심은 <span class=\"hi\">합짐을 모아서 한 번에 돌리는 그림</span>입니다. 한 콜씩 받고 한 콜씩 끝내고 다시 받는 패턴이 아니라, 콜이 많이 발생하는 피크 시간에 픽업을 한 번에 모아 묶고, 골짜기에 그 묶음을 풀어내며 차근차근 배송합니다. 그리고 오후 피크에 또 한 번 묶음을 모아 후반에 풀어냅니다. <b>하루 두 사이클이면 충분합니다.</b></p>\n\n    <div class=\"strat\">\n      <h4>두 사이클의 골격</h4>\n      <div class=\"row\"><div class=\"seg\">1차 피크</div><div class=\"ac\">합짐 픽업을 모은다.</div></div>\n      <div class=\"row\"><div class=\"seg\">점심 골짜기</div><div class=\"ac\">모아둔 묶음 배송을 풀어낸다.</div></div>\n      <div class=\"row\"><div class=\"seg\">2차 피크</div><div class=\"ac\">다시 합짐 픽업을 모은다.</div></div>\n      <div class=\"row\"><div class=\"seg\">후반</div><div class=\"ac\">두 번째 묶음을 풀고 마감.</div></div>\n    </div>\n\n    <div class=\"card\" style=\"margin-top:18px\">\n      <h4>짧고 굵게 — 픽업을 모으는 두 피크</h4>\n      <div class=\"hours\" id=\"hours2\"></div>\n      <div class=\"hlab\" id=\"hlab2\"></div>\n      <div class=\"legend\"><span><i style=\"background:var(--red)\"></i>이 시간에 픽업을 모은다</span></div>\n    </div>\n\n    <p>이 그림에서 가장 중요한 건 <span class=\"hi\">피크엔 픽업을 모으고, 골짜기에 배송을 푼다</span>는 순서입니다. 피크에 이미 운행 중이면 그 시간에 쏟아지는 새 콜을 잡을 자리가 없습니다. 피크의 콜은 피크에 차가 비어 있는 사람에게 갑니다. 그래서 픽업은 피크에 모으고, 배송은 콜이 적은 시간에 풀어내는 흐름이 자연스럽게 만들어집니다.</p>\n\n    <p>이렇게 두 번 끊어서 가면 사이사이 숨 돌릴 자리도 생기고, 묶음 배송 동선도 한 권역으로 자연스럽게 짜집니다. 합짐의 본래 장점이 살아납니다.</p>\n\n    <div class=\"note\">\n      <b>왜 두 사이클이 가장 효율적인가.</b> 봉우리 두 개에 사이클이 하나씩 맞아떨어집니다. 한 사이클을 길게 늘리면 두 번째 피크를 그냥 보내고, 세 사이클로 잘게 쪼개면 합짐으로 묶이는 묶음이 작아져 한 번 도는 의미가 사라집니다. 분포가 두 개라 사이클도 두 개가 답이 됩니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">3</span><span class=\"t\">가늘고 길게, 끊어지지 않게 이어 탄다</span></h2>\n    <p>반대 길의 핵심은 <span class=\"hi\">한 콜이 끝나면 다음 콜이 바로 이어지는 흐름</span>을 유지하는 겁니다. 합짐으로 한 번에 묶지 않고, 콜 하나하나를 부드럽게 이어 붙여 갑니다. 한 번에 큰 묶음을 만드는 대신, 끊기지 않는 회전 자체가 자산이 되는 그림입니다.</p>\n\n    <p>이 길에서 가장 중요한 시간은 <b>피크가 아니라 피크의 양옆</b>입니다. 피크엔 다른 기사들이 같이 몰리고 도로도 같이 막힙니다. 그 안에서 무리해서 회전하기보다 한 박자 쉬며 다음 흐름을 준비합니다. 전기차라면 충전 시간을 여기에 끼우면 시간을 두 번 쓰지 않아도 됩니다.</p>\n\n    <div class=\"strat\">\n      <h4>이어 타기의 골격</h4>\n      <div class=\"row\"><div class=\"seg\">출근 구간</div><div class=\"ac\">남들 안 나온 시간. 가볍게 시동을 거는 콜로 회전을 시작.</div></div>\n      <div class=\"row\"><div class=\"seg\">1차 피크</div><div class=\"ac\">경쟁자 몰림과 도로 혼잡이 겹치는 시간. <b>잠깐 쉬며 충전.</b></div></div>\n      <div class=\"row\"><div class=\"seg\">점심 골짜기</div><div class=\"ac\">남들 쉴 때 가벼운 콜로 회전을 다시 이어 붙임.</div></div>\n      <div class=\"row\"><div class=\"seg\">2차 피크</div><div class=\"ac\">한 번 더 한 박자 쉬고, 충전이 더 필요하면 여기서 마저.</div></div>\n      <div class=\"row\"><div class=\"seg\">피크 직후</div><div class=\"ac\">경쟁자가 빠지는 시간. 다시 콜을 잡고 흐름 회복.</div></div>\n      <div class=\"row\"><div class=\"seg\">저녁</div><div class=\"ac\">완만하게 이어가다 자연스럽게 마감.</div></div>\n    </div>\n\n    <div class=\"card\" style=\"margin-top:18px\">\n      <h4>가늘고 길게 — 피크 옆을 길게 걷는다</h4>\n      <div class=\"hours\" id=\"hours3\"></div>\n      <div class=\"hlab\" id=\"hlab3\"></div>\n      <div class=\"legend\"><span><i style=\"background:var(--red)\"></i>이 시간에 콜을 잡으며 회전</span></div>\n    </div>\n\n    <p>피크 시간에 <span class=\"hi\">자리에 들어가 쉬고 충전하는 게 손해처럼 보이지만 그렇지 않습니다.</span> 어차피 도로가 막혀 회전이 잘 안 도는 시간이고, 다른 기사들과 같은 콜을 두고 다투는 시간입니다. 그 시간을 휴식에 쓰면 피크가 지나고 경쟁자들이 빠진 자리에서 도로도 한가하고 콜도 다시 잡힙니다. <b>같은 9시간을 쓰더라도 어느 시간에 무엇을 했느냐가 손에 남는 금액을 가릅니다.</b></p>\n\n    <div class=\"note\">\n      <b>경쟁 조정 확률.</b> 콜 100개를 1명이 나누는 비피크가, 콜 1000개를 50명이 나누는 피크보다 1인당 기회는 더 많을 수 있습니다. 콜의 절대 양이 아니라 콜과 경쟁자의 비율이 내가 가져갈 확률을 정합니다. 그래서 콜이 많은 시간 그 자체보다, 콜이 많고 경쟁자가 적은 시간이 진짜 황금 시간입니다.\n    </div>\n\n    <div class=\"note\">\n      <b>분산(variance).</b> 한 군데에 시간을 몰면 잘 풀린 날과 안 풀린 날의 차이가 크게 벌어집니다. 시간을 길게 펼쳐서 가면 그 진폭이 줄어듭니다. 일주일 평균 수입은 비슷해도 하루하루가 더 일정하게 나옵니다. 매일 안정적인 게 좋은 사람에게 잘 맞는 그림입니다.\n    </div>\n\n    <div class=\"vs\">\n      <div class=\"box\">\n        <div class=\"vn\" style=\"color:var(--gold)\">짧고 굵게</div>\n        <div class=\"vu\">합짐 모음<br>두 사이클로 마감<br>일찍 들어가기</div>\n      </div>\n      <div class=\"box\">\n        <div class=\"vn\" style=\"color:var(--grn)\">가늘고 길게</div>\n        <div class=\"vu\">끊김 없이 이어 타기<br>피크엔 쉬고 충전<br>길게 걸치기</div>\n      </div>\n    </div>\n\n    <p>둘 다 같은 분포 위에서 자기 자리를 찾는 길입니다. <b>한판 끝내고 손에 더 들고 갈지, 천천히 길게 쌓을지.</b> 차종, 체력, 가족 일정에 맞춰 고르시면 됩니다. 어느 쪽이든 그래프의 흐름을 한 번 머리에 그려두고 움직이는 것과 그냥 콜이 뜨는 대로 따라가는 것은 하루 끝에 차이가 남습니다.</p>\n  </div>\n\n  <div class=\"foot\">\n    QP 데이터 리포트 2호 · 2026.06 · 10일 표본 기반 (전체 시장 데이터 아님) · 경쟁 밀도는 이론 모델\n  </div>\n</div>\n<script>\nvar H=[21,2,2,5,2,1,29,155,496,1151,1343,915,796,1258,1415,1186,961,723,444,324,207,75,45,28];\nvar mx=Math.max.apply(null,H), peak={9:1,10:1,11:1,13:1,14:1,15:1};\nfunction drawBars(id){\n  document.getElementById(id).innerHTML = H.map(function(v,h){\n    var c = peak[h] ? \" peak\" : \"\";\n    return '<div class=\"h'+c+'\" style=\"height:'+Math.max(3,v/mx*100)+'%\"></div>';\n  }).join(\"\");\n}\ndrawBars(\"hours\");\ndrawBars(\"hours2\");\ndrawBars(\"hours3\");\nfunction drawLab(id){\n  var marks = {0:1,3:1,6:1,9:1,12:1,15:1,18:1,21:1};\n  var out = '';\n  for(var h=0; h<24; h++){\n    out += '<span>'+(marks[h] ? h : '')+'</span>';\n  }\n  out += '<span class=\"end\">24</span>';\n  document.getElementById(id).innerHTML = out;\n}\ndrawLab(\"hlab1\");\ndrawLab(\"hlab2\");\ndrawLab(\"hlab3\");\nfunction addMarks(id, ranges){\n  var host = document.getElementById(id);\n  ranges.forEach(function(r){\n    var m = document.createElement('div');\n    m.className = 'mark';\n    m.style.left = (r.s/24*100) + '%';\n    m.style.width = ((r.e - r.s + 1)/24*100) + '%';\n    if(r.label){\n      var lab = document.createElement('div');\n      lab.className = 'ml';\n      lab.textContent = r.label;\n      m.appendChild(lab);\n    }\n    host.appendChild(m);\n  });\n}\naddMarks(\"hours2\", [\n  {s:9, e:11, label:\"1차 픽업\"},\n  {s:13, e:15, label:\"2차 픽업\"}\n]);\naddMarks(\"hours3\", [\n  {s:7, e:8, label:\"시동\"},\n  {s:12, e:12, label:\"\"},\n  {s:16, e:19, label:\"본격 회전\"}\n]);\n<\/script>\n</body></html>\n","column-3-crowd.html":"<!doctype html><html lang=\"ko\"><head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>QP 데이터 리포트 3호 · 콜이 많은 곳은 좋은 곳일까</title>\n<style>\n:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n*{box-sizing:border-box;margin:0;padding:0}\nbody{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}\n.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}\n.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}\nh1{font-size:25px;font-weight:800;line-height:1.3;margin:6px 0 22px}\n.sec{margin-bottom:32px}\n.slabel{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--gold);margin-bottom:1px}\n.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:800;font-size:15px;margin-right:8px}\nh2{font-size:18.5px;font-weight:800;display:flex;align-items:center;margin-bottom:10px}\nh2 span.t{flex:1}\np{font-size:14.5px;margin:8px 0;word-break:keep-all}\n.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}\n.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0}\n.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:10px}\n.hours{display:flex;align-items:flex-end;gap:2px;height:88px;margin:26px 0 4px;position:relative}\n.hours .h{flex:1;background:#d8ccb2;border-radius:2px 2px 0 0}\n.hours .h.peak{background:var(--gold)}\n.hours .mark{position:absolute;top:-10px;bottom:-8px;border:2.5px solid var(--red);border-radius:16px;pointer-events:none;box-sizing:border-box}\n.hours .mark .ml{position:absolute;top:-19px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--red);font-weight:800;white-space:nowrap;background:var(--card);padding:1px 5px;border-radius:4px;line-height:1.2}\n.hlab{display:flex;gap:2px;font-size:9.5px;color:var(--ts);margin-top:3px;position:relative}\n.hlab span{flex:1;text-align:center;font-variant-numeric:tabular-nums}\n.hlab span.end{position:absolute;right:0;top:0;flex:none}\n.legend{display:flex;gap:14px;font-size:11.5px;color:var(--ts);margin-top:8px;flex-wrap:wrap}\n.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}\n.eqrow{display:flex;align-items:center;gap:8px;margin:14px 0}\n.eqrow .ebox{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 10px;text-align:center;font-size:13.5px;font-weight:800;line-height:1.4}\n.eqrow .eq{font-size:20px;font-weight:800;color:var(--gold);flex:0 0 auto}\n.dwell .dl{display:flex;align-items:center;gap:9px;margin:10px 0}\n.dwell .dl .dn{flex:0 0 70px;font-size:12.5px;font-weight:800}\n.dwell .dl .dw{flex:1;height:16px;background:#ece3cf;border-radius:8px;overflow:hidden}\n.dwell .dl .dw i{display:block;height:100%;border-radius:8px}\n.dwell .dl .dtag{flex:0 0 auto;font-size:11px;color:var(--ts);font-weight:700}\n.zones{display:flex;gap:6px;margin:14px 0}\n.zones .z{flex:1;border-radius:10px;padding:13px 8px;text-align:center;color:#fff}\n.zones .z .zt{font-size:13px;font-weight:800;margin-bottom:4px}\n.zones .z .zd{font-size:10.5px;line-height:1.45;opacity:.95}\n.card .cdesc{font-size:13px;margin:2px 0 0;color:var(--tm);line-height:1.6}\n.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}\n.chips span{background:#efe7d4;color:#6b5d3e;border-radius:14px;padding:3px 11px;font-size:12px;font-weight:700}\n.swap{margin:14px 0}\n.swap .sr{display:flex;align-items:center;gap:10px;margin:9px 0;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:11px 13px}\n.swap .sr .st{flex:0 0 86px;font-weight:800;font-size:13px}\n.swap .sr .sa{color:var(--gold);font-weight:800;font-size:16px}\n.swap .sr .sd{flex:1;font-size:13.5px;font-weight:700}\n.strat{background:var(--tm);color:#f3ead7;border-radius:12px;padding:14px 16px;margin:12px 0}\n.strat h4{color:#caa14a;font-size:12px;font-weight:800;margin-bottom:10px;letter-spacing:.04em}\n.strat .row{display:flex;gap:12px;align-items:flex-start;margin:9px 0;font-size:13.5px;line-height:1.55}\n.strat .row .seg{flex:0 0 64px;font-weight:800;color:#ffd98a}\n.strat .row .ac{flex:1}\n.strat b{color:#ffd98a}\n.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;margin:14px 0;font-size:12.5px;color:#5a4d2e;line-height:1.6}\n.note b{color:var(--tm);font-weight:800}\n.vs{display:flex;gap:10px;margin:14px 0 6px}\n.vs .box{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center}\n.vs .box .vn{font-size:15.5px;font-weight:800;line-height:1.2;margin-bottom:6px}\n.vs .box .vu{font-size:12.5px;color:var(--ts);line-height:1.7}\n.rbar{margin:7px 0}\n.rbar .rt{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:3px}\n.rbar .rt .rp{color:var(--ts);font-weight:800;font-variant-numeric:tabular-nums}\n.rbar .rl{height:9px;background:#ece3cf;border-radius:5px;overflow:hidden}\n.rbar .rl i{display:block;height:100%;border-radius:5px}\n.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:24px;line-height:1.6}\n@media print{body{background:#fff}.sheet{box-shadow:none}}\n</style></head><body>\n<div class=\"sheet\">\n  <div class=\"kicker\">QP 데이터 리포트 #3</div>\n  <h1>콜이 많은 곳,<br>정말 좋은 곳일까</h1>\n\n  <div class=\"sec\">\n    <h2><span class=\"t\">왜 늘 남이 먼저 가져갈까</span></h2>\n    <p>콜이 많이 뜨는 곳, 많이 뜨는 시간을 좋은 자리라 여기고 찾아갑니다. 그런데 막상 가 보면 <span class=\"hi\">좋은 콜은 늘 남이 먼저 가져가고</span> 손에 남는 게 없습니다. 콜이 부족해서일까요. 데이터는 다르게 말합니다. 문제는 콜의 양이 아니라, 다들 같은 곳 같은 시간에 몰린다는 데 있습니다.</p>\n\n    <div class=\"card\">\n      <h4>평일 하루 콜 분포 (1인 기준 상대 밀도)</h4>\n      <div class=\"hours\" id=\"hoursWd\"></div>\n      <div class=\"hlab\" id=\"lab1\"></div>\n      <div class=\"legend\"><span><i style=\"background:var(--gold)\"></i>콜도 기사도 몰리는 낮</span><span><i style=\"background:#d8ccb2\"></i>한산한 시간</span></div>\n    </div>\n\n    <p>낮 시간에 콜이 두 번 산을 이루며 두텁게 쌓입니다. 누가 봐도 일감 많아 보이는 시간입니다. 그런데 <b>같은 그래프가 곧 기사가 가장 많이 몰리는 시간</b>이기도 합니다. 퀵 일을 회사처럼 아홉 시 출근 여섯 시 퇴근으로 묶어 두면, 바로 이 피크에 나를 붙여 두는 셈입니다. 다들 같은 시간에 일하니 <span class=\"hi\">가장 경쟁이 센 창 안으로 스스로 걸어 들어갑니다.</span></p>\n\n    <div class=\"note\">\n      <b>9 to 6의 함정.</b> 정해진 시간에 나와 정해진 시간에 접는 리듬은 안정적으로 느껴집니다. 하지만 그 리듬은 곧 모두의 리듬입니다. 같은 시간에 같이 일하면 같은 콜을 두고 같이 경쟁합니다. 시간을 한 틀에 묶지 않고 폭을 넓게 볼수록, 남들이 비운 자리가 보입니다.\n    </div>\n\n    <p>이 리포트는 세 가지를 봅니다. 좋아 보이는 콜의 정체, 콜이 많은 곳의 함정, 그 안에서 살아남는 움직임입니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">1</span><span class=\"t\">좋아 보이는 건 남에게도 좋아 보입니다</span></h2>\n\n    <div class=\"eqrow\">\n      <div class=\"ebox\">내 눈에<br>좋은 콜</div>\n      <div class=\"eq\">=</div>\n      <div class=\"ebox\">남의 눈에도<br>좋은 콜</div>\n    </div>\n\n    <p>콜을 보는 눈은 다 비슷합니다. <span class=\"hi\">나에게 좋아 보이는 건 남에게도 좋아 보이고, 남에게 구려 보이는 건 나에게도 구려 보입니다.</span> 그래서 좋은 콜일수록 경쟁이 셉니다.</p>\n\n    <div class=\"card\">\n      <h4>오더창에 머무는 시간</h4>\n      <div class=\"dwell\">\n        <div class=\"dl\"><div class=\"dn\">좋은 콜</div><div class=\"dw\"><i style=\"width:18%;background:var(--red)\"></i></div><div class=\"dtag\">뜨자마자 사라짐</div></div>\n        <div class=\"dl\"><div class=\"dn\">둥둥 콜</div><div class=\"dw\"><i style=\"width:90%;background:#c7bca0\"></i></div><div class=\"dtag\">계속 떠 있음</div></div>\n      </div>\n    </div>\n\n    <p>오더창에 둥둥 떠 있는 콜은 <b>아무도 안 가져간 콜</b>입니다. 반대로 뜨자마자 사라지는 콜은 <b>누가 봐도 좋은 콜</b>입니다. 화면에 오래 남아 있다는 건 그만큼 매력이 덜하다는 신호입니다. 좋은 콜만 골라 잡겠다고 버티는 동안, 그 좋은 콜은 이미 남의 차에 실려 있습니다.</p>\n\n    <div class=\"note\">\n      <b>오래 떠 있는 콜과 빨리 빠지는 콜.</b> 둘의 차이가 곧 경쟁의 온도입니다. 좋은 것만 노리면 늘 한발 늦고, 그 사이 시간만 흘러갑니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">2</span><span class=\"t\">많은 곳을 찾지 말고, 없는 곳을 피하세요</span></h2>\n    <p>그래서 위치를 보는 방향을 뒤집어야 합니다. <span class=\"hi\">콜이 많은 곳이라고 좋아서 찾아갈 게 아니라, 반대로 콜이 대체로 없는 곳을 피해 가야 합니다.</span></p>\n\n    <div class=\"zones\">\n      <div class=\"z\" style=\"background:var(--red)\"><div class=\"zt\">핫스팟</div><div class=\"zd\">콜 많지만<br>기사도 몰림</div></div>\n      <div class=\"z\" style=\"background:#b3a98f\"><div class=\"zt\">사각지대</div><div class=\"zd\">콜이 말라<br>빈손·대기</div></div>\n      <div class=\"z\" style=\"background:var(--grn)\"><div class=\"zt\">길목</div><div class=\"zd\">콜 적당·<br>덜 붐빔</div></div>\n    </div>\n\n    <div class=\"card\">\n      <h4>콜이 몰리는 곳 (평일 출발지 상위 권역)</h4>\n      <div class=\"rbar\"><div class=\"rt\"><span>경기도 광주시</span><span class=\"rp\">5.6%</span></div><div class=\"rl\"><i style=\"width:100%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>서울 강남구</span><span class=\"rp\">5.3%</span></div><div class=\"rl\"><i style=\"width:95%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>서울 강서구</span><span class=\"rp\">4.7%</span></div><div class=\"rl\"><i style=\"width:84%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>서울 성동구</span><span class=\"rp\">4.5%</span></div><div class=\"rl\"><i style=\"width:80%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>경기도 김포시</span><span class=\"rp\">3.5%</span></div><div class=\"rl\"><i style=\"width:63%;background:var(--gold)\"></i></div></div>\n    </div>\n\n    <div class=\"card\">\n      <h4>콜이 얇은 곳 (출발 물량이 적은 외곽)</h4>\n      <p class=\"cdesc\">도심과 물류 단지에서 먼 외곽 전원·농촌 권역입니다. 표본 안에서는 출발 콜이 거의 잡히지 않습니다. 살기 나쁜 곳이라는 뜻이 아니라, 짐이 출발하는 물량 자체가 얇다는 뜻입니다.</p>\n      <div class=\"chips\"><span>경기도 가평군</span><span>경기도 연천군</span><span>경기도 양평군</span></div>\n    </div>\n\n    <p>위쪽 권역은 콜이 가장 많이 뜨는 곳이지만, 동시에 기사가 가장 많이 모이는 곳입니다. 아래쪽 외곽은 콜 자체가 얇아 <span class=\"hi\">죽치고 기다리면 빈손이 되는 자리</span>입니다. 좋은 곳을 쫓는 욕심보다, 이 두 극단을 피하는 감각이 하루를 지킵니다.</p>\n\n    <p>여기에 시간을 겹치면 방향이 더 또렷해집니다. 같은 자리도 시간에 따라 답이 달라집니다.</p>\n\n    <div class=\"swap\">\n      <div class=\"sr\"><div class=\"st\" style=\"color:var(--red)\">몰리는 시간</div><div class=\"sa\">→</div><div class=\"sd\">한산한 곳으로 빠진다</div></div>\n      <div class=\"sr\"><div class=\"st\" style=\"color:var(--grn)\">한산한 시간</div><div class=\"sa\">→</div><div class=\"sd\">몰리는 곳으로 들어간다</div></div>\n    </div>\n\n    <p>모두가 몰리는 피크에는 핫스팟을 비켜 <b>한산한 길목</b>에서 경쟁 없이 한 건을 잡습니다. 반대로 다들 빠진 한산한 시간에는 <b>물량이 도는 곳</b>으로 들어가 남은 콜을 줍습니다. <span class=\"hi\">붐빌 때 비켜서고, 빌 때 들어가는 엇박자</span>가 같은 하루를 다르게 씁니다.</p>\n\n    <div class=\"note\">\n      <b>쫓기보다 피하기, 그리고 엇박자.</b> 콜이 몰리는 곳을 좇아 들어가면 경쟁만 만나고, 콜이 마른 외곽에 갇히면 시간만 흘립니다. 남들과 시간을 엇갈리게 두는 것만으로도 같은 자리가 다른 자리가 됩니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">3</span><span class=\"t\">가볍게 하나 잡고, 움직이세요</span></h2>\n    <p>모두가 구름같이 몰리는 시간에는 <span class=\"hi\">내가 원하는 걸 반드시 잡지 못할 수도 있습니다.</span> 가만히 앉아 좋은 것만 기다리며 시간을 태우고 피크 시간을 다 놓치느니, 효율 좋은 것 하나라도 잡고 움직이는 게 낫습니다.</p>\n\n    <div class=\"vs\">\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--ts)\">좋은 것만 기다림</div><div class=\"vu\">한복판에서 버팀<br>시간만 흘러감</div></div>\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--grn)\">하나 잡고 회전</div><div class=\"vu\">가볍게 한 건<br>다음 자리로 이동</div></div>\n    </div>\n\n    <p>한 번 회전하면 다음 자리가 열립니다. 무거운 한 건을 기다리며 버티기보다, 가벼운 한 건이 멈춰 선 대기보다 멀리 데려갑니다. 오토바이 오더처럼 빠르게 빠지는 일감은 늘 한쪽에 깔려 있습니다.</p>\n\n    <div class=\"note\">\n      <b>김다마는 붐비는 곳에 가지 않습니다.</b> 오토바이 오더 하나 가볍게 잡고 빠져나갑니다. 무거운 한 건을 노리며 한복판에서 버티는 대신, 가벼운 한 건으로 자리를 옮겨 다음 기회를 먼저 잡습니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"t\">자리를 점검하고, 가볍게 움직이세요</span></h2>\n    <p>지금까지를 한 동선으로 꿰면 매일 스스로 던질 질문이 보입니다.</p>\n\n    <div class=\"strat\">\n      <h4>오늘의 점검 포인트</h4>\n      <div class=\"row\"><div class=\"seg\">자리</div><div class=\"ac\">지금 내가 있는 <b>시간과 자리가 경쟁이 센 곳</b>은 아닌지 본다.</div></div>\n      <div class=\"row\"><div class=\"seg\">기다림</div><div class=\"ac\">가볍게 잡고 움직여야 할 상황에서, <b>좋은 것만 잡으려고 기다리며</b> 시간을 버리고 애만 태우고 있는 건 아닌지 본다.</div></div>\n      <div class=\"row\"><div class=\"seg\">회전</div><div class=\"ac\">완벽한 한 건을 노리기보다, <b>효율 좋은 하나를 잡고</b> 흐름을 만든다.</div></div>\n      <div class=\"row\"><div class=\"seg\">유연함</div><div class=\"ac\">시간도 자리도 한 틀에 묶지 않는다. <b>남들이 비는 시간과 자리</b>로 폭을 넓혀 움직인다.</div></div>\n    </div>\n\n    <p>정해진 시간과 정해진 자리에 나를 묶지 않는 것. 남들이 붐빌 때 비켜서고 남들이 비울 때 들어가는 <span class=\"hi\">유연함이 같은 하루에서 더 많은 기회를 만듭니다.</span> 9 to 6의 틀을 벗고 폭넓게 보는 눈이, 콜을 쫓는 발보다 멀리 갑니다.</p>\n\n    <p>데이터는 늘 말합니다. <span class=\"hi\">콜이 없어서 일을 못 하는 게 아니고, 일이 없어서 돈을 못 버는 게 아니라고.</span> 문제는 양이 아니라 자리와 타이밍입니다. 우리는 더 효율적으로 움직이기 위해 QP를 만들고 씁니다.</p>\n  </div>\n\n  <div class=\"foot\">\n    QP 데이터 리포트 3호 · 2026.06 · 평일 표본 (중복 제거 · 전체 시장 데이터 아님) · 콜 양은 사용자 증가 영향을 걷어낸 1인 기준 상대 밀도 · 시간은 콜이 감지된 시각 기준 · 권역은 픽업(출발지) 기준, 서울·인천은 구, 그 외는 시 · 오더창 머무는 시간 그림은 비교를 위한 도식 · 비율은 표본 안의 분포로 큰 흐름만 봅니다\n  </div>\n</div>\n<script>\nvar HW=[1,1,0,0,0,0,2,9,46,106,112,96,74,108,111,94,91,60,32,25,14,7,3,3];\nfunction drawBars(id,A,peak){\n  var mx=Math.max.apply(null,A);\n  document.getElementById(id).innerHTML=A.map(function(v,h){\n    var c=peak&&peak[h]?\" peak\":\"\";\n    return '<div class=\"h'+c+'\" style=\"height:'+Math.max(3,v/mx*100)+'%\"></div>';\n  }).join(\"\");\n}\ndrawBars(\"hoursWd\",HW,{8:1,9:1,10:1,11:1,12:1,13:1,14:1,15:1,16:1});\nfunction drawLab(id){\n  var marks={0:1,3:1,6:1,9:1,12:1,15:1,18:1,21:1},out='';\n  for(var h=0;h<24;h++) out+='<span>'+(marks[h]?h:'')+'</span>';\n  out+='<span class=\"end\">24</span>';\n  document.getElementById(id).innerHTML=out;\n}\ndrawLab(\"lab1\");\nfunction addMark(id,s,e,label){\n  var host=document.getElementById(id),m=document.createElement('div');\n  m.className='mark';m.style.left=(s/24*100)+'%';m.style.width=((e-s+1)/24*100)+'%';\n  if(label){var l=document.createElement('div');l.className='ml';l.textContent=label;m.appendChild(l);}\n  host.appendChild(m);\n}\naddMark(\"hoursWd\",9,16,\"다 같이 몰리는 시간\");\n<\/script>\n</body></html>\n","column-4-longhaul.html":"<!doctype html><html lang=\"ko\"><head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>QP 데이터 리포트 4호 · 아직도 비싼 거만 찾으세요?</title>\n<style>\n:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n*{box-sizing:border-box;margin:0;padding:0}\nbody{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}\n.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}\n.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}\nh1{font-size:26px;font-weight:800;line-height:1.3;margin:6px 0 4px}\n.subhead{font-size:14px;font-weight:800;color:var(--ts);margin-bottom:22px}\n.lead{font-size:15px;line-height:1.75;margin:10px 0;word-break:keep-all}\n.lead.first::first-letter{font-size:1.1em}\n.sec{margin-bottom:30px}\n.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:800;font-size:15px;margin-right:8px}\nh2{font-size:18.5px;font-weight:800;display:flex;align-items:center;margin-bottom:10px;line-height:1.3}\nh2 span.t{flex:1}\np{font-size:14.5px;margin:8px 0;word-break:keep-all}\n.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}\n.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:12px 0}\n.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:12px}\n.donut{width:152px;height:152px;border-radius:50%;margin:6px auto 2px;position:relative;background:conic-gradient(var(--red) 0 15%,var(--gold) 15% 41%,var(--grn) 41% 100%)}\n.donut::after{content:\"\";position:absolute;inset:32px;background:var(--card);border-radius:50%}\n.donut .dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800}\n.donut .dc .a{font-size:21px;color:var(--grn);line-height:1}\n.donut .dc .b{font-size:10.5px;color:var(--ts);margin-top:2px}\n.dleg{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:12px;color:var(--ts);font-weight:700;margin-top:8px}\n.dleg i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}\n.rbar{margin:8px 0}\n.rbar .rt{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:3px}\n.rbar .rt .rp{color:var(--ts);font-weight:800;font-variant-numeric:tabular-nums}\n.rbar .rl{height:11px;background:#ece3cf;border-radius:6px;overflow:hidden}\n.rbar .rl i{display:block;height:100%;border-radius:6px}\n.dtable{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0}\n.dtable th{background:var(--tm);color:#f3ead7;font-weight:800;padding:8px 5px;font-size:11px;line-height:1.3}\n.dtable td{padding:7px 5px;border-bottom:1px solid var(--bd);text-align:center;font-variant-numeric:tabular-nums}\n.dtable td:first-child{font-weight:800;text-align:left}\n.dtable tr.hl td{background:#f3e2a8;font-weight:800}\n.dtable td .vt{font-size:11px;color:var(--ts)}\n.stat{display:flex;gap:10px;margin:13px 0}\n.stat .b{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:15px 10px;text-align:center}\n.stat .b .bn2{font-size:14px;font-weight:800;margin-bottom:7px}\n.stat .b .n{font-size:23px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums}\n.stat .b .l{font-size:12px;color:var(--ts);margin-top:4px;font-weight:700;line-height:1.4}\n.vs{display:flex;gap:10px;margin:14px 0 6px}\n.vs .box{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center}\n.vs .box .vn{font-size:16px;font-weight:800;line-height:1.2;margin-bottom:7px}\n.vs .box .vu{font-size:12.5px;color:var(--ts);line-height:1.8}\n.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 14px;margin:14px 0;font-size:12.5px;color:#5a4d2e;line-height:1.6}\n.note b{color:var(--tm);font-weight:800}\n.wrap{margin-top:28px}\n.wrap .lead{font-size:15px}\n.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:24px;line-height:1.6}\n@media print{body{background:#fff}.sheet{box-shadow:none}}\n</style></head><body>\n<div class=\"sheet\">\n  <div class=\"kicker\">QP 데이터 리포트 #4</div>\n  <h1>아직도 비싼 거만 찾으세요?</h1>\n  <div class=\"subhead\">장거리 고단가의 함정</div>\n\n  <p class=\"lead first\">퀵 일을 하다 보면 큰 금액 콜에 자꾸 눈이 갑니다. 오더창에 5만원, 7만원짜리가 뜨면 그거 하나만 잡아도 하루가 풀릴 것 같습니다. 그래서 작은 콜은 흘려보내고 큰 거 한 방을 기다리게 됩니다.</p>\n  <p class=\"lead\">정말 그게 남는 장사일까요. 그동안 서버에 쌓인 인성 오더를 운임대별로 갈라서 하나씩 들여다봤습니다. 어떤 금액 콜이 얼마나 자주 오는지, 거리는 얼마나 되는지, km당 단가는 어떤지, 어떤 차가 그 콜을 많이 잡는지까지 같이 봤습니다.</p>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">1</span><span class=\"t\">큰 콜은 생각만큼 자주 오지 않는다</span></h2>\n    <p>먼저 어떤 금액 콜이 얼마나 자주 뜨는지부터 봤습니다. 콜 백 개가 떴다고 치면, 그 안에 1만원짜리가 몇 개, 3만원짜리가 몇 개인지 비율로 나눠 본 그림입니다.</p>\n    <div class=\"card\">\n      <div class=\"donut\"><div class=\"dc\"><span class=\"a\">59%</span><span class=\"b\">3~4만원대</span></div></div>\n      <div class=\"dleg\"><span><i style=\"background:var(--grn)\"></i>3~4만원대 59%</span><span><i style=\"background:var(--gold)\"></i>2만원 이하 26%</span><span><i style=\"background:var(--red)\"></i>5만원 이상 16%</span></div>\n    </div>\n    <div class=\"card\">\n      <h4>운임대별 콜 비중</h4>\n      <div class=\"rbar\"><div class=\"rt\"><span>1만원대</span><span class=\"rp\">3.5%</span></div><div class=\"rl\"><i style=\"width:7%;background:#c7bca0\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>2만원대</span><span class=\"rp\">22.1%</span></div><div class=\"rl\"><i style=\"width:47%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>3만원대</span><span class=\"rp\">46.8%</span></div><div class=\"rl\"><i style=\"width:100%;background:var(--grn)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>4만원대</span><span class=\"rp\">12.0%</span></div><div class=\"rl\"><i style=\"width:26%;background:var(--grn)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>5만원대</span><span class=\"rp\">6.6%</span></div><div class=\"rl\"><i style=\"width:14%;background:var(--red)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>6만원대</span><span class=\"rp\">3.7%</span></div><div class=\"rl\"><i style=\"width:8%;background:var(--red)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>7만원대</span><span class=\"rp\">2.1%</span></div><div class=\"rl\"><i style=\"width:4%;background:var(--red)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>8만원대 이상</span><span class=\"rp\">3.1%</span></div><div class=\"rl\"><i style=\"width:7%;background:#b3a98f\"></i></div></div>\n    </div>\n    <p>3만원대 하나가 전체의 절반 가깝습니다. 여기에 4만원대까지 더하면 약 59%, 오더창에 뜨는 콜 열 개 중 여섯 개쯤이 3만원대 아니면 4만원대라는 얘기입니다. 반대로 그렇게 눈이 가던 5만원 이상은 다 합쳐도 약 16%, 열 개 중 한두 개꼴입니다. <span class=\"hi\">3~4만원대가 5만원 이상보다 약 4배 자주 옵니다.</span> 큰 한 방을 기다리는 동안 흔한 콜은 그 네 배의 속도로 옆을 지나가고 있다는 뜻입니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">2</span><span class=\"t\">운임이 거리를 못 따라간다</span></h2>\n    <p>큰 콜은 왜 금액이 큰지, 콜 하나하나의 속을 들여다보면 답이 보입니다. 운임대별로 평균 배송거리와 km당 단가, 그리고 어떤 차가 가장 많이 잡는지를 한 표에 모았습니다.</p>\n    <div class=\"card\">\n      <table class=\"dtable\">\n        <tr><th>운임대</th><th>비중</th><th>배송거리</th><th>km당 단가</th><th>최다 차종</th></tr>\n        <tr><td>1만원대</td><td>3.5%</td><td>13km</td><td>1,113원</td><td>오토바이<div class=\"vt\">72%</div></td></tr>\n        <tr><td>2만원대</td><td>22.1%</td><td>21km</td><td>1,196원</td><td>다마스<div class=\"vt\">54%</div></td></tr>\n        <tr class=\"hl\"><td>3만원대</td><td>46.8%</td><td>31km</td><td>1,064원</td><td>다마스<div class=\"vt\">79%</div></td></tr>\n        <tr><td>4만원대</td><td>12.0%</td><td>44km</td><td>1,015원</td><td>다마스<div class=\"vt\">78%</div></td></tr>\n        <tr><td>5만원대</td><td>6.6%</td><td>52km</td><td>1,016원</td><td>다마스<div class=\"vt\">64%</div></td></tr>\n        <tr><td>6만원대</td><td>3.7%</td><td>77km</td><td>808원</td><td>다마스<div class=\"vt\">69%</div></td></tr>\n        <tr><td>7만원대</td><td>2.1%</td><td>94km</td><td>825원</td><td>다마스<div class=\"vt\">58%</div></td></tr>\n        <tr><td>8만원대</td><td>0.8%</td><td>61km</td><td>1,314원</td><td>다마스<div class=\"vt\">52%</div></td></tr>\n        <tr><td>9만원대</td><td>0.5%</td><td>92km</td><td>1,019원</td><td>다마스<div class=\"vt\">75%</div></td></tr>\n      </table>\n    </div>\n    <p>운임이 오르면 거리가 길어진다는 건 누구나 압니다. 진짜 봐야 할 건 그다음입니다. 거리와 운임이 같은 속도로 늘지 않습니다. 거리가 늘어나는 만큼 운임이 비례해서 따라 올라주지 않습니다. 2만원대 21km가 7만원대 94km로 거리는 4배 넘게 벌어지는 동안, 운임은 3배 남짓 오르는 데 그칩니다. 멀어진 거리에 견주면 더 받는 돈이 점점 인색해진다는 뜻이고, 그래서 <span class=\"hi\">한 걸음당 받는 돈, km당 단가는 거꾸로 깎입니다.</span> 멀리 갈수록 새로 더한 1km가 벌어다 주는 돈이 줄어듭니다. 차종도 거듭니다. 1만원대는 오토바이가 주로 잡고, 2만원대부터는 다마스가 자리를 차지합니다. km당 단가는 직선거리를 기준으로 잡은 값입니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">3</span><span class=\"t\">거리는 늘고, 단가는 줄고</span></h2>\n    <p>거리만 따로 떼어내 막대로 세우면 흐름이 더 또렷합니다. 2만원대 21km에서 5만원대 52km까지는 한 칸 한 칸 완만하게 올라갑니다. 그러다 <span class=\"hi\">6만원을 넘기는 순간 77km로 한 단계 확 뜁니다.</span></p>\n    <div class=\"card\">\n      <h4>운임대별 평균 배송거리</h4>\n      <div class=\"rbar\"><div class=\"rt\"><span>2만원대</span><span class=\"rp\">21km</span></div><div class=\"rl\"><i style=\"width:22%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>3만원대</span><span class=\"rp\">31km</span></div><div class=\"rl\"><i style=\"width:33%;background:var(--grn)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>4만원대</span><span class=\"rp\">44km</span></div><div class=\"rl\"><i style=\"width:47%;background:var(--grn)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>5만원대</span><span class=\"rp\">52km</span></div><div class=\"rl\"><i style=\"width:56%;background:#c0a86a\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>6만원대</span><span class=\"rp\">77km</span></div><div class=\"rl\"><i style=\"width:82%;background:var(--red)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>7만원대</span><span class=\"rp\">94km</span></div><div class=\"rl\"><i style=\"width:100%;background:var(--red)\"></i></div></div>\n    </div>\n    <div class=\"stat\">\n      <div class=\"b\"><div class=\"bn2\">5만원대</div><div class=\"n\" style=\"color:var(--grn)\">52km</div><div class=\"l\">km당 약 1,016원</div></div>\n      <div class=\"b\"><div class=\"bn2\">6만원대</div><div class=\"n\" style=\"color:var(--red)\">77km</div><div class=\"l\">km당 약 808원</div></div>\n    </div>\n    <p>5만원대에서 6만원대로 한 칸 오르는 동안 거리는 25km가 더 붙습니다. 금액은 만원 올랐는데 가야 할 길은 절반이 더 늘어난 셈입니다. 그 사이 km당 단가는 약 1,016원에서 808원으로 200원이 빠집니다. 멀리 갈수록 한 걸음당 버는 돈은 오히려 줄어드는 자리, 그게 6만원대입니다. 게다가 그 한 콜에 묶여 있는 동안은 다른 콜을 잡을 수도 없습니다.</p>\n    <div class=\"note\">\n      <b>숫자의 함정.</b> 8만원대에서 km당 단가가 다시 오르는 것처럼 보입니다. 더 좋은 콜이 돌아와서가 아닙니다. 거리는 짧은데 1톤이나 카고 큰 차에 타일, 가전 같은 부피 큰 짐을 싣고 설치까지 하거나, 합짐 금지로 차 한 대를 통째 묶는 콜이라 금액만 커진 것입니다. <span class=\"hi\">단가로 번 게 아니라 짐과 작업으로 받은 돈</span>이라, 숫자만 보고 좋은 콜이라 읽으면 함정에 빠집니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">4</span><span class=\"t\">같은 6만원, 속은 다르다</span></h2>\n    <p>같은 금액이라도 그 안이 늘 같은 건 아닙니다. 같은 6~7만원을 큰 콜 하나로 채울 때와, 3만원대 두 콜로 나눠 채울 때를 나란히 놓고 봤습니다.</p>\n    <div class=\"vs\">\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--red)\">7만원 한 콜</div><div class=\"vu\">94km 직진<br>km당 약 825원<br>한 콜에 묶임</div></div>\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--grn)\">3만원 두 콜</div><div class=\"vu\">합쳐 62km<br>km당 약 1,064원<br>두 건으로 나뉨</div></div>\n    </div>\n    <p>한쪽은 94km를 한 번에 달려 7만원을 받습니다. 다른 쪽은 31km짜리 콜 두 개로 합쳐 62km를 가고 6만원을 받습니다. 금액은 비슷한데 거리는 두 콜 쪽이 30km 넘게 짧고, 한 걸음당 단가도 더 높습니다. <span class=\"hi\">같은 돈을 벌어도 덜 달리고 더 챙기는 길이 분명히 있습니다.</span></p>\n  </div>\n\n  <div class=\"wrap\">\n    <p class=\"lead\">숫자가 보여주는 그림은 여기까지입니다. 큰 콜은 드물게 오고, 멀리 가고, 한 걸음당 단가는 낮습니다. 흔한 3~4만원대 콜은 자주 오고, 가깝고, 단가는 오히려 높습니다.</p>\n    <p class=\"lead\">그렇다고 큰 콜이 무조건 나쁘다는 얘기는 아닙니다. 멀리 가는 길이 편한 사람도 있고, 한 번에 멀리 털고 들어오는 게 맞는 날도 있습니다. 다만 큰 금액이라는 숫자 하나만 보고 따라가면 거리는 길고 단가는 낮은 콜을 좋은 콜로 착각하기 쉽습니다. 금액 뒤에 붙은 거리와 km당 단가까지 같이 보고 고르면, 같은 하루에 손에 남는 돈이 달라집니다.</p>\n  </div>\n\n  <div class=\"foot\">\n    QP 데이터 리포트 4호 · 2026.06 · 전 사용자 인성 오더 표본 기반 (전체 시장 데이터 아님) · 비중은 약 1만 표본 분포 · 배송거리와 km당 단가는 직선거리 기준 일부 표본의 중위값이라 큰 흐름으로만 · 8~9만원대는 표본이 얇아 방향만 봅니다\n  </div>\n</div>\n</body></html>\n","column-5-cargo-load.html":"<!doctype html><html lang=\"ko\"><head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>QP 데이터 리포트 5호 · 짐을 많이 실을수록 요금을 많이 줄까?</title>\n<style>\n:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n*{box-sizing:border-box;margin:0;padding:0}\nbody{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}\n.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}\n.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}\nh1{font-size:26px;font-weight:800;line-height:1.3;margin:6px 0 4px}\n.subhead{font-size:14px;font-weight:800;color:var(--ts);margin-bottom:22px}\n.lead{font-size:15px;line-height:1.75;margin:10px 0;word-break:keep-all}\n.sec{margin-bottom:30px}\n.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:800;font-size:15px;margin-right:8px;flex:0 0 30px}\nh2{font-size:18.5px;font-weight:800;display:flex;align-items:center;margin-bottom:10px;line-height:1.3}\nh2 span.t{flex:1}\np{font-size:14.5px;margin:8px 0;word-break:keep-all}\n.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}\n.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:12px 0}\n.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:12px}\n.stat{display:flex;gap:10px;margin:13px 0}\n.stat .b{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:15px 10px;text-align:center}\n.stat .b .bn2{font-size:13px;font-weight:800;margin-bottom:7px;line-height:1.35}\n.stat .b .n{font-size:22px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums}\n.stat .b .l{font-size:12px;color:var(--ts);margin-top:4px;font-weight:700;line-height:1.4}\n.rbar{margin:9px 0}\n.rbar .rt{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;margin-bottom:3px}\n.rbar .rt .rp{color:var(--ts);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}\n.rbar .rl{height:11px;background:#ece3cf;border-radius:6px;overflow:hidden}\n.rbar .rl i{display:block;height:100%;border-radius:6px}\n.dtable{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0}\n.dtable th{background:var(--tm);color:#f3ead7;font-weight:800;padding:8px 5px;font-size:11px;line-height:1.3}\n.dtable td{padding:7px 5px;border-bottom:1px solid var(--bd);text-align:center;font-variant-numeric:tabular-nums}\n.dtable td:first-child{font-weight:800;text-align:left}\n.dtable tr.hl td{background:#f3e2a8;font-weight:800}\n.dtable td .vt{font-size:11px;color:var(--ts)}\n.vs{display:flex;gap:10px;margin:14px 0 6px}\n.vs .box{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center}\n.vs .box .vn{font-size:15px;font-weight:800;line-height:1.25;margin-bottom:7px}\n.vs .box .vu{font-size:12.5px;color:var(--ts);line-height:1.8}\n.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 14px;margin:14px 0;font-size:12.5px;color:#5a4d2e;line-height:1.6}\n.note b{color:var(--tm);font-weight:800}\n.ex{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}\n.ex .e{background:#fffdf5;border:1px solid var(--bd);border-radius:8px;padding:10px 12px}\n.ex .e b{display:block;font-size:12px;margin-bottom:3px;color:var(--tm)}\n.ex .e span{display:block;font-size:12.5px;color:#5a4d2e;line-height:1.55}\n.wrap{margin-top:28px}\n.wrap .lead{font-size:15px}\n.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:24px;line-height:1.6}\n@media(max-width:430px){.sheet{padding:26px 18px 54px}h1{font-size:24px}.stat,.vs{gap:8px}.stat .b{padding:13px 7px}.stat .b .n{font-size:20px}.dtable{font-size:11.5px}.dtable th,.dtable td{padding-left:3px;padding-right:3px}}\n@media print{body{background:#fff}.sheet{box-shadow:none}}\n</style></head><body>\n<div class=\"sheet\">\n  <div class=\"kicker\">QP 데이터 리포트 #5</div>\n  <h1>짐을 많이 실을수록<br>요금을 많이 줄까?</h1>\n  <div class=\"subhead\">큰 짐 단독과 작은 짐 합짐 비교</div>\n\n  <p class=\"lead\">궁금한 건 단순합니다. 짐이 많으면 정말 돈을 더 줄까요. 큰 짐 하나를 싣는 게, 작은 짐 여러 개를 동선 맞춰 묶는 것보다 나을까요.</p>\n  <p class=\"lead\">그래서 적요란에 짐 정보가 있는 오더만 골랐습니다. 서류·봉투처럼 작은 짐, 박스 몇 개짜리 중간 짐, 파렛트·상하차가 붙은 큰 짐으로 나눠 평균 요금과 거리, km당 단가를 봤습니다.</p>\n  <p class=\"lead\">다만 이 숫자는 현장을 그대로 보여주는 사진이 아닙니다. 적요란에 적힌 말과 실제 현장에서 만나는 짐 사이에는 자주 차이가 납니다. 이번 리포트는 그 차이가 왜 생기는지도 같이 봅니다.</p>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">1</span><span class=\"t\">적요란에 짐 정보가 있는 오더만 봤다</span></h2>\n    <p>이번 표본은 적요란에 서류, 봉투, 박스, 상자, 파렛트, 포대, 롤, 상하차 같은 말이 적힌 오더입니다. 실제 저울로 무게를 잰 건 아닙니다. <span class=\"hi\">기사님이 오더창에서 읽는 짐 정보를 기준으로 나눈 비교</span>입니다.</p>\n    <div class=\"card\">\n      <h4>짐 정보가 있는 오더의 구성</h4>\n      <div class=\"rbar\"><div class=\"rt\"><span>작고 적은 짐</span><span class=\"rp\">6.8%</span></div><div class=\"rl\"><i style=\"width:14%;background:#c7bca0\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>중간 짐</span><span class=\"rp\">49.9%</span></div><div class=\"rl\"><i style=\"width:100%;background:var(--grn)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>크고 많은 짐</span><span class=\"rp\">43.3%</span></div><div class=\"rl\"><i style=\"width:87%;background:var(--gold)\"></i></div></div>\n    </div>\n    <p>나누는 기준은 어렵지 않습니다. 손에 들고 바로 움직일 만하면 작고 적은 짐, 박스 몇 개 정도면 중간 짐, 차 공간을 많이 쓰거나 상하차가 붙을 것 같으면 크고 많은 짐으로 봤습니다.</p>\n    <div class=\"ex\">\n      <div class=\"e\"><b>작고 적은 짐</b><span>서류, 봉투 1개, 쇼핑백 1개, 소박스 1개, 샘플처럼 차 공간을 거의 안 쓰는 짐입니다.</span></div>\n      <div class=\"e\"><b>중간 짐</b><span>컵 5박스, 부자재 2박스, 택배박스, 노트북 박스처럼 일반적인 박스 배송에 가까운 짐입니다.</span></div>\n      <div class=\"e\"><b>크고 많은 짐</b><span>파렛트, 박스 수십 개, 공파렛트 30개, 중량 250키로, 지게차 상하차처럼 공간이나 작업 부담이 보이는 짐입니다.</span></div>\n    </div>\n    <div class=\"note\">\n      <b>읽는 기준.</b> 적요란은 사람이 적는 말이라 실제 부피와 무게를 그대로 보여주진 않습니다. 이번 리포트는 실측 자료가 아니라, 기사님이 오더창에서 보는 짐 정보가 요금에 어떻게 묻어나는지 본 자료입니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">2</span><span class=\"t\">적요란은 현장을 직접 본 말이 아니다</span></h2>\n    <p>퀵서비스나 화물 오더는 대부분 비대면으로 접수됩니다. 고객이 전화나 문자로 설명하고, 주선사는 그 말을 듣고 오더를 올립니다. 문제는 주선사가 짐을 직접 보고 쓰는 게 아니라는 점입니다.</p>\n    <p>고객도 항상 정확하게 말하지는 않습니다. 요금을 줄이고 싶어서 짐을 작게 말하는 경우도 있고, 고객은 별것 아니라고 생각했는데 막상 기사님이 보면 차에 싣기 어려운 경우도 있습니다. 주선사가 짐 크기를 자세히 묻지 않거나, 적요란에 충분히 적지 않는 경우도 있습니다.</p>\n    <div class=\"note\">\n      <b>현장에서 난감한 이유.</b> 적요란에는 작은 짐처럼 보였는데, 막상 도착하면 박스가 너무 많거나 물건이 너무 크거나 상하차가 필요한 경우가 생깁니다. 그때 과적 문제, 추가 요금 협의, 대기 시간, 고객 설명까지 기사님 에너지가 한꺼번에 들어갑니다. 표에 적힌 숫자와 현장에서 몸으로 겪는 일이 다르게 느껴지는 이유가 여기 있습니다.\n    </div>\n    <p>요금 구조도 단순하지 않습니다. 고객은 가능하면 적게 내고 싶고, 주선사는 접수한 정보를 바탕으로 요금을 맞춥니다. 그 사이에서 기사님에게 내려오는 운임은 고객이 낸 요금과 다를 수 있습니다. 현장에서는 중간 수수료가 23%라고 알려져 있어도 실제 체감은 그보다 더 빠지는 것 같다는 말도 많습니다. 이 리포트가 수수료율을 검증한 건 아닙니다. 다만 기사님 입장에서는 짐은 크고 많은데 내려온 운임은 충분하지 않다고 느끼는 상황이 생길 수 있습니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">3</span><span class=\"t\">평균으로 보면 큰 짐이 조금 더 높다</span></h2>\n    <p>먼저 평균 총요금을 봤습니다. <span class=\"hi\">큰 짐 쪽이 돈을 조금 더 주긴 했습니다.</span></p>\n    <div class=\"stat\">\n      <div class=\"b\"><div class=\"bn2\">작고 적은 짐</div><div class=\"n\" style=\"color:var(--ts)\">38,627</div><div class=\"l\">평균 총요금</div></div>\n      <div class=\"b\"><div class=\"bn2\">중간 짐</div><div class=\"n\" style=\"color:var(--grn)\">38,686</div><div class=\"l\">평균 총요금</div></div>\n      <div class=\"b\"><div class=\"bn2\">크고 많은 짐</div><div class=\"n\" style=\"color:var(--gold)\">41,400</div><div class=\"l\">평균 총요금</div></div>\n    </div>\n    <p>큰 짐 쪽이 작고 적은 짐보다 평균 약 2,800원 높았습니다. 차이는 있습니다. 그런데 짐이 커진 만큼 요금이 확 뛰는 그림은 아닙니다. 오더창에 짐이 많아 보여도, 총액만 보고 좋은 콜이라고 판단하긴 어렵습니다.</p>\n    <div class=\"note\">\n      <b>평균으로 봤습니다.</b> 짐 정보가 있는 오더를 작고 적은 짐, 중간 짐, 크고 많은 짐으로 나눠 평균 요금을 비교했습니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">4</span><span class=\"t\">돈은 조금 더, 거리는 조금 짧게</span></h2>\n    <p>큰 짐은 돈을 조금 더 줬고, 거리는 오히려 조금 짧았습니다. 그래서 km당 단가도 높게 나왔습니다.</p>\n    <div class=\"card\">\n      <table class=\"dtable\">\n        <tr><th>구분</th><th>비중</th><th>평균 거리</th><th>평균 km당</th><th>평균 총요금</th></tr>\n        <tr><td>작고 적은 짐</td><td>6.8%</td><td>43.4km</td><td>1,072원</td><td>38,627원</td></tr>\n        <tr><td>중간 짐</td><td>49.9%</td><td>41.5km</td><td>1,311원</td><td>38,686원</td></tr>\n        <tr class=\"hl\"><td>크고 많은 짐</td><td>43.3%</td><td>40.8km</td><td>1,620원</td><td>41,400원</td></tr>\n      </table>\n    </div>\n    <div class=\"card\">\n      <h4>km당 단가 비교</h4>\n      <div class=\"rbar\"><div class=\"rt\"><span>작고 적은 짐</span><span class=\"rp\">1,072원/km</span></div><div class=\"rl\"><i style=\"width:66%;background:#c7bca0\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>중간 짐</span><span class=\"rp\">1,311원/km</span></div><div class=\"rl\"><i style=\"width:81%;background:var(--grn)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>크고 많은 짐</span><span class=\"rp\">1,620원/km</span></div><div class=\"rl\"><i style=\"width:100%;background:var(--gold)\"></i></div></div>\n    </div>\n    <p>여기까지만 보면 큰 짐이 좋아 보입니다. 돈도 조금 더 주고, 거리 대비 단가도 높습니다. 하지만 이 숫자에는 빠진 게 있습니다. <span class=\"hi\">상하차, 대기, 검수에 걸리는 시간</span>입니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">5</span><span class=\"t\">얼마를 받느냐보다, 얼마나 걸리느냐다</span></h2>\n    <p>큰 짐은 km당 단가가 좋아 보일 수 있습니다. 하지만 현장에서 시간이 길어지면 얘기가 달라집니다. <span class=\"hi\">이 오더 하나가 끝날 때까지 내 시간을 얼마나 묶는지</span>를 같이 봐야 합니다.</p>\n    <div class=\"vs\">\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--ts)\">작고 적은 짐</div><div class=\"vu\">평균 총요금 38,627원<br>평균 거리 43.4km<br>km당 1,072원</div></div>\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--gold)\">크고 많은 짐</div><div class=\"vu\">평균 총요금 41,400원<br>평균 거리 40.8km<br>km당 1,620원</div></div>\n    </div>\n    <div class=\"vs\">\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--gold)\">km당 단가</div><div class=\"vu\">요금 ÷ 거리<br>길 위의 값<br>작업 시간은 빠짐</div></div>\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--grn)\">시간당 효율</div><div class=\"vu\">요금 ÷ 완료 시간<br>실제로 묶인 시간<br>하루 수익에 가까움</div></div>\n    </div>\n    <p>예를 들어 큰 짐 하나를 잡았습니다. 숫자로는 좋아 보입니다. 그런데 출발지에서 상차 기다리고, 도착지에서 하차 기다리고, 물건 확인까지 받느라 20분, 30분이 더 걸릴 수 있습니다. 그러면 길 위에서 본 단가는 좋아도, 실제로 한 시간에 남는 돈은 줄어듭니다.</p>\n    <div class=\"vs\">\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--gold)\">큰 짐 단독</div><div class=\"vu\">단가는 높아 보임<br>대기·상하차 변수<br>한 오더에 시간 묶임</div></div>\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--grn)\">작은·중간 짐 합짐</div><div class=\"vu\">동선으로 묶기 쉬움<br>작업 변수 적음<br>회전으로 효율 보완</div></div>\n    </div>\n    <p>그래서 작은 짐과 중간 짐을 동선 맞춰 합짐하는 쪽이 더 나을 수 있습니다. 큰 짐 하나가 좋아 보여도, 같은 시간에 작은 짐과 중간 짐을 두세 건 무리 없이 끝낼 수 있다면 손에 남는 효율은 달라집니다. 특히 작은 짐은 차 공간을 많이 쓰지 않아서, 이미 가는 방향에 얹기 좋습니다.</p>\n    <p>차량 기사님한테는 오토바이에 뜨는 작은 오더도 이런 의미에서 기회가 됩니다. 서류, 봉투, 쇼핑백, 작은 박스처럼 가볍고 작은 짐은 차 안에서 자리를 거의 차지하지 않습니다. 출발지와 도착지가 기존 동선과 크게 벗어나지 않는다면, 짐 걱정 없이 수익을 보태는 오더가 될 수 있습니다.</p>\n    <div class=\"note\">\n      <b>합짐할 때 지켜야 할 것.</b> 합짐은 약속 시간을 지킬 수 있을 때만 해야 합니다. 몇 건 더 묶겠다고 규정 시간이나 배송 약속을 어기면 안 됩니다. 고객이 기다리게 되거나, 주선사가 항의를 받게 되거나, 물건에 문제가 생기면 그건 수익을 올린 게 아니라 신뢰를 깎은 겁니다. 동선이 맞고, 시간 안에 끝낼 수 있고, 짐끼리 서로 방해되지 않을 때만 합짐이 의미가 있습니다.\n    </div>\n  </div>\n\n  <div class=\"wrap\">\n    <p class=\"lead\">이번 데이터가 보여준 건 단순합니다. 큰 짐은 평균 요금과 km당 단가가 조금 더 높았습니다. 하지만 기사님 수익은 km당 단가에서 끝나지 않습니다.</p>\n    <p class=\"lead\">큰 짐을 단독으로 가져갈 때는 이 오더가 몇 분을 잡아먹는지 봐야 합니다. 단가가 좋아도 오래 걸리면 효율은 떨어집니다. 반대로 작은 짐, 중간 짐, 짐 걱정이 적은 오토바이 오더는 동선과 시간이 맞으면 합짐으로 더 나은 선택이 될 수 있습니다. 다만 합짐은 항상 약속 시간을 지킬 수 있을 때만 해야 합니다.</p>\n  </div>\n\n  <div class=\"foot\">\n    QP 데이터 리포트 5호 · 2026.07 · 2026.06.01~2026.06.30 전 사용자 인성 오더 표본 기반 (전체 시장 데이터 아님) · 경유·왕복 제외 · 거리 있는 편도 오더 중 적요에 짐 정보가 잡힌 오더만 비교 · 실제 무게·부피 실측 아님 · 거리와 km당 단가는 직선거리 기준 · 작고 적은 짐 구간은 표본이 얇아 방향만 봅니다\n  </div>\n</div>\n</body></html>\n","special-memo.html":"<!doctype html><html lang=\"ko\"><head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>QP 특별 분석 · 적요의 미스터리</title>\n<style>\n:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n*{box-sizing:border-box;margin:0;padding:0}\nbody{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}\n.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}\n.kicker{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--gold)}\nh1{font-size:26px;font-weight:800;line-height:1.32;margin:6px 0 6px}\n.sub{font-size:14px;color:var(--ts);margin-bottom:18px}\n.act{margin:34px 0 6px;border-top:2px solid var(--gold);padding-top:13px}\n.act .an{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--gold)}\n.act .at{font-size:21px;font-weight:800;margin-top:1px;line-height:1.25}\n.sec{margin-bottom:26px}\nh2{font-size:18px;font-weight:800;margin:18px 0 6px;line-height:1.3}\np{font-size:14.5px;margin:9px 0;word-break:keep-all}\n.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}\n.hero{background:var(--tm);color:#f3ead7;border-radius:16px;padding:24px 20px;text-align:center;margin:16px 0 6px}\n.hero .bn{font-size:54px;font-weight:800;color:#ffd98a;line-height:1;font-variant-numeric:tabular-nums}\n.hero .bt{font-size:13.5px;color:#e9debf;margin-top:8px;font-weight:700;line-height:1.5}\n.hero .bl{font-size:12px;color:#b9ab8a;margin-top:6px}\n.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:12px 0}\n.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:12px}\n.split{position:relative;height:40px;border-radius:8px;overflow:hidden;background:repeating-linear-gradient(45deg,#e6dcc6,#e6dcc6 7px,#ded3bb 7px,#ded3bb 14px);margin:2px 0}\n.split i{position:absolute;left:0;top:0;height:100%;background:var(--grn);border-radius:8px 0 0 8px}\n.split .lab{position:absolute;top:50%;transform:translateY(-50%);font-size:12px;font-weight:800}\n.split .l1{left:9px;color:#fff} .split .l2{right:12px;color:#6b5d3e}\n.rbar{margin:9px 0}\n.rbar .rt{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:3px}\n.rbar .rt .rp{color:var(--ts);font-weight:800;font-variant-numeric:tabular-nums}\n.rbar .rl{height:11px;background:#ece3cf;border-radius:6px;overflow:hidden}\n.rbar .rl i{display:block;height:100%;border-radius:6px}\n.stat{display:flex;gap:9px;margin:12px 0}\n.stat .b{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 8px;text-align:center}\n.stat .b .n{font-size:27px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}\n.stat .b .l{font-size:11.5px;color:var(--ts);margin-top:6px;font-weight:700;line-height:1.4}\n.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 14px;margin:13px 0;font-size:12.5px;color:#5a4d2e;line-height:1.6}\n.note b{color:var(--tm);font-weight:800}\n.quote{background:var(--card);border:1px dashed var(--bd);border-radius:12px;padding:13px 15px;margin:10px 0;font-size:13.5px;font-weight:700;color:var(--tm);line-height:1.5}\n.quote .ql{display:block;font-size:11px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:5px}\n.symbols{text-align:center;font-size:28px;letter-spacing:5px;color:var(--gold);font-weight:800;margin:8px 0 2px}\n.call{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:15px 16px;margin:12px 0;line-height:1.6}\n.call .who{color:var(--ts);font-size:11.5px;font-weight:800;margin-bottom:5px}\n.call .line{font-size:15.5px;font-weight:800;color:var(--tm)}\n.call .end{font-size:13px;color:var(--red);font-weight:800;margin-top:5px}\n.gal{margin:10px 0}\n.gal .gg{margin:13px 0}\n.gal .gl{font-size:12px;font-weight:800;color:var(--gold);letter-spacing:.04em;margin-bottom:6px}\n.gal .gq{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 13px;margin:6px 0;font-size:13px;font-weight:600;color:var(--tm);line-height:1.5}\n.cloud{padding:8px 2px}\n.cloud .cr{display:flex;flex-wrap:wrap;gap:5px 12px;align-items:center;justify-content:center;margin:3px 0}\n.cloud span{font-weight:800;line-height:1.05}\n.c1{color:var(--gold)} .c2{color:var(--tm)} .c3{color:var(--ts)}\n.chips{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0}\n.chips span{background:#efe7d4;color:#6b5d3e;border-radius:14px;padding:4px 12px;font-size:12.5px;font-weight:700}\n.fun{display:flex;flex-direction:column;gap:10px;margin:12px 0}\n.fun .f{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 15px}\n.fun .f .ft{font-size:14.5px;font-weight:800;margin-bottom:4px}\n.fun .f .ft .em{font-size:17px;margin-right:5px}\n.fun .f .fd{font-size:13px;color:#5a4d2e;line-height:1.55}\n.fun .f .fq{font-size:12.5px;color:var(--ts);margin-top:6px;padding-left:9px;border-left:2px solid var(--bd)}\n.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:26px;line-height:1.6}\n@media print{body{background:#fff}.sheet{box-shadow:none}}\n</style></head><body>\n<div class=\"sheet\">\n  <div class=\"kicker\">QP 특별 분석</div>\n  <h1>적요의 미스터리<br><span style=\"font-size:18px;color:var(--ts)\">정작 짐 얘기는 어디에</span></h1>\n  <div class=\"sub\">주선사가 콜에 적어 보내는 한 줄, 적요. 우리 보라고 적는 칸인데 정작 우리가 알아야 할 건 쏙 빠져 있습니다.</div>\n\n  <p>콜이 뜨면 우리는 적요부터 봅니다. <span class=\"hi\">지금 실은 짐 옆에 이걸 더 얹을 수 있는지</span>, 그 한 줄로 정하니까요. 적요는 우리가 쓰는 게 아니라 주선사가 우리 보라고 적는 칸입니다. 그러니 짐이 얼마나 큰지, 부피가 어떤지가 적혀 있어야 정상입니다. 그래야 내 차 남은 자리에 들어갈지 가늠하니까요. 그런데 만 오천 줄을 열어 보니, 정작 그 크기는 없고 별의별 사연만 가득했습니다.</p>\n\n  <div class=\"hero\">\n    <div class=\"bn\">2%</div>\n    <div class=\"bt\">짐 크기·부피가 적힌 적요</div>\n    <div class=\"bl\">박스 몇 개인지는 알아도, 그게 얼마나 큰지는 100개 중 2개뿐</div>\n  </div>\n\n  <div class=\"sec\">\n    <h2>현장의 입버릇</h2>\n    <p>적요에 가장 자주 나오는 말을 크기로 키워 봤습니다. 클수록 많이 적힌 말입니다. 그 어디에도 크기나 부피는 크게 보이지 않습니다.</p>\n    <div class=\"card\">\n      <div class=\"cloud\">\n        <div class=\"cr\">\n          <span class=\"c3\" style=\"font-size:20px\">친절</span>\n          <span class=\"c3\" style=\"font-size:21px\">취급주의</span>\n          <span class=\"c2\" style=\"font-size:22px\">구르마</span>\n          <span class=\"c3\" style=\"font-size:20px\">부탁드립니다</span>\n        </div>\n        <div class=\"cr\">\n          <span class=\"c1\" style=\"font-size:27px\">픽업</span>\n          <span class=\"c1\" style=\"font-size:27px\">도착지</span>\n          <span class=\"c1\" style=\"font-size:29px\">상하차</span>\n        </div>\n        <div class=\"cr\">\n          <span class=\"c1\" style=\"font-size:31px\">박스</span>\n          <span class=\"c1\" style=\"font-size:56px\">급송</span>\n          <span class=\"c1\" style=\"font-size:31px\">전화먼저</span>\n        </div>\n        <div class=\"cr\">\n          <span class=\"c2\" style=\"font-size:26px\">바로</span>\n          <span class=\"c2\" style=\"font-size:25px\">물건</span>\n          <span class=\"c2\" style=\"font-size:25px\">상차</span>\n          <span class=\"c2\" style=\"font-size:24px\">하차</span>\n        </div>\n        <div class=\"cr\">\n          <span class=\"c2\" style=\"font-size:21px\">바로배송</span>\n          <span class=\"c3\" style=\"font-size:19px\">서류</span>\n          <span class=\"c3\" style=\"font-size:18px\">세금계산서</span>\n          <span class=\"c3\" style=\"font-size:18px\">착불</span>\n          <span class=\"c3\" style=\"font-size:18px\">통화먼저</span>\n          <span class=\"c3\" style=\"font-size:18px\">혼적</span>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2>박스 개수를 줘도 못 믿습니다</h2>\n    <p>기사가 제일 먼저 알아야 할 건 부피입니다. 내 차 남은 자리에 이게 들어가느냐. 적요는 박스 개수를 40%나 적어 줍니다. 얼핏 도움 될 것 같지만 함정이 있습니다. <span class=\"hi\">박스 크기에 기준이 없습니다.</span></p>\n    <p>\"소박스\"라더니 가 보면 큰 박스고, \"사과박스\", \"라면박스\"라더니 이삿짐 박스만 합니다. 실제로 \"작은박스 21개\"라 적어 놓고 괄호 안에 \"가로 1미터, 세로 1미터\"가 붙기도 합니다. 개수를 세 줘도 그 한 박스가 얼마나 큰지 모르니, 부피는 여전히 깜깜합니다. 박스 개수 40%는 \"잘 줬네\" 할 정보가 못 됩니다.</p>\n    <div class=\"stat\">\n      <div class=\"b\"><div class=\"n\" style=\"color:var(--gold)\">28%</div><div class=\"l\">픽업 시각을<br>콕 집은 적요</div></div>\n      <div class=\"b\"><div class=\"n\" style=\"color:var(--gold)\">40%</div><div class=\"l\">박스 개수만<br>적은 적요</div></div>\n      <div class=\"b\"><div class=\"n\" style=\"color:var(--grn)\">2%</div><div class=\"l\">박스 크기·부피를<br>적은 적요</div></div>\n    </div>\n    <p>시각은 분 단위로 콕 집으면서, 정작 박스가 얼마나 큰지는 2%만 적힙니다. 무게요? 그건 알아야 할 것 중 가장 뒤인데, 그마저 약 6%로 1순위인 크기·부피보다 더 자주 적힙니다. 순위가 거꾸로입니다. 짐을 같이 실어도 되는지 적은 합짐 메모도 2%, 빈자리에 한 건이라도 더 싣고 싶은 우리한테는 알아서 눈치껏 하라는 모양입니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2>빈자리는 부탁과 으름장이 채웁니다</h2>\n    <p>짐 정보가 빠진 자리를 채운 건 이런 말들입니다. 한 메모에 여러 개가 겹치기도 합니다.</p>\n    <div class=\"card\">\n      <div class=\"rbar\"><div class=\"rt\"><span>빨리 가달라·부탁·친절 (호소)</span><span class=\"rp\">32%</span></div><div class=\"rl\"><i style=\"width:100%;background:var(--red)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>전화·통화 먼저 하라</span><span class=\"rp\">15%</span></div><div class=\"rl\"><i style=\"width:47%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>취소·책임·주의 (으름장)</span><span class=\"rp\">8%</span></div><div class=\"rl\"><i style=\"width:25%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>크기·부피 (정작 1순위)</span><span class=\"rp\">2%</span></div><div class=\"rl\"><i style=\"width:6%;background:var(--grn)\"></i></div></div>\n    </div>\n    <p><span class=\"hi\">빨리 오라는 말이 짐 크기 정보보다 열 배 넘게 많습니다.</span> 정작 빨리 가려면 그게 내 차에 들어갈지부터 알아야 할 텐데, 그 순서는 끝내 거꾸로입니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2>안 되면 다 기사님 책임</h2>\n    <div class=\"quote\"><span class=\"ql\">가장 많이 복사된 한 문장</span>◆꼭 전화먼저◆<br>전화없이 이동 후 취소 시 캔슬비 없음!!</div>\n    <div class=\"quote\">송장 사진 전송 안 하시면 운임 지급 안 됩니다</div>\n    <div class=\"quote\">인수증 사진 안 보내면 운임 처리 안 됨</div>\n    <div class=\"quote\">자바라·호로 안 씌우면 운임 못 받습니다</div>\n    <p>짐 크기는 생략해도 이 한 줄은 빠지지 않습니다. 한데 이건 주선사가 손해 볼 걱정이 아닙니다. 일이 틀어지면 그 책임을 기사에게 넘기겠다는 선언입니다. 전화 없이 갔다 취소되면 캔슬비는 없고, 사진 한 장 빠뜨리면 운임도 없습니다. <span class=\"hi\">헛걸음도 떼인 돈도 전부 기사 몫</span>이 됩니다. 적요의 8%가 이렇게 위험을 기사 쪽으로 미뤄 둡니다.</p>\n    <p>어떤 적요는 한술 더 떠 \"이중배차, 취소 잘함\"이라고 제 입으로 적어 둡니다. 콜을 두 군데 뿌려 잘 취소된다는 걸 알면서도, 헛걸음 책임은 또 우리 몫입니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2>짐만 가리는 게 아닙니다</h2>\n    <p>적요는 사람도 고릅니다. \"무게가 있으니 젊은 분으로 배차해 달라\"는 말이 버젓이 적히고, 박스 수십 개를 \"기사님 혼자\" 상하차하라는 칸도 흔합니다.</p>\n    <div class=\"quote\">3대봉 무게가 있어 젊은 분으로 배차 부탁드립니다</div>\n    <div class=\"quote\">휴지 48박스 / 기사님 혼자 수작업 상하차</div>\n    <div class=\"quote\">27박스, 하차지 혼자 내려주고 가면 됩니다</div>\n    <p>여기까지는 약과입니다. 어떤 적요는 <span class=\"hi\">실명을 콕 집어 \"○○○ 기사 배차 금지\"</span>라고 적습니다. 누가 볼지 모르는 칸에 특정 기사를 공개로 저격합니다. 짐 크기 한 줄은 아껴도, 사람 거르는 줄은 아끼지 않습니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2>숫자 대신 마음을 적습니다</h2>\n    <div class=\"symbols\">◆ ★ ▶ ! ~</div>\n    <p>크기 같은 숫자는 빼먹어도, 눈에 띄게 꾸미고 마음을 전하는 데는 진심입니다. <span class=\"hi\">적요 아홉 개 중 하나(11%)에 ◆★ 같은 도형 기호</span>가 등장하고, 느낌표는 빠지는 법이 없습니다.</p>\n    <div class=\"quote\">급송 1박스 ★혼적금지★ ★자가용진입금지★</div>\n    <div class=\"quote\">★발주서 수량 확인 + 인수자 싸인 필수★</div>\n    <div class=\"quote\">바로 가주셔야 합니다 !! 꼭 !!</div>\n    <div class=\"stat\">\n      <div class=\"b\"><div class=\"n\" style=\"color:var(--red)\">28</div><div class=\"l\">요구·부탁이<br>담긴 적요</div></div>\n      <div class=\"b\"><div class=\"n\" style=\"color:var(--grn)\">1</div><div class=\"l\">감사가<br>담긴 적요</div></div>\n    </div>\n    <p>적요에 담긴 요구·부탁과 감사는 <span class=\"hi\">28 대 1</span>입니다. 부탁 스물여덟 번에 고맙다는 말은 한 번꼴, \"죄송\"은 한 번도 없었습니다. ◆로 테두리 두를 그 정성으로 박스 크기 한 줄 적어 주셨다면, 하고 우리는 생각합니다. 사실은 빼고 마음만 적힌 그 한 줄을, 우리는 매일 받아 듭니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2>안 싣는 게 없습니다</h2>\n    <p>적요를 훑으면 별별 게 다 오갑니다. 부품·자재가 가장 많고 서류와 음식이 뒤를 잇습니다. 짐마다 붙는 사연도 제각각입니다. 생물 장어엔 \"천막 필요\", 냉동식품엔 \"햇빛 받으면 안 됨\", 전자제품엔 \"조심히 다뤄주세요 사장님\". 어떤 콜은 \"작은 박스에 든 아기 고양이\"를 비흡연 조수석에 모셔 달라 합니다.</p>\n    <div class=\"chips\">\n      <span>부품·자재 2.3%</span><span>서류 2.2%</span><span>음식·식품 1.5%</span><span>가구</span><span>의류</span><span>꽃·화분</span><span>약</span><span>새끼 고양이</span>\n    </div>\n    <div class=\"note\">\n      <b>같은 \"박스 1개\"라도 부품과 꽃은 부피가 천지 차이입니다.</b> 자재 한 트럭과 서류 한 장이 같은 칸에서 콜로 뜨는데, 박스가 얼마나 큰지는 안 적혀 내 차에 들어갈지 가늠이 안 됩니다. 그래서 매번 가 봐야 압니다. 손으로 끌어 달라는 구르마·수작업도 8%인데, 정작 그게 얼마나 큰 짐인지는 또 비밀입니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2>사실, 주선사도 모릅니다</h2>\n    <p>읽다 보면 대놓고 모른다고 적힌 칸이 수두룩합니다.</p>\n    <div class=\"quote\">박스 몇 갠지 모름 / 전화먼저 상하차 도와주세요</div>\n    <div class=\"quote\">조조 친절배송 / 물량 모름</div>\n    <p>빈말이 아닙니다. 크기를 안 적는 게 아니라 <span class=\"hi\">못 적는</span> 겁니다. 주선사도 그 짐을 본 적이 없거든요. 고객이 전화나 인터넷으로 접수하면, 사무실은 직접 보지 않고 말로만 듣고 옮겨 적습니다.</p>\n    <div class=\"call\">\n      <div class=\"who\">📞 오래된 단골 사장님</div>\n      <div class=\"line\">\"여기 다마스 한 대!\"</div>\n      <div class=\"end\">…뚝. (통화 종료)</div>\n    </div>\n    <p>차종만 외치고 끊어 버립니다. 크기는커녕 뭘 싣는지도 안 나옵니다. 사무실도 모르는 걸 옮겨 적자니, 한 칸은 \"전화 먼저\"인데 옆 칸은 \"전화 X 그냥 들어가세요\"로 엇갈리고, \"카고차늕 안됍니다\" 같은 오타까지 더해 칸은 뒤죽박죽이 됩니다. 그래도 우리는 이걸 보고 길을 나서야 합니다.</p>\n    <p>그래도 <span class=\"hi\">우리가 원하는 건 여전히 딱 하나</span>입니다. 뭐가, 얼마나 있는지. 그 한 줄이면 됩니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2>한 글자부터 521자까지</h2>\n    <p>길이는 극과 극입니다. 적요의 <span class=\"hi\">4%는 세 글자도 안 됩니다.</span> 가장 흔한 한 글자짜리는 별표 하나 \"*\". 그런데 반대편 끝에는 521자짜리가 있습니다.</p>\n    <p>가장 긴 적요는 적요라기보다 사건 경위서에 가깝습니다. 깐생강 한 제품이 엉뚱한 ○○요양원으로 오배송됐다는 상황 공유로 시작합니다. ○기사가 받았는데 알고 보니 ○○국밥으로 갈 물건이었고, 그 ○기사는 부재라 연락이 안 닿고, 미입고 업장은 금일 중 다시 보내 달라 하고, 피킹 오류로 추정되니 고객사 확인 후 후속 처리를 부탁한다는 내용이 1번 2번 번호까지 매겨 가며 빼곡합니다. 부재 연락을 두 번 시도했다는 말, 업장 간 재배송이 가능한지 물어봤다는 말까지 들어가고, 끝은 \"확인 부탁드립니다. 감사합니다.\" 적요 한 칸에 들어갈 분량이 아닙니다. <span class=\"hi\">그런데 이 521자 안에도, 정작 짐이 얼마나 큰지는 없습니다.</span></p>\n  </div>\n\n  <div class=\"sec\">\n    <h2>그래서, 적요 너머를 봅니다</h2>\n    <p>적요 한 줄로는 현장이 다 안 담깁니다. 주선사는 짐을 못 봤고, 우리는 가 봐야 압니다. 그 사이의 빈칸이 매일의 답답함입니다.</p>\n    <p>그런데 한 줄로는 못 해도, 만 오천 줄을 모으면 보입니다. 무엇이 얼마나 급한지, 어디서 어떻게 움직여야 하는지. <span class=\"hi\">한 사람의 적요는 잔소리뿐이어도, 쌓인 적요는 현장을 말합니다.</span></p>\n    <p>그래서 우리는 적요 한 줄 너머를 데이터로 봅니다. 별표와 느낌표가 못 알려주는 걸, 쌓인 데이터가 알려줍니다.</p>\n    <div class=\"hero\">\n      <div class=\"bt\" style=\"font-size:14px;color:#d9cdb0\">우리가 진짜 원하는 적요는 한 줄이면 됩니다</div>\n      <div class=\"bn\" style=\"font-size:30px;margin-top:10px;line-height:1.25\">\"박스 ○개,<br>크기는 이만큼\"</div>\n      <div class=\"bl\">그거면 내 차에 들어갈지 한눈에 정합니다</div>\n    </div>\n  </div>\n\n  <div class=\"foot\">\n    QP 특별 분석 · 2026.06 · 주선사가 작성한 인성 적요 15,463건 분석 (전체 오더의 35% · 전체 시장 데이터 아님) · 비율은 그 표현이 담긴 적요의 몫이며, 한 메모에 여러 부탁이 겹쳐 갈래끼리 일부 겹침 · 인용 문구는 실제 적요에서 그대로 가져옴\n  </div>\n</div>\n</body></html>\n","column-6-memo-rules.html":"<!doctype html>\n<html lang=\"ko\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n  <title>데이터 리포트 6호 | 기사가 꼭 해야 되는 것 다섯 가지, 절대 하지 말아야 되는 것 다섯 가지</title>\n  <style>\n    :root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n    *{box-sizing:border-box;margin:0;padding:0}\n    body{background:#e8dec9;color:var(--tm);font-family:-apple-system,\"Noto Sans KR\",sans-serif;line-height:1.7;-webkit-text-size-adjust:100%}\n    .sheet{max-width:680px;min-height:100vh;margin:0 auto;padding:30px 22px 60px;background:var(--bg)}\n    .kicker{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.12em}\n    h1{margin:6px 0 5px;font-size:26px;font-weight:800;line-height:1.3;word-break:keep-all}\n    .subhead{margin-bottom:22px;color:var(--ts);font-size:14px;font-weight:800}\n    .lead,p{margin:8px 0;font-size:14.5px;word-break:keep-all}\n    .lead{font-size:15px;line-height:1.75}\n    .sec{margin:0 0 30px}\n    h2{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:18.5px;font-weight:800;line-height:1.35}\n    .num{display:inline-block;flex:0 0 30px;width:30px;height:30px;border-radius:8px;background:var(--tm);color:#fff;font-size:15px;font-weight:800;line-height:30px;text-align:center}\n    .hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}\n    .card{margin:12px 0;padding:15px 16px;border:1px solid var(--bd);border-radius:8px;background:var(--card)}\n    .card h3{margin-bottom:5px;font-size:15px;line-height:1.45}\n    .card p{margin:0;color:#5a4d2e;font-size:13.5px;line-height:1.62}\n    .rank{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;margin:10px 0}\n    .rank .n{width:30px;height:30px;border-radius:50%;background:#e8dec9;color:var(--tm);font-size:13px;font-weight:800;line-height:30px;text-align:center}\n    .rank .txt{padding:1px 0 10px;border-bottom:1px solid var(--bd)}\n    .rank:last-child .txt{padding-bottom:0;border-bottom:0}\n    .quote{display:block;margin-bottom:4px;color:var(--tm);font-size:15px;font-weight:800;line-height:1.45}\n    .desc{display:block;color:var(--ts);font-size:13.5px;line-height:1.58}\n    .must .n{background:#dce9d5;color:#3e6231}\n    .dont .n{background:#f5ddd4;color:#9a4429}\n    .note{margin:14px 0;padding:11px 14px;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;background:#fffdf5;color:#5a4d2e;font-size:12.5px;line-height:1.65}\n    .note b{color:var(--tm)}\n    .rule{margin:9px 0;padding:11px 12px;border:1px solid var(--bd);border-radius:8px;background:#fffdf5;font-size:13px;line-height:1.62}\n    .rule b{display:block;margin-bottom:3px;font-size:12px;color:var(--ts)}\n    .raw{margin:12px 0;padding:13px 14px;border-radius:8px;background:var(--tm);color:#f3ead7;font-size:13.5px;line-height:1.7}\n    .raw span{display:block;margin:4px 0}\n    .raw em{color:#ffd98a;font-style:normal;font-weight:800}\n    .foot{margin-top:26px;padding-top:14px;border-top:1px dashed var(--bd);color:var(--ts);font-size:12px;line-height:1.65}\n    @media(max-width:430px){.sheet{padding:26px 18px 54px}h1{font-size:24px}.card{padding:14px}.rank{gap:9px}}\n    @media print{body{background:#fff}.sheet{box-shadow:none}}\n  </style>\n</head>\n<body>\n  <main class=\"sheet\">\n    <div class=\"kicker\">데이터 리포트 #6 · 초안</div>\n    <h1>기사가 꼭 해야 되는 것<br>다섯 가지, 절대 하지 말아야<br>되는 것 다섯 가지</h1>\n    <div class=\"subhead\">적요 1,000건에서 반복된 당부를 읽어봤습니다</div>\n\n    <p class=\"lead\">적요는 물건 이름만 적는 칸이 아닙니다. 상차지와 도착지에서 같은 일이 반복되면, 그 말도 적요에 남습니다. 시간을 안 맞추고, 바로 배송하지 않고, 연락이 안 되고, 물건을 막 다루고, 다른 곳 홍보를 하는 일이 있었으니 다시 적어놓는 겁니다.</p>\n    <p class=\"lead\">기사 옆에서 누가 복장과 말투, 운행을 계속 지시하는 일은 없습니다. 혼자 가서 혼자 고객을 만나고 혼자 전달합니다. 그래서 적요는 현장에서 쌓인 당부이자 경고입니다. 이번에는 적요 1,000건을 읽고, 그 안에서 가장 자주 반복된 행동 다섯 가지와 하지 말라는 행동 다섯 가지를 순서대로 뽑았습니다.</p>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">1</span>꼭 해주세요</h2>\n      <div class=\"card must\">\n        <div class=\"rank\"><div class=\"n\">1</div><div class=\"txt\"><span class=\"quote\">정해진 시간에 맞춰 가세요</span><span class=\"desc\">`17시상차`, `시간엄수`, `도착10분전 전화`처럼 시간에 관한 말이 가장 많이 나왔습니다. 상차 시간은 지났는데 기사가 안 오고, 도착 시간이 다 됐는데 연락도 없으면 상차지와 도착지는 다음 일을 못 합니다. 시간을 적어놓는다는 건 그 시간을 안 맞춘 일이 있었다는 뜻입니다. 늦을 것 같으면 먼저 연락하는 것도 시간을 맞추는 일입니다.</span></div></div>\n        <div class=\"rank\"><div class=\"n\">2</div><div class=\"txt\"><span class=\"quote\">픽업후바로배송해주세요</span><span class=\"desc\">상차만 빨리 하고 다른 일을 보라는 말이 아닙니다. `픽업후바로배송`, `바로하차`, `바로가실분`은 이 물건을 실은 뒤 다른 일정 때문에 늦어지지 않게 해달라는 말입니다. 바로 배송이 적힌 오더를 잡았다면, 다른 짐과 섞거나 중간에 오래 머물지 않는 쪽으로 동선을 잡아야 합니다.</span></div></div>\n        <div class=\"rank\"><div class=\"n\">3</div><div class=\"txt\"><span class=\"quote\">상차후 하차지 전화하여 도착...</span><span class=\"desc\">`꼭 전화먼저`, `상차후 하차지 전화`, `도착10분전 전화`가 반복됩니다. 전화와 연락은 예의만의 문제가 아닙니다. 주소가 맞는지, 누가 받는지, 지금 들어가도 되는지, 늦어지면 어떻게 할지를 다시 맞추는 배송 절차입니다. 특히 상차를 마친 뒤에는 도착지에 한 번 확인하는 습관이 헛걸음과 대기를 줄입니다.</span></div></div>\n        <div class=\"rank\"><div class=\"n\">4</div><div class=\"txt\"><span class=\"quote\">구루마지참 상하차부탁합니다</span><span class=\"desc\">`구루마지참`, `상하차부탁합니다`, `올려주셔야해요`는 차에 싣는 데서 끝나지 않는 오더라는 표시입니다. 물건을 어디까지 옮겨야 하는지, 계단인지 엘리베이터인지, 기사 혼자 가능한지부터 봐야 합니다. 잡은 뒤 현장에 가서 처음 알면 시간도 꼬이고 요금 문제도 생깁니다.</span></div></div>\n        <div class=\"rank\"><div class=\"n\">5</div><div class=\"txt\"><span class=\"quote\">명세서 싸인받아서 사진전송</span><span class=\"desc\">`인수증`, `싸인`, `사진전송`은 물건을 내려놓았다는 말보다 더 중요합니다. 누가, 언제, 어떤 물건을 받았는지 남겨야 나중에 “못 받았다”는 말이 나와도 확인할 수 있습니다. 배송의 마지막은 도착지가 아니라 인수 확인까지입니다.</span></div></div>\n      </div>\n      <p>다섯 가지를 묶어 보면 어렵지 않습니다. <span class=\"hi\">시간을 맞추고, 바로 가야 할 건 바로 가고, 필요한 연락을 하고, 현장 작업을 확인하고, 끝에는 인수 확인을 남기는 일</span>입니다. 적요가 이 다섯 가지를 반복해서 말하는 건 그 반대가 현장에서 계속 일어났기 때문입니다.</p>\n    </section>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">2</span>절대 하지 마세요</h2>\n      <div class=\"card dont\">\n        <div class=\"rank\"><div class=\"n\">1</div><div class=\"txt\"><span class=\"quote\">파손주의 · 취급주의</span><span class=\"desc\">`파손주의`, `취급주의`, `충격주의`는 던지거나 막 싣지 말라는 말입니다. 물건이 깨지거나 망가지면 배송이 끝난 뒤에도 일이 끝나지 않습니다. 특히 유리, 대리석, 전자제품처럼 한 번의 충격으로 문제가 생기는 짐은 적요를 보고 싣는 방법부터 달라져야 합니다.</span></div></div>\n        <div class=\"rank\"><div class=\"n\">2</div><div class=\"txt\"><span class=\"quote\">홍보금지</span><span class=\"desc\">다른 주선사가 연결한 고객 앞에서 자기 회사나 본인을 홍보하지 말라는 말입니다. 명함을 주거나 “다음에는 여기로 연락하세요”라고 말하는 순간, 배송이 아니라 다른 주선사의 고객을 상대로 영업하는 일이 됩니다.</span></div></div>\n        <div class=\"rank\"><div class=\"n\">3</div><div class=\"txt\"><span class=\"quote\">혼적금지 · 혼적불가</span><span class=\"desc\">합짐 자체가 무조건 안 된다는 말은 아닙니다. 다만 이 조건이 적힌 오더를 잡았다면, 다른 짐과 섞어 싣지 않는 약속으로 보고 움직여야 합니다. 작은 짐과 중간 짐을 합쳐 움직이는 것은 수익에 도움이 될 수 있지만, 혼적금지 오더까지 억지로 끼워 넣으면 지연과 분쟁이 기사에게 돌아올 수 있습니다.</span></div></div>\n        <div class=\"rank\"><div class=\"n\">4</div><div class=\"txt\"><span class=\"quote\">경유금지 · 경유안됨</span><span class=\"desc\">중간에 다른 곳을 들르지 말라는 뜻입니다. 긴급 표시가 없더라도 적요에 적혀 있으면 그 오더의 운행 조건입니다. 혼적금지와 경유금지는 비슷해 보여도 다릅니다. 혼적은 다른 짐을 같이 싣는 문제이고, 경유는 다른 곳을 들르는 문제입니다. 둘 다 적혀 있으면 사실상 직행에 가까운 운행을 요구하는 오더입니다.</span></div></div>\n        <div class=\"rank\"><div class=\"n\">5</div><div class=\"txt\"><span class=\"quote\">상차지 전화하지마세요 · 전화금지</span><span class=\"desc\">앞에서는 전화하라고 하고 여기서는 전화하지 말라고 해서 이상해 보일 수 있습니다. 뜻은 같습니다. 연락은 기사 마음대로 하는 게 아니라 적요에 적힌 창구와 순서대로 하라는 말입니다. 전화 금지라면 고객에게 바로 묻기보다 주선사에 확인하고, 전화 먼저라면 물건을 싣기 전에 연락해야 합니다.</span></div></div>\n      </div>\n      <p>하지 말라는 말도 결국 같은 방향입니다. 물건을 망가뜨리지 말고, 고객을 빼앗지 말고, 약속하지 않은 운행을 하지 말고, 적요가 정한 연락 방법을 지키라는 뜻입니다.</p>\n    </section>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">3</span>규정도 같은 말을 합니다</h2>\n      <div class=\"rule\"><b>합짐</b>협의되지 않은 묶음(합짐) 배송은 사고와 지연 배송의 원인이 되며 기사에게 책임이 돌아갈 수 있습니다.</div>\n      <div class=\"rule\"><b>상하차</b>수작업, 올려주기, 상하차 도와주기 등의 적요 내용을 사전에 반드시 확인하여야 합니다.</div>\n      <div class=\"rule\"><b>홍보</b>공유오더 수행 중 출발지·도착지 고객에게 소속 회사의 전단지, 개인 명함 또는 유사한 쿠폰 배부 등을 금합니다.</div>\n      <div class=\"note\"><b>상하차는 무조건 무료라는 뜻이 아닙니다.</b> 지상·지하 2층까지 직접 배송은 기본 운임에 포함됩니다. 3층 이상 계단 배송이나 기사 혼자 하는 상하차는 사업자를 통해 도움이나 추가 운임을 협의할 수 있습니다. 현장에서 처음 확인된 작업이라면 먼저 주선사에 알려야 합니다. 기사와 고객이 따로 돈을 주고받는 방식은 안 됩니다.</div>\n    </section>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">4</span>이런 말까지 적혀 있습니다</h2>\n      <div class=\"raw\">\n        <span><em>슬리퍼X</em></span>\n        <span><em>기사님 복장 긴바지 / 운동화 (필)</em></span>\n        <span><em>[불만사절] ◈존댓말필수</em></span>\n        <span><em>불친절기사 절대사절 주요거래처입니다</em></span>\n        <span><em>불친절시배차제한</em></span>\n        <span><em>담배냄새주의</em></span>\n      </div>\n      <p>슬리퍼를 신고 가고, 말투 때문에 불만이 생기고, 불친절해서 배차 제한까지 거론되는 일이 반복되니까 이런 말이 적요에 들어갑니다. 특히 중요한 거래처나 설치 현장에서는 물건만 내려놓고 끝나는 일이 아닙니다. 고객과 마주하고, 물건 위치를 확인하고, 필요한 설명을 듣고, 서명을 받아야 합니다.</p>\n      <p>그래서 `슬리퍼X`나 `존댓말필수`는 사소한 잔소리가 아닙니다. 배송 기사가 현장에서 어떤 모습으로 일하는지를 두고 쌓인 당부입니다. 운전만 잘한다고 배송을 잘한 게 아닙니다. 복장과 말투, 고객을 대하는 태도도 배송의 일부입니다.</p>\n    </section>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">5</span>적요는 약속입니다</h2>\n      <p>적요의 열 가지는 거창한 기술이 아닙니다. 시간을 지키고, 바로 가야 할 물건은 바로 가고, 필요한 연락을 하고, 물건을 안전하게 다루고, 남의 고객에게 영업하지 않는 일입니다. 하지만 당연한 말이 적요에 반복된다는 건 현장에서는 당연하게 지켜지지 않는 순간도 많다는 뜻입니다.</p>\n      <p><span class=\"hi\">다만 적요와 현장이 다르면 그냥 떠안지 마세요.</span> 짐의 양, 상하차, 층수, 시간 조건이 처음 들은 내용과 다르면 바로 주선사에 알리고 협의해야 합니다. 상하차가 너무 많거나 차량에 못 싣는 짐이면, 무리해서 출발하는 것이 답이 아닙니다. 지킬 수 있는 조건을 확인하고 잡는 것까지가 배송의 시작입니다.</p>\n    </section>\n\n    <footer class=\"foot\">데이터 리포트 6호 초안 · 최근 수집 적요 1,000건을 읽고, 별도 100건으로 순서를 다시 확인했습니다. 원문은 개인정보를 가리고 읽기 쉽게 일부만 인용했습니다. 전체 시장 데이터가 아닙니다.</footer>\n  </main>\n</body>\n</html>\n","column-7-destination-origin.html":"<!doctype html>\n<html lang=\"ko\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n  <title>데이터 리포트 7호 | 하차지는 다음 상차지가 될 수 있을까</title>\n  <style>\n    :root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n    *{box-sizing:border-box;margin:0;padding:0}\n    body{background:#e8dec9;color:var(--tm);font-family:-apple-system,\"Noto Sans KR\",sans-serif;line-height:1.7;-webkit-text-size-adjust:100%}\n    .sheet{max-width:680px;min-height:100vh;margin:0 auto;padding:30px 22px 60px;background:var(--bg)}\n    .kicker{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.12em}\n    h1{margin:6px 0 5px;font-size:26px;font-weight:800;line-height:1.3;word-break:keep-all}\n    .subhead{margin-bottom:22px;color:var(--ts);font-size:14px;font-weight:800}\n    .lead,p{margin:8px 0;font-size:14.5px;word-break:keep-all}\n    .lead{font-size:15px;line-height:1.75}\n    .sec{margin:0 0 30px}\n    h2{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:18.5px;font-weight:800;line-height:1.35}\n    .num{display:inline-block;flex:0 0 30px;width:30px;height:30px;border-radius:8px;background:var(--tm);color:#fff;font-size:15px;font-weight:800;line-height:30px;text-align:center}\n    .hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}\n    .stat{display:flex;gap:10px;margin:13px 0}\n    .stat .b{flex:1;padding:15px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);text-align:center}\n    .stat .n{font-size:27px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}\n    .stat .l{margin-top:6px;color:var(--ts);font-size:12px;font-weight:700;line-height:1.45}\n    .rbar{margin:11px 0}\n    .rbar .rt{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;font-size:13.5px;font-weight:800}\n    .rbar .rp{color:var(--ts);font-variant-numeric:tabular-nums;white-space:nowrap}\n    .rbar .rl{height:12px;overflow:hidden;border-radius:6px;background:#ece3cf}\n    .rbar .rl i{display:block;height:100%;border-radius:6px;background:var(--grn)}\n    .ranklist{margin:12px 0;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--card)}\n    .rankrow{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--bd);font-size:13.5px}\n    .rankrow:last-child{border-bottom:0}\n    .rankno{color:var(--ts);font-weight:800;font-variant-numeric:tabular-nums}\n    .rankname{font-weight:800}\n    .rankpct{font-weight:800;font-variant-numeric:tabular-nums;color:#3e6231}\n    .rankpct.low{color:#b75535}\n    .card{margin:12px 0;padding:15px 16px;border:1px solid var(--bd);border-radius:8px;background:var(--card)}\n    .card h3{margin-bottom:6px;font-size:15px;line-height:1.4}\n    .card p{margin:0;color:#5a4d2e;font-size:13.5px;line-height:1.63}\n    .note{margin:14px 0;padding:11px 14px;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;background:#fffdf5;color:#5a4d2e;font-size:12.5px;line-height:1.65}\n    .note b{color:var(--tm)}\n    .steps{margin:12px 0;padding:0 16px;border:1px solid var(--bd);border-radius:8px;background:var(--card)}\n    .step{display:grid;grid-template-columns:28px 1fr;gap:9px;padding:12px 0;border-bottom:1px solid var(--bd)}\n    .step:last-child{border-bottom:0}\n    .step b{display:block;margin-bottom:3px;font-size:14px}\n    .step span{display:block;color:var(--ts);font-size:13.5px;line-height:1.58}\n    .step .n{width:27px;height:27px;border-radius:50%;background:#dce9d5;color:#3e6231;font-size:13px;font-weight:800;line-height:27px;text-align:center}\n    .foot{margin-top:26px;padding-top:14px;border-top:1px dashed var(--bd);color:var(--ts);font-size:12px;line-height:1.65}\n    @media(max-width:430px){.sheet{padding:26px 18px 54px}h1{font-size:24px}.stat{gap:8px}.stat .b{padding:13px 7px}.stat .n{font-size:24px}}\n    @media print{body{background:#fff}.sheet{box-shadow:none}}\n  </style>\n</head>\n<body>\n  <main class=\"sheet\">\n    <div class=\"kicker\">데이터 리포트 #7 · 초안</div>\n    <h1>하차지는 다음 상차지가<br>될 수 있을까</h1>\n    <div class=\"subhead\">수집 오더에서 하차지 시·군·구와 상차지 시·군·구를 비교했습니다</div>\n\n    <p class=\"lead\">하차하고 나면 이런 느낌이 듭니다. “여기도 콜이 나오는 곳이겠지.” 짧게 움직일수록 그 감각은 더 강합니다. 하지만 느낌과 실제 데이터는 분리해서 봐야 합니다. 하차한 바로 그 자리에서 다음 콜을 잡았다는 기록과, 그 동네에 상차 오더가 있었다는 기록은 다른 얘기이기 때문입니다.</p>\n    <p class=\"lead\">결론부터 말하면 <span class=\"hi\">자주 가는 수도권 하차 지역은 상차지이기도 한 경우가 많았습니다.</span> 다만 모든 하차지가 그렇지는 않았고, 특히 장거리 하차지는 같은 날 다음 기회를 기대하기 어려웠습니다.</p>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">1</span>자주 가는 하차 지역은 다시 출발지로도 나왔습니다</h2>\n      <div class=\"stat\">\n        <div class=\"b\"><div class=\"n\" style=\"color:var(--grn)\">97.8%</div><div class=\"l\">하차지 시·군·구가<br>수집 기간 안에 상차지로도 나타남</div></div>\n        <div class=\"b\"><div class=\"n\" style=\"color:var(--gold)\">48.2%</div><div class=\"l\">같은 날짜에<br>상차지로도 나타남</div></div>\n      </div>\n      <p>하차지와 상차지를 주소 원문 그대로 비교하면 표기가 제각각이라 제대로 맞지 않습니다. 그래서 이번에는 주소에 <b>구가 있으면 구, 없으면 군, 그것도 없으면 시</b> 단위로 묶어 비교했습니다. 하차지가 된 지역 가운데, 수집 기간 안에 상차지로도 나타난 곳이 많았습니다.</p>\n      <p>같은 날짜에 상차지로도 나타난 비율은 48.2%였습니다. 이 수치는 그 지역에 그날 상차 수요가 함께 있었는지를 보여줍니다. 하차한 직후 내 앞에 다음 콜이 떴다는 뜻은 아닙니다. 그래도 짧은 거리로 하차한 뒤 그 지역에서 다음 기회를 찾는 감각이 완전히 근거 없는 말은 아니라는 정도는 보여줍니다.</p>\n      <div class=\"note\"><b>중요한 구분.</b> 이 자료는 오더 시장의 시·군·구 단위 흐름입니다. 특정 기사 한 명이 A에서 하차하고, 곧바로 A에서 출발하는 다음 콜을 실제로 수행했다는 이동 기록은 아닙니다. 그래서 이 리포트는 “다음 콜이 반드시 있다”가 아니라 “그 지역에 상차 수요가 다시 나타날 가능성”을 말합니다.</div>\n    </section>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">2</span>하지만 모든 하차지가 그런 것은 아닙니다</h2>\n      <div class=\"stat\">\n        <div class=\"b\"><div class=\"n\" style=\"color:var(--gold)\">50.2%</div><div class=\"l\">하차지 시·군·구 종류 중<br>상차지이기도 한 지역</div></div>\n        <div class=\"b\"><div class=\"n\" style=\"color:var(--grn)\">97.8%</div><div class=\"l\">하차 오더 기준<br>그 지역에 다시 상차 수요가 있음</div></div>\n      </div>\n      <p>두 숫자를 같이 봐야 합니다. 하차지 시·군·구의 종류만 놓고 보면 절반 정도가 상차지로도 나타났습니다. 반면 실제 하차 오더를 기준으로 보면 97.8%가 상차 수요가 있는 지역으로 들어갔습니다.</p>\n      <p>뜻은 간단합니다. <span class=\"hi\">자주 가는 몇몇 지역에 하차와 상차가 함께 몰려 있다는 것</span>입니다. 도심, 업무지, 공단, 물류가 모인 곳은 물건을 받는 곳이면서 동시에 다른 물건이 나오는 곳입니다. 반대로 드물게 가는 외곽이나 한 번성 목적지는 하차만 하고 다음 기회를 찾기 어려울 수 있습니다.</p>\n    </section>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">3</span>거리가 길어질수록 이 감각은 약해집니다</h2>\n      <p>거리 정보가 있는 오더만 따로 놓고, 하차지 시·군·구가 같은 날짜에 상차지로도 나타난 비율을 봤습니다.</p>\n      <div class=\"card\">\n        <div class=\"rbar\"><div class=\"rt\"><span>10km 미만</span><span class=\"rp\">66.7%</span></div><div class=\"rl\"><i style=\"width:100%\"></i></div></div>\n        <div class=\"rbar\"><div class=\"rt\"><span>10~30km</span><span class=\"rp\">61.5%</span></div><div class=\"rl\"><i style=\"width:92.2%\"></i></div></div>\n        <div class=\"rbar\"><div class=\"rt\"><span>30~70km</span><span class=\"rp\">58.7%</span></div><div class=\"rl\"><i style=\"width:88%\"></i></div></div>\n        <div class=\"rbar\"><div class=\"rt\"><span>70km 이상</span><span class=\"rp\">23.2%</span></div><div class=\"rl\"><i style=\"width:34.8%;background:var(--red)\"></i></div></div>\n      </div>\n      <p>10km 안팎과 10~30km 구간에서는 같은 날 상차 수요가 있는 하차 지역이 많았습니다. 가까운 곳에서 하차한 뒤, 주변 콜을 다시 보는 습관에는 근거가 있습니다.</p>\n      <p>하지만 70km 이상으로 가면 23.2%까지 떨어집니다. 장거리는 도착지만 보고 “가서 다음 콜 잡으면 되겠지”라고 판단하기 어렵습니다. 내려가는 운임이 괜찮아 보여도, 돌아오는 길과 그곳의 다음 기회까지 같이 봐야 합니다.</p>\n      <div class=\"note\"><b>거리별 수치는 거리 정보가 기록된 오더만 기준으로 했습니다.</b> 거리 정보가 비어 있는 오더까지 억지로 넣지 않았습니다.</div>\n    </section>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">4</span>다음 상차로 잘 이어진 곳 10곳</h2>\n      <p>하차가 반복해서 기록된 지역 가운데, <b>같은 날짜에 그 지역에서 상차 수요가 다시 확인된 비율</b>이 높은 순서입니다. 구가 확인된 곳은 구 단위로, 없으면 군이나 시 단위로 묶었습니다.</p>\n      <div class=\"ranklist\" aria-label=\"하차 후 같은 날짜 상차 수요가 높은 시군구 10곳\">\n        <div class=\"rankrow\"><span class=\"rankno\">1</span><span class=\"rankname\">서울 구로구</span><span class=\"rankpct\">93.3%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">2</span><span class=\"rankname\">인천 남동구</span><span class=\"rankpct\">89.1%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">3</span><span class=\"rankname\">화성시</span><span class=\"rankpct\">86.2%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">4</span><span class=\"rankname\">하남시</span><span class=\"rankpct\">85.2%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">5</span><span class=\"rankname\">시흥시</span><span class=\"rankpct\">83.8%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">6</span><span class=\"rankname\">서울 마포구</span><span class=\"rankpct\">83.0%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">7</span><span class=\"rankname\">서울 성동구</span><span class=\"rankpct\">81.1%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">8</span><span class=\"rankname\">성남시 분당구</span><span class=\"rankpct\">80.4%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">9</span><span class=\"rankname\">인천 서구</span><span class=\"rankpct\">80.0%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">10</span><span class=\"rankname\">서울 광진구</span><span class=\"rankpct\">75.2%</span></div>\n      </div>\n      <p>이 순위가 “여기로 가면 반드시 바로 다음 콜을 잡는다”는 뜻은 아닙니다. 그래도 하차 전에 주변 콜을 한 번 더 보는 습관이 가장 잘 통할 만한 곳들이라는 근거는 됩니다.</p>\n    </section>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">5</span>다음 상차로 잘 안 이어진 곳 10곳</h2>\n      <p>반대로 아래 지역은 같은 기준에서 비율이 낮았습니다. 현장에서는 이런 곳을 유대지처럼 느끼기 쉽습니다. 다만 <b>상차가 전혀 없다는 뜻은 아닙니다.</b> 하차 뒤 같은 날짜에 다시 상차 수요가 잡히는 경우가 상대적으로 적었다는 뜻입니다.</p>\n      <div class=\"ranklist\" aria-label=\"하차 후 같은 날짜 상차 수요가 낮은 시군구 10곳\">\n        <div class=\"rankrow\"><span class=\"rankno\">1</span><span class=\"rankname\">양평군</span><span class=\"rankpct low\">3.2%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">2</span><span class=\"rankname\">원주시</span><span class=\"rankpct low\">3.5%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">3</span><span class=\"rankname\">춘천시</span><span class=\"rankpct low\">5.0%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">4</span><span class=\"rankname\">천안시 동남구</span><span class=\"rankpct low\">10.5%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">5</span><span class=\"rankname\">과천시</span><span class=\"rankpct low\">10.6%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">6</span><span class=\"rankname\">안양시 동안구</span><span class=\"rankpct low\">12.9%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">7</span><span class=\"rankname\">음성군</span><span class=\"rankpct low\">16.6%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">8</span><span class=\"rankname\">아산시</span><span class=\"rankpct low\">17.4%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">9</span><span class=\"rankname\">서울 동작구</span><span class=\"rankpct low\">17.6%</span></div>\n        <div class=\"rankrow\"><span class=\"rankno\">10</span><span class=\"rankname\">수원시 장안구</span><span class=\"rankpct low\">17.6%</span></div>\n      </div>\n      <p>이런 곳은 내려갈 때부터 돌아올 길을 같이 봐야 합니다. 하차 후에야 복귀 콜을 찾는 방식은 기다리는 시간이 길어질 수 있습니다. 특히 장거리 하차라면 목적지 금액만으로 잡기보다, 복귀 가능성까지 넣어 계산하는 편이 맞습니다.</p>\n      <div class=\"note\"><b>순위 기준.</b> 하차 기록이 300건 이상인 지역만 비교했습니다. 구가 있으면 구, 없으면 군, 그것도 없으면 시로 묶었습니다. 실제 행정구역으로 확인되지 않는 표현은 순위에서 뺐습니다.</div>\n    </section>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">6</span>하차한 뒤에는 이렇게 보면 됩니다</h2>\n      <div class=\"steps\">\n        <div class=\"step\"><div class=\"n\">1</div><div><b>하차지 이름만 보고 확신하지 마세요</b><span>이 리포트는 시·군·구 단위 흐름입니다. 같은 구 안에서도 주거지인지, 업무지인지, 공단인지에 따라 콜 흐름이 다릅니다. 하차 한 건만으로 다음 콜을 단정하면 안 됩니다.</span></div></div>\n        <div class=\"step\"><div class=\"n\">2</div><div><b>단거리와 중거리는 주변 콜을 한 번 더 보세요</b><span>수도권 안쪽 단·중거리 하차 지역에는 같은 날 상차 수요가 함께 나타난 경우가 많았습니다. 하차 후 바로 이동하기보다 주변 흐름을 잠깐 확인할 이유가 있습니다.</span></div></div>\n        <div class=\"step\"><div class=\"n\">3</div><div><b>장거리는 복귀 계획을 먼저 세우세요</b><span>장거리 하차지에서 다음 상차 수요가 같은 날 나타나는 비율은 낮았습니다. 내려가는 콜 하나의 금액보다, 돌아오는 시간과 빈차 이동까지 포함해 판단해야 합니다.</span></div></div>\n      </div>\n    </section>\n\n    <section class=\"sec\">\n      <h2><span class=\"num\">7</span>하차지는 기회가 될 수 있지만, 보장은 아닙니다</h2>\n      <p>수집된 오더는 “대부분의 하차 지역이 상차 수요와 완전히 끊긴 곳은 아니다”라는 쪽을 보여줍니다. 특히 자주 가는 수도권 지역과 단·중거리 하차지에서는 그 말이 더 잘 맞습니다.</p>\n      <p>반대로 장거리와 드문 외곽 하차지는 다릅니다. <span class=\"hi\">하차지가 새 상차지가 될 수 있다는 감각은 동선을 읽는 힌트이지, 다음 콜을 보장하는 약속은 아닙니다.</span> 내려가기 전에는 도착지에서의 다음 기회와 복귀까지 같이 계산해야 합니다.</p>\n    </section>\n\n    <footer class=\"foot\">데이터 리포트 7호 초안 · 2026-05-04~2026-07-29 수집 오더 기준 · 주소 원문에서 구가 있으면 구, 없으면 군, 그다음 시를 읽어 비교했습니다. 오더 시장의 지역 흐름이며, 특정 기사의 실제 다음 수행 오더를 뜻하지 않습니다. 전체 시장 데이터가 아닙니다.</footer>\n  </main>\n</body>\n</html>\n","drafts/column-3-night.html":"<!doctype html><html lang=\"ko\"><head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>QP 데이터 리포트 3호 · 저녁에도 일이 있나요</title>\n<style>\n:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n*{box-sizing:border-box;margin:0;padding:0}\nbody{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}\n.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}\n.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}\nh1{font-size:25px;font-weight:800;line-height:1.3;margin:6px 0 22px}\n.sec{margin-bottom:30px}\n.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:800;font-size:15px;margin-right:8px}\nh2{font-size:18.5px;font-weight:800;display:flex;align-items:center;margin-bottom:10px}\nh2 span.t{flex:1}\np{font-size:14.5px;margin:8px 0;word-break:keep-all}\n.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}\n.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0}\n.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:10px}\n.hours{display:flex;align-items:flex-end;gap:2px;height:84px;margin:26px 0 4px;position:relative}\n.hours .h{flex:1;background:#d8ccb2;border-radius:2px 2px 0 0}\n.hours .h.peak{background:var(--gold)}\n.hours .h.eve{background:var(--red)}\n.hours .mark{position:absolute;top:-10px;bottom:-8px;border:2.5px solid var(--red);border-radius:16px;pointer-events:none;box-sizing:border-box}\n.hours .mark .ml{position:absolute;top:-19px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--red);font-weight:800;white-space:nowrap;background:var(--card);padding:1px 5px;border-radius:4px;line-height:1.2}\n.hlab{display:flex;gap:2px;font-size:9.5px;color:var(--ts);margin-top:3px;position:relative}\n.hlab span{flex:1;text-align:center;font-variant-numeric:tabular-nums}\n.hlab span.end{position:absolute;right:0;top:0;flex:none}\n.legend{display:flex;gap:14px;font-size:11.5px;color:var(--ts);margin-top:8px;flex-wrap:wrap}\n.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}\n.strat{background:var(--tm);color:#f3ead7;border-radius:12px;padding:14px 16px;margin:12px 0}\n.strat h4{color:#caa14a;font-size:12px;font-weight:800;margin-bottom:10px;letter-spacing:.04em}\n.strat .row{display:flex;gap:12px;align-items:flex-start;margin:9px 0;font-size:13.5px;line-height:1.55}\n.strat .row .seg{flex:0 0 92px;font-weight:800;color:#ffd98a}\n.strat .row .ac{flex:1}\n.strat b{color:#ffd98a}\n.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;margin:14px 0;font-size:12.5px;color:#5a4d2e;line-height:1.6}\n.note b{color:var(--tm);font-weight:800}\n.vs{display:flex;gap:10px;margin:14px 0 6px}\n.vs .box{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center}\n.vs .box .vn{font-size:16px;font-weight:800;line-height:1.2;margin-bottom:6px}\n.vs .box .vu{font-size:12.5px;color:var(--ts);line-height:1.7}\n.rbar{margin:7px 0}\n.rbar .rt{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:3px}\n.rbar .rt .rp{color:var(--ts);font-weight:800;font-variant-numeric:tabular-nums}\n.rbar .rl{height:9px;background:#ece3cf;border-radius:5px;overflow:hidden}\n.rbar .rl i{display:block;height:100%;border-radius:5px}\n.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:24px;line-height:1.6}\n@media print{body{background:#fff}.sheet{box-shadow:none}}\n</style></head><body>\n<div class=\"sheet\">\n  <div class=\"kicker\">QP 데이터 리포트 #3</div>\n  <h1>저녁에도<br>일이 있을까</h1>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">1</span><span class=\"t\">저녁에도 콜은 돕니다, 짧게</span></h2>\n    <p>해가 지면 일이 끊긴다고 생각하기 쉽습니다. 데이터로 보면 저녁에도 콜은 돕니다. 다만 <span class=\"hi\">살아있는 시간이 생각보다 짧습니다.</span> 평일 콜은 낮에 두 번 산을 넘고, 저녁으로 갈수록 빠르게 식습니다.</p>\n\n    <div class=\"card\">\n      <h4>평일 하루 콜 분포 (상대 밀도)</h4>\n      <div class=\"hours\" id=\"hoursWd\"></div>\n      <div class=\"hlab\" id=\"lab1\"></div>\n      <div class=\"legend\"><span><i style=\"background:var(--gold)\"></i>낮 피크</span><span><i style=\"background:var(--red)\"></i>저녁 구간</span></div>\n    </div>\n\n    <p>오후 산이 한 번 더 솟은 뒤, <b>오후 다섯시 무렵까지</b>는 콜이 낮 피크의 절반 정도로 버팁니다. 그런데 <span class=\"hi\">저녁 여섯시를 넘기면서 한 번에 반으로 꺾이고</span>, 그 뒤로는 가파르게 내려갑니다. 저녁은 일이 없는 시간이 아니라, <b>빠르게 닫히는 창문</b>입니다.</p>\n\n    <div class=\"note\">\n      <b>저녁은 덤이 아니라 마감입니다.</b> 낮을 다 보내고 저녁을 보너스처럼 여기면 타이밍을 놓칩니다. 저녁 콜은 오래 기다려주지 않습니다. 낮의 마지막 회전을 저녁 초입에 어떻게 잇느냐가, 하루 끝의 한두 콜을 가릅니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">2</span><span class=\"t\">야근의 골든타임은 밤이 아닙니다</span></h2>\n    <p>늦게까지 달리면 그만큼 더 번다고 느끼기 쉽습니다. 데이터는 다르게 말합니다. <span class=\"hi\">밤이 깊을수록 콜은 거의 사라집니다.</span> 평일 기준 밤 아홉시면 낮 피크의 십분의 일 아래로 내려가고, <b>밤 열시를 넘기면 사실상 끊깁니다.</b></p>\n\n    <div class=\"vs\">\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--red)\">이른 저녁</div><div class=\"vu\">오후 5시~7시<br>저녁의 알짜 구간</div></div>\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--ts)\">늦은 밤</div><div class=\"vu\">밤 10시 이후<br>콜 거의 없음</div></div>\n    </div>\n\n    <p>그래서 야근의 진짜 골든타임은 한밤중이 아니라 <span class=\"hi\">이른 저녁</span>입니다. 오후의 마지막 콜이 저녁 초입까지 이어지는 그 구간이, 하루를 한 번 더 회전시킬 마지막 기회입니다. 참고로 <b>주말은 평일보다 저녁이 길게 열립니다.</b> 늦은 저녁 일감이 필요하면 평일보다 주말 저녁이 두텁습니다.</p>\n\n    <div class=\"note\">\n      <b>늦게까지 달리면 더 번다, 는 착각.</b> 밤늦게 한두 콜을 더 노리며 버티는 시간에, 콜은 이미 잠들어 있습니다. 늦은 밤의 빈 대기는 수입이 아니라 피로만 쌓습니다. 저녁의 알짜 구간을 촘촘히 쓰고 <b>일찍 접는 편</b>이, 콜이 마른 시간을 버티는 것보다 손에 더 남습니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">3</span><span class=\"t\">저녁엔 픽업 나는 곳이 옮겨갑니다</span></h2>\n    <p>저녁에 더 중요한 건 시간만이 아닙니다. <span class=\"hi\">콜이 시작되는 곳, 곧 픽업이 나는 자리가 내가 있어야 할 위치입니다.</span> 그런데 그 자리가 낮과 저녁이 다릅니다.</p>\n\n    <div class=\"card\">\n      <h4>낮에 픽업 나는 곳 (오전·오후, 넓게 분산)</h4>\n      <div class=\"rbar\"><div class=\"rt\"><span>경기도 광주시</span><span class=\"rp\">5.9%</span></div><div class=\"rl\"><i style=\"width:100%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>서울 강남구</span><span class=\"rp\">5.4%</span></div><div class=\"rl\"><i style=\"width:92%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>경기도 화성시</span><span class=\"rp\">4.3%</span></div><div class=\"rl\"><i style=\"width:73%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>경기도 김포시</span><span class=\"rp\">3.5%</span></div><div class=\"rl\"><i style=\"width:59%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>서울 금천구</span><span class=\"rp\">3.2%</span></div><div class=\"rl\"><i style=\"width:54%;background:var(--gold)\"></i></div></div>\n    </div>\n    <div class=\"card\">\n      <h4>저녁에 픽업 나는 곳 (오후 5시~7시, 좁게 집중)</h4>\n      <div class=\"rbar\"><div class=\"rt\"><span>서울 강남구</span><span class=\"rp\">6.0%</span></div><div class=\"rl\"><i style=\"width:100%;background:var(--red)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>서울 송파구</span><span class=\"rp\">5.4%</span></div><div class=\"rl\"><i style=\"width:90%;background:var(--red)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>경기도 광주시</span><span class=\"rp\">5.0%</span></div><div class=\"rl\"><i style=\"width:83%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>서울 성동구</span><span class=\"rp\">4.7%</span></div><div class=\"rl\"><i style=\"width:78%;background:var(--red)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>서울 서초구</span><span class=\"rp\">4.1%</span></div><div class=\"rl\"><i style=\"width:68%;background:var(--red)\"></i></div></div>\n      <div class=\"legend\"><span><i style=\"background:var(--red)\"></i>서울 강남권·도심</span><span><i style=\"background:var(--gold)\"></i>경기 외곽</span></div>\n    </div>\n\n    <p>낮에는 픽업이 <b>경기 외곽 물류 지역</b>과 서울 곳곳에 넓게 깔립니다. 광주시, 화성시, 김포시 같은 외곽이 위쪽을 차지합니다. 그런데 저녁으로 가면 <span class=\"hi\">그 무대가 서울 강남권과 도심으로 좁혀집니다.</span> 강남구, 송파구, 서초구, 성동구가 저녁 픽업의 중심으로 올라옵니다.</p>\n\n    <p>특히 <b>송파구</b>가 눈에 띕니다. 낮에는 한참 아래에 있다가 저녁이 되면 강남구 다음 자리까지 올라옵니다. 반대로 낮에 가장 위였던 <b>경기 외곽</b>은 저녁이면 한두 칸씩 내려갑니다. 저녁은 화물보다 도심 안쪽 물량의 결이 짙어지는 시간입니다.</p>\n\n    <div class=\"note\">\n      <b>금액은 시간으로 갈리지 않습니다.</b> 저녁이라고 콜 단가가 오르거나 내리지는 않습니다. 콜 한 건의 중앙값은 낮과 저녁이 거의 같습니다. 저녁의 승부는 단가가 아니라 <b>픽업이 남아 있는 권역 안에 내가 있느냐</b>에서 갈립니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">4</span><span class=\"t\">그래서 동선은 이렇게</span></h2>\n    <p>시간과 위치를 하나로 꿰면 저녁 동선이 보입니다. <b>낮의 외곽에서 저녁의 도심으로, 흐름을 따라 미리 옮겨 탄다.</b></p>\n\n    <div class=\"strat\">\n      <h4>저녁 동선의 골격</h4>\n      <div class=\"row\"><div class=\"seg\">낮</div><div class=\"ac\">경기 외곽 물류나 서울 업무 지역에서 넓게 콜을 받는다. 낮엔 어디 있든 콜이 깔린다.</div></div>\n      <div class=\"row\"><div class=\"seg\">오후 늦게</div><div class=\"ac\">오후 산의 끝물을 타면서 <b>서울 강남권·도심 방향</b>으로 미리 자리를 옮긴다. 저녁 무대로 먼저 들어가 둔다.</div></div>\n      <div class=\"row\"><div class=\"seg\">저녁 알짜</div><div class=\"ac\"><b>오후 다섯시에서 일곱시</b>, 강남구·송파구·서초구·성동구 안에서 짧게 회전한다. 픽업이 거기서 남는다.</div></div>\n      <div class=\"row\"><div class=\"seg\">마감 인식</div><div class=\"ac\">저녁 여섯시를 넘기면 콜이 반으로 꺾인다. 권역 밖으로 멀리 빼는 콜은 돌아올 길을 한 번 더 본다.</div></div>\n      <div class=\"row\"><div class=\"seg\">밤</div><div class=\"ac\">밤 열시 뒤의 빈 대기는 줄인다. 콜이 마른 시간을 버티는 건 수입이 아니다.</div></div>\n    </div>\n\n    <p>핵심은 <span class=\"hi\">저녁 무대로 한발 먼저 들어가 있는 것</span>입니다. 콜이 강남권으로 옮겨간 뒤에 외곽에서 출발하면 이미 늦습니다. 낮의 마지막 콜을 도심 방향으로 잡아 흐름을 타고 들어오면, 저녁 창이 열릴 때 이미 그 안에 있게 됩니다.</p>\n\n    <div class=\"note\">\n      <b>빈손 시간이 진짜 적입니다.</b> 저녁 수입을 갉아먹는 건 콜 단가가 아니라 콜이 옮겨간 뒤 엉뚱한 자리에 남은 빈 시간입니다. 저녁 픽업이 어디로 옮겨가는지 알고 그 길목에 미리 서 있는 것. 그게 저녁을 길게 끄는 것보다 더 단단하게 쌓입니다.\n    </div>\n  </div>\n\n  <div class=\"foot\">\n    QP 데이터 리포트 3호 · 2026.06 · 평일 표본 (중복 제거 · 전체 시장 데이터 아님) · 콜 양은 사용자 증가 영향을 걷어낸 1인 기준 상대 밀도 · 시간은 콜이 감지된 시각 기준 · 권역은 픽업(출발지) 기준, 서울·인천은 구, 그 외는 시 · 저녁 표본은 낮보다 얇아 권역 순위는 큰 흐름으로만\n  </div>\n</div>\n<script>\nvar HW=[1,1,0,0,0,0,2,9,46,106,112,96,74,108,111,94,91,60,32,25,14,7,3,3];\nfunction drawBars(id,A,peak,eve){\n  var mx=Math.max.apply(null,A);\n  document.getElementById(id).innerHTML=A.map(function(v,h){\n    var c=peak&&peak[h]?\" peak\":(eve&&eve[h]?\" eve\":\"\");\n    return '<div class=\"h'+c+'\" style=\"height:'+Math.max(3,v/mx*100)+'%\"></div>';\n  }).join(\"\");\n}\ndrawBars(\"hoursWd\",HW,{9:1,10:1,11:1,13:1,14:1},{17:1,18:1,19:1,20:1,21:1});\nfunction drawLab(id){\n  var marks={0:1,3:1,6:1,9:1,12:1,15:1,18:1,21:1},out='';\n  for(var h=0;h<24;h++) out+='<span>'+(marks[h]?h:'')+'</span>';\n  out+='<span class=\"end\">24</span>';\n  document.getElementById(id).innerHTML=out;\n}\ndrawLab(\"lab1\");\nfunction addMark(id,s,e,label){\n  var host=document.getElementById(id),m=document.createElement('div');\n  m.className='mark';m.style.left=(s/24*100)+'%';m.style.width=((e-s+1)/24*100)+'%';\n  if(label){var l=document.createElement('div');l.className='ml';l.textContent=label;m.appendChild(l);}\n  host.appendChild(m);\n}\naddMark(\"hoursWd\",17,21,\"저녁\");\n<\/script>\n</body></html>\n","drafts/column-3-weekend.html":"<!doctype html><html lang=\"ko\"><head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>QP 데이터 리포트 3호 · 주말엔 어떻게 일해야 할까</title>\n<style>\n:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n*{box-sizing:border-box;margin:0;padding:0}\nbody{background:#e8dec9;font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--tm);line-height:1.7;-webkit-text-size-adjust:100%}\n.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}\n.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}\nh1{font-size:25px;font-weight:800;line-height:1.3;margin:6px 0 22px}\n.sec{margin-bottom:30px}\n.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:800;font-size:15px;margin-right:8px}\nh2{font-size:18.5px;font-weight:800;display:flex;align-items:center;margin-bottom:10px}\nh2 span.t{flex:1}\np{font-size:14.5px;margin:8px 0;word-break:keep-all}\n.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:700}\n.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0}\n.card h4{font-size:12px;color:var(--ts);font-weight:800;letter-spacing:.04em;margin-bottom:10px}\n.hours{display:flex;align-items:flex-end;gap:2px;height:84px;margin:26px 0 4px;position:relative}\n.hours .h{flex:1;background:#d8ccb2;border-radius:2px 2px 0 0}\n.hours .h.peak{background:var(--gold)}\n.hours .mark{position:absolute;top:-10px;bottom:-8px;border:2.5px solid var(--red);border-radius:16px;pointer-events:none;box-sizing:border-box}\n.hours .mark .ml{position:absolute;top:-19px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--red);font-weight:800;white-space:nowrap;background:var(--card);padding:1px 5px;border-radius:4px;line-height:1.2}\n.hlab{display:flex;gap:2px;font-size:9.5px;color:var(--ts);margin-top:3px;position:relative}\n.hlab span{flex:1;text-align:center;font-variant-numeric:tabular-nums}\n.hlab span.end{position:absolute;right:0;top:0;flex:none}\n.legend{display:flex;gap:14px;font-size:11.5px;color:var(--ts);margin-top:8px;flex-wrap:wrap}\n.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}\n.strat{background:var(--tm);color:#f3ead7;border-radius:12px;padding:14px 16px;margin:12px 0}\n.strat h4{color:#caa14a;font-size:12px;font-weight:800;margin-bottom:10px;letter-spacing:.04em}\n.strat .row{display:flex;gap:12px;align-items:flex-start;margin:9px 0;font-size:13.5px;line-height:1.55}\n.strat .row .seg{flex:0 0 92px;font-weight:800;color:#ffd98a}\n.strat .row .ac{flex:1}\n.strat b{color:#ffd98a}\n.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;margin:14px 0;font-size:12.5px;color:#5a4d2e;line-height:1.6}\n.note b{color:var(--tm);font-weight:800}\n.vs{display:flex;gap:10px;margin:14px 0 6px}\n.vs .box{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center}\n.vs .box .vn{font-size:16px;font-weight:800;line-height:1.2;margin-bottom:6px}\n.vs .box .vu{font-size:12.5px;color:var(--ts);line-height:1.7}\n.rbar{margin:7px 0}\n.rbar .rt{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:3px}\n.rbar .rt .rp{color:var(--ts);font-weight:800;font-variant-numeric:tabular-nums}\n.rbar .rl{height:9px;background:#ece3cf;border-radius:5px;overflow:hidden}\n.rbar .rl i{display:block;height:100%;border-radius:5px}\n.cmp{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}\n.cmp th,.cmp td{padding:8px 10px;border-bottom:1px solid var(--bd);text-align:center}\n.cmp th{font-size:11.5px;color:var(--ts);font-weight:800;letter-spacing:.03em}\n.cmp td.lbl{text-align:left;font-weight:700}\n.cmp td .up{color:var(--red);font-weight:800}.cmp td .dn{color:var(--grn);font-weight:800}\n.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:24px;line-height:1.6}\n@media print{body{background:#fff}.sheet{box-shadow:none}}\n</style></head><body>\n<div class=\"sheet\">\n  <div class=\"kicker\">QP 데이터 리포트 #3</div>\n  <h1>주말엔<br>어떻게 일해야 할까</h1>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">1</span><span class=\"t\">주말은 평일과 다른 게임이다</span></h2>\n    <p>같은 차, 같은 사람인데 주말은 평일과 흐름이 다릅니다. 콜의 양이 줄고, 몰리는 시간도 뒤로 밀립니다. <span class=\"hi\">평일에 통하던 습관을 주말에 그대로 가져오면 헛돕니다.</span></p>\n\n    <div class=\"vs\">\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--gold)\">평일</div><div class=\"vu\">콜 풍부<br>오전형 흐름</div></div>\n      <div class=\"box\"><div class=\"vn\" style=\"color:var(--grn)\">주말</div><div class=\"vu\">콜이 약 3분의 1<br>오후형 흐름</div></div>\n    </div>\n\n    <p>한 사람이 하루에 잡는 콜이 주말엔 평일의 <b>약 3분의 1</b> 수준으로 내려갑니다. 양이 얇아진다는 건 같은 방식으로 더 오래 달려도 손에 덜 남는다는 뜻입니다. 주말은 많이 도는 날이 아니라 <b>고르게 골라 타는 날</b>입니다.</p>\n\n    <div class=\"card\">\n      <h4>평일 하루 콜 분포 (상대 밀도)</h4>\n      <div class=\"hours\" id=\"hoursWd\"></div>\n      <div class=\"hlab\" id=\"lab1\"></div>\n    </div>\n    <div class=\"card\">\n      <h4>주말 하루 콜 분포 (상대 밀도)</h4>\n      <div class=\"hours\" id=\"hoursWe\"></div>\n      <div class=\"hlab\" id=\"lab2\"></div>\n    </div>\n\n    <p>봉우리 위치가 다릅니다. 평일은 <b>오전</b>에 산이 솟는데, 주말은 그 산이 <span class=\"hi\">오후로 한참 밀려 있습니다.</span> 주말 아침은 평일보다 한참 조용합니다.</p>\n\n    <div class=\"note\">\n      <b>주말 아침 일찍 나가는 함정.</b> 평일 감각으로 주말 이른 아침에 나가면 콜이 아직 깨어나지 않은 시간을 빈손으로 흘려보냅니다. 주말은 늦게 시작해도 늦지 않습니다. 무게가 오후에 실리니, <b>오후 흐름에 차를 비워두는 것</b>이 주말의 첫 단추입니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">2</span><span class=\"t\">콜이 도는 동네가 좁아진다</span></h2>\n    <p>주말이 평일과 가장 크게 갈리는 지점은 <span class=\"hi\">콜이 어디서 나오느냐</span>입니다. 평일엔 콜이 경기 외곽 물류 지역과 서울 업무 지구에 넓게 퍼집니다. 주말엔 그 무대가 <b>강남 한강벨트</b>로 확 좁아집니다.</p>\n\n    <div class=\"card\">\n      <h4>평일 콜 출발지 상위 (넓게 분산)</h4>\n      <div class=\"rbar\"><div class=\"rt\"><span>경기도 광주시</span><span class=\"rp\">5.6%</span></div><div class=\"rl\"><i style=\"width:67%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>강남구</span><span class=\"rp\">5.3%</span></div><div class=\"rl\"><i style=\"width:63%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>강서구</span><span class=\"rp\">4.7%</span></div><div class=\"rl\"><i style=\"width:56%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>성동구</span><span class=\"rp\">4.5%</span></div><div class=\"rl\"><i style=\"width:54%;background:var(--gold)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>경기도 김포시</span><span class=\"rp\">3.5%</span></div><div class=\"rl\"><i style=\"width:42%;background:var(--gold)\"></i></div></div>\n    </div>\n    <div class=\"card\">\n      <h4>주말 콜 출발지 상위 (강남권 집중)</h4>\n      <div class=\"rbar\"><div class=\"rt\"><span>강남구</span><span class=\"rp\">8.4%</span></div><div class=\"rl\"><i style=\"width:100%;background:var(--grn)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>서초구</span><span class=\"rp\">6.0%</span></div><div class=\"rl\"><i style=\"width:71%;background:var(--grn)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>송파구</span><span class=\"rp\">5.9%</span></div><div class=\"rl\"><i style=\"width:70%;background:var(--grn)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>용산구</span><span class=\"rp\">5.5%</span></div><div class=\"rl\"><i style=\"width:65%;background:var(--grn)\"></i></div></div>\n      <div class=\"rbar\"><div class=\"rt\"><span>성동구</span><span class=\"rp\">4.5%</span></div><div class=\"rl\"><i style=\"width:54%;background:var(--grn)\"></i></div></div>\n    </div>\n\n    <p>평일 상위에 있던 <b>경기 외곽 물류(광주·김포)</b>가 주말엔 빠지고, 그 자리를 <b>강남구·서초구·송파구</b> 강남 3구와 용산이 채웁니다. 주말엔 화물보다 <span class=\"hi\">사람이 움직이는 동네</span>에서 콜이 납니다.</p>\n\n    <div class=\"note\">\n      <b>좁아진다는 게 왜 기회인가.</b> 콜이 도시 전체에 옅게 깔리면 어디 있든 비슷합니다. 주말처럼 몇 개 구로 뭉치면, 그 안에 자리 잡은 사람과 바깥에 있는 사람의 차이가 벌어집니다. 콜이 적은 날일수록 <b>강남권 안에 있는 것</b>이 빈손 시간을 줄이는 가장 확실한 방법입니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">3</span><span class=\"t\">차종도 금액도 결이 바뀐다</span></h2>\n    <p>무대만 바뀌는 게 아니라 <span class=\"hi\">콜의 성격 자체가 바뀝니다.</span> 평일은 다마스 화물이 주축인데, 주말은 가벼운 배송 쪽으로 무게가 옮겨갑니다.</p>\n\n    <table class=\"cmp\">\n      <tr><th>차종</th><th>평일</th><th>주말</th></tr>\n      <tr><td class=\"lbl\">다마스</td><td>65%</td><td><span class=\"dn\">59%</span></td></tr>\n      <tr><td class=\"lbl\">오토바이</td><td>20%</td><td><span class=\"up\">약 30%</span></td></tr>\n      <tr><td class=\"lbl\">라보·1톤</td><td>7%</td><td>2%</td></tr>\n    </table>\n\n    <p>주말엔 <b>오토바이 콜이 절반 가까이 늘어납니다.</b> 다마스 화물 비중은 줄고요. 짐을 크게 싣는 일보다 가볍게 빨리 나르는 일이 많아진다는 신호입니다.</p>\n\n    <p>금액도 같은 방향입니다. 콜 한 건의 중앙값이 평일 약 <b>3만 5천원</b>에서 주말 약 <b>3만원</b>으로 조금 내려갑니다. 특히 작은 금액 콜이 눈에 띄게 늘어납니다.</p>\n\n    <table class=\"cmp\">\n      <tr><th>콜 금액대</th><th>평일</th><th>주말</th></tr>\n      <tr><td class=\"lbl\">2만원 미만</td><td>4%</td><td><span class=\"up\">15%</span></td></tr>\n      <tr><td class=\"lbl\">2~3만 5천</td><td>52%</td><td>46%</td></tr>\n      <tr><td class=\"lbl\">3만 5천 이상</td><td>44%</td><td>39%</td></tr>\n    </table>\n\n    <p>주말은 <span class=\"hi\">소액 잔콜이 평일의 서너 배로 섞입니다.</span> 한 건의 단가를 기대하기보다, 가벼운 콜을 끊김 없이 이어 붙여 회전으로 채우는 그림이 주말에 더 맞습니다.</p>\n\n    <div class=\"note\">\n      <b>화물 위주 기사라면.</b> 콜 양도 줄고 단가도 살짝 낮고 화물 비중까지 빠지는 주말은, 다마스·1톤 기사에게는 분명한 비수기입니다. 주말에 평일만큼 달리기보다, <b>평일에 무게를 싣고 주말은 가볍게</b> 가는 배분도 한 방법입니다.\n    </div>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">4</span><span class=\"t\">그래서 주말은 이렇게</span></h2>\n    <p>지금까지 본 네 가지를 하나로 꿰면 주말 운행의 그림이 나옵니다. <b>좁은 무대, 늦은 시작, 가벼운 콜, 끊김 없는 회전.</b></p>\n\n    <div class=\"strat\">\n      <h4>주말 하루의 골격</h4>\n      <div class=\"row\"><div class=\"seg\">아침</div><div class=\"ac\">무리해서 일찍 나가지 않는다. 가볍게 몸만 푼다.</div></div>\n      <div class=\"row\"><div class=\"seg\">핫스팟 진입</div><div class=\"ac\">콜이 깨어나는 시간에 맞춰 <b>강남 3구·용산</b> 안으로 자리를 옮긴다.</div></div>\n      <div class=\"row\"><div class=\"seg\">권역 순환</div><div class=\"ac\">그 안에서 짧게 돈다. 한 콜이 끝나면 가까운 다음 콜로 바로 잇는다.</div></div>\n      <div class=\"row\"><div class=\"seg\">외곽 콜 경계</div><div class=\"ac\">권역 밖으로 멀리 빼는 콜은 한 번 더 생각한다. 돌아올 콜이 있는지.</div></div>\n      <div class=\"row\"><div class=\"seg\">오후 집중</div><div class=\"ac\">무게가 실리는 오후에 회전을 가장 촘촘히 가져간다.</div></div>\n    </div>\n\n    <p>평일처럼 도시 전체를 넓게 커버하는 동선은 주말엔 오히려 손해입니다. 멀리 한 건 잘 잡는 것보다, <span class=\"hi\">가까이 여러 건을 끊기지 않게 잇는 쪽</span>이 콜이 얇은 날엔 더 안정적으로 쌓입니다.</p>\n\n    <div class=\"note\">\n      <b>빈손 시간이 진짜 적</b>입니다. 주말 수입을 갉아먹는 건 콜 단가가 아니라 콜과 콜 사이 비어 있는 시간입니다. 좁은 권역에서 짧게 도는 건 그 빈 시간을 줄이려는 겁니다. 한 건의 크기보다 흐름이 끊기지 않는 것이 주말엔 더 큰 무기가 됩니다.\n    </div>\n\n    <p>주말을 어떻게 쓸지는 결국 선택입니다. 콜이 얇으니 효율 위주로 짧게 타고 일찍 접는 길도 있고, 평일에 무게를 더 싣는 길도 있습니다. 분명한 건, <b>주말은 평일과 다른 지도를 펴야 한다</b>는 것입니다.</p>\n  </div>\n\n  <div class=\"foot\">\n    QP 데이터 리포트 3호 · 2026.06 · 약 2주 표본 (평일 1만여 건 · 주말 1천여 건 · 중복 제거 · 전체 시장 데이터 아님) · 콜 양은 사용자 증가 영향을 걷어낸 1인 기준 · 금액은 중앙값(이상치 제외) · 지역은 서울·인천 구 단위, 그 외 시 단위\n  </div>\n</div>\n<script>\nvar HW=[1,1,0,0,0,0,2,9,46,106,112,96,74,108,111,94,91,60,32,25,14,7,3,3];\nvar HE=[3,0,1,0,0,0,6,16,35,60,55,53,67,86,133,125,107,104,65,37,24,8,13,5];\nfunction drawBars(id,A,peak){\n  var mx=Math.max.apply(null,A);\n  document.getElementById(id).innerHTML=A.map(function(v,h){\n    var c=peak[h]?\" peak\":\"\";\n    return '<div class=\"h'+c+'\" style=\"height:'+Math.max(3,v/mx*100)+'%\"></div>';\n  }).join(\"\");\n}\ndrawBars(\"hoursWd\",HW,{9:1,10:1,11:1});\ndrawBars(\"hoursWe\",HE,{14:1,15:1,16:1});\nfunction drawLab(id){\n  var marks={0:1,3:1,6:1,9:1,12:1,15:1,18:1,21:1},out='';\n  for(var h=0;h<24;h++) out+='<span>'+(marks[h]?h:'')+'</span>';\n  out+='<span class=\"end\">24</span>';\n  document.getElementById(id).innerHTML=out;\n}\ndrawLab(\"lab1\");drawLab(\"lab2\");\nfunction addMark(id,s,e,label){\n  var host=document.getElementById(id),m=document.createElement('div');\n  m.className='mark';m.style.left=(s/24*100)+'%';m.style.width=((e-s+1)/24*100)+'%';\n  if(label){var l=document.createElement('div');l.className='ml';l.textContent=label;m.appendChild(l);}\n  host.appendChild(m);\n}\naddMark(\"hoursWd\",9,11,\"오전\");\naddMark(\"hoursWe\",14,16,\"오후\");\n<\/script>\n</body></html>\n","special-longhaul-report-20260709.html":"<!doctype html>\n<html lang=\"ko\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>서울에서 멀리 갈 때, 얼마면 잡을 만한가</title>\n<style>\n:root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}\n*{box-sizing:border-box;margin:0;padding:0}\nbody{background:#e8dec9;font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR','Apple SD Gothic Neo',sans-serif;color:var(--tm);line-height:1.72;-webkit-text-size-adjust:100%}\n.sheet{max-width:680px;margin:0 auto;background:var(--bg);min-height:100vh;padding:30px 22px 60px}\n.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--gold)}\nh1{font-size:27px;font-weight:850;line-height:1.28;margin:7px 0 7px;letter-spacing:0}\n.subhead{font-size:14px;font-weight:800;color:var(--ts);line-height:1.5;margin-bottom:22px;word-break:keep-all}\n.lead{font-size:15px;line-height:1.78;margin:10px 0;word-break:keep-all}\n.sec{margin-top:31px}\nh2{font-size:19px;font-weight:850;line-height:1.35;display:flex;gap:9px;align-items:flex-start;margin-bottom:12px;letter-spacing:0}\n.num{flex:0 0 30px;width:30px;height:30px;line-height:30px;text-align:center;background:var(--tm);color:#fff;border-radius:8px;font-weight:850;font-size:15px}\np{font-size:14.5px;margin:9px 0;word-break:keep-all}\n.hi{background:linear-gradient(transparent 60%,#F3E2A8 60%);font-weight:800}\n.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:15px 16px;margin:13px 0}\n.note{background:#fffdf5;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 14px;margin:14px 0;font-size:12.8px;color:#5a4d2e;line-height:1.65}\n.note b{color:var(--tm)}\n.metric{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:13px 0}\n.metric .m{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:13px 8px;text-align:center}\n.metric .n{font-size:20px;font-weight:850;line-height:1.15;font-variant-numeric:tabular-nums}\n.metric .l{font-size:11.5px;color:var(--ts);font-weight:800;margin-top:5px;line-height:1.35}\n.range{font-size:13px;font-weight:800;color:#5a4d2e;margin:4px 0 10px}\n.timebox{background:#fffdf5;border:1px solid var(--bd);border-radius:12px;padding:13px 14px;margin:12px 0;font-size:13.5px;line-height:1.62;color:#4e432f}\n.timebox b{color:var(--tm)}\n.timebox .tl{font-size:11.5px;font-weight:850;color:var(--gold);letter-spacing:.04em;margin-bottom:3px}\n.bars{margin:12px 0 2px}\n.bar{margin:8px 0}\n.bar .bt{display:flex;justify-content:space-between;gap:8px;font-size:12.8px;font-weight:800}\n.bar .bt span:last-child{color:var(--ts);font-variant-numeric:tabular-nums}\n.bar .track{height:11px;background:#ece3cf;border-radius:999px;overflow:hidden;margin-top:4px}\n.bar i{display:block;height:100%;border-radius:999px;background:var(--gold)}\n.bar.green i{background:var(--grn)}\n.bar.red i{background:var(--red)}\n.pull{background:var(--tm);color:#f3ead7;border-radius:12px;padding:15px 16px;margin:15px 0}\n.pull b{color:#ffd98a}\n.pull .pt{font-size:12px;font-weight:850;letter-spacing:.04em;color:#caa14a;margin-bottom:8px}\n.small{font-size:12.3px;color:var(--ts);line-height:1.6}\n.foot{font-size:12px;color:var(--ts);border-top:1px dashed var(--bd);padding-top:14px;margin-top:28px;line-height:1.6}\n@media(max-width:390px){.sheet{padding:28px 18px 54px}h1{font-size:25px}.metric{gap:6px}.metric .n{font-size:18px}.metric .l{font-size:11px}}\n@media print{body{background:#fff}.sheet{box-shadow:none}}\n</style>\n</head>\n<body>\n<div class=\"sheet\">\n  <div class=\"kicker\">QUICKPILOT SPECIAL REPORT</div>\n  <h1>서울에서 멀리 갈 때,<br>얼마면 잡을 만한가</h1>\n  <div class=\"subhead\">광주권, 동해안권, 동남권 오더를 금액보다 시간 기준으로 다시 읽어봤다</div>\n\n  <p class=\"lead\">서울이나 수도권에서 멀리 내려가는 오더를 보면 금액부터 보입니다. 10만원이면 괜찮은 건지, 14만원이면 잡을 만한 건지, 숫자만 봐서는 바로 감이 오지 않습니다.</p>\n  <p class=\"lead\">장거리는 결국 시간 싸움입니다. 같은 10만원대라도 세 시간짜리 길과 여섯 시간짜리 길은 완전히 다릅니다. km당 금액은 참고가 될 수 있지만, 실제로 중요한 건 <span class=\"hi\">목적지까지 가는 동안 내 하루가 얼마나 묶이느냐</span>입니다.</p>\n  <p class=\"lead\">그래서 이번에는 광주권, 동해안권, 동남권을 금액이 낮은 쪽부터 차례로 봤습니다. 숫자는 판단의 출발점이고, 마지막 판단은 시간입니다.</p>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">1</span><span>광주권, 장거리의 기준선</span></h2>\n    <p>광주권은 세 권역 중 가장 차분합니다. 금액이 크게 튀기보다 10만원 전후에 모입니다. 서울·수도권에서 광주권으로 내려가는 오더는 <b>100,000원 / 252.6km / km당 444원</b>으로 읽힙니다.</p>\n\n    <div class=\"metric\">\n      <div class=\"m\"><div class=\"n\">100,000원</div><div class=\"l\">갈 때 금액 중심값</div></div>\n      <div class=\"m\"><div class=\"n\">252.6km</div><div class=\"l\">직선거리 중간값</div></div>\n      <div class=\"m\"><div class=\"n\">444원</div><div class=\"l\">km당 금액</div></div>\n    </div>\n    <div class=\"range\">중간 금액 범위: 78,000~126,000원</div>\n    <div class=\"timebox\"><div class=\"tl\">대략적인 시간 부담</div>서울·수도권에서 광주권까지는 도로 상황에 따라 다르지만, <b>편도 이동만 대략 4시간 안팎에서 5시간 이상</b>까지 봐야 합니다. 여기에 픽업 대기, 상차, 하차가 붙으면 반나절 가까이 묶일 수 있습니다.</div>\n\n    <p>그래서 광주권은 장거리의 기준선으로 보기 좋습니다. 금액만 보면 “그래도 10만원”입니다. 하지만 목적지까지 가는 시간, 현장 대기, 다시 올라올 부담까지 넣으면 느낌이 달라집니다. km당 444원이라는 숫자는 참고용입니다. 진짜 봐야 할 것은 이 오더가 하루 중 몇 시간을 가져가느냐입니다.</p>\n\n    <div class=\"card\">\n      <div class=\"small\"><b>갈 때 오더가 많이 보인 시간대</b></div>\n      <div class=\"bars\">\n        <div class=\"bar\"><div class=\"bt\"><span>오후 14~17시</span><span>36.2%</span></div><div class=\"track\"><i style=\"width:100%\"></i></div></div>\n        <div class=\"bar green\"><div class=\"bt\"><span>오전 06~10시</span><span>27.6%</span></div><div class=\"track\"><i style=\"width:76%\"></i></div></div>\n        <div class=\"bar green\"><div class=\"bt\"><span>점심 11~13시</span><span>25.9%</span></div><div class=\"track\"><i style=\"width:71%\"></i></div></div>\n      </div>\n    </div>\n\n    <p>오후 비중이 가장 높고, 오전과 점심도 따라옵니다. 한쪽 시간에만 몰리는 길은 아닙니다. 그래서 광주권은 장거리 오더를 처음 비교할 때 기준으로 삼기 좋습니다.</p>\n    <p>돌아오는 흐름은 내려가는 쪽에 비해 훨씬 얇습니다. 금액은 <b>92,000원</b> 정도로 보였고, 점심 11~13시에 상대적으로 많이 잡혔습니다. 그래도 이 숫자만 믿고 복귀를 기대하기는 어렵습니다. 광주권은 내려갈 때 조건을 먼저 보고, 복귀는 있으면 좋은 정도로 보는 편이 현실적입니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">2</span><span>동해안권, 짧아 보여도 가벼운 길은 아니다</span></h2>\n    <p>동해안권은 처음 보면 광주권보다 가깝게 느껴집니다. 실제로 직선거리도 더 짧습니다. 그런데 현장에서 느끼는 부담은 거리만큼 단순하지 않습니다. 서울·수도권에서 강릉, 속초, 동해, 삼척 쪽으로 가는 오더는 <b>108,000원 / 167.8km / km당 636원</b>으로 읽힙니다.</p>\n\n    <div class=\"metric\">\n      <div class=\"m\"><div class=\"n\">108,000원</div><div class=\"l\">갈 때 금액 중심값</div></div>\n      <div class=\"m\"><div class=\"n\">167.8km</div><div class=\"l\">직선거리 중간값</div></div>\n      <div class=\"m\"><div class=\"n\">636원</div><div class=\"l\">km당 금액</div></div>\n    </div>\n    <div class=\"range\">중간 금액 범위: 90,000~130,000원</div>\n    <div class=\"timebox\"><div class=\"tl\">대략적인 시간 부담</div>동해안권은 거리만 보면 짧아 보여도, 실제 이동은 <b>편도 3시간 전후에서 4시간 이상</b>까지 잡히는 길입니다. 산길, 고속도로 흐름, 도착 후 빠져나오는 시간까지 같이 봐야 합니다.</div>\n\n    <p>여기서 중요한 건 하나입니다. <span class=\"hi\">거리만 짧다고 편한 길은 아닙니다.</span> 동해안권은 지도에서 보면 부담이 덜해 보일 수 있습니다. 하지만 산길, 고속도로 흐름, 도착 후 복귀 부담, 해안 도시 특유의 편도감이 붙습니다. 그래서 광주권보다 거리는 짧아도 km당 금액은 더 높게 잡힙니다. 다만 이 숫자는 참고일 뿐이고, 실제 판단은 소요 시간으로 해야 합니다.</p>\n\n    <div class=\"card\">\n      <div class=\"small\"><b>갈 때 오더가 많이 보인 시간대</b></div>\n      <div class=\"bars\">\n        <div class=\"bar\"><div class=\"bt\"><span>점심 11~13시</span><span>35.6%</span></div><div class=\"track\"><i style=\"width:100%\"></i></div></div>\n        <div class=\"bar green\"><div class=\"bt\"><span>오후 14~17시</span><span>31.1%</span></div><div class=\"track\"><i style=\"width:88%\"></i></div></div>\n        <div class=\"bar green\"><div class=\"bt\"><span>오전 06~10시</span><span>22.2%</span></div><div class=\"track\"><i style=\"width:63%\"></i></div></div>\n      </div>\n    </div>\n\n    <p>동해안권은 점심 무렵 비중이 가장 높습니다. 당일에 다녀오려는 흐름으로 읽힙니다. 출발이 늦어지면 복귀 시간이 애매해지고 피로도 커집니다. 같은 10만원대라도 몇 시에 출발하느냐가 중요한 이유입니다.</p>\n    <p>돌아오는 흐름은 거의 잡히지 않았습니다. 지금 숫자로는 금액대를 말하기 어렵습니다. 이 권역은 돌아올 콜을 기대하고 들어가기보다, 내려가는 오더 하나가 그날 시간을 얼마나 잡아먹는지 먼저 봐야 합니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">3</span><span>동남권, 금액도 크고 편차도 크다</span></h2>\n    <p>동남권은 부산·울산·창원·김해·양산·거제·통영을 묶은 권역입니다. 세 권역 중 금액이 가장 큽니다. 대신 편차도 큽니다. 부산 끝까지 가는 오더와 경남 주변권 오더가 같은 묶음 안에 섞여 있기 때문입니다.</p>\n\n    <div class=\"metric\">\n      <div class=\"m\"><div class=\"n\">139,000원</div><div class=\"l\">갈 때 금액 중심값</div></div>\n      <div class=\"m\"><div class=\"n\">298.9km</div><div class=\"l\">직선거리 중간값</div></div>\n      <div class=\"m\"><div class=\"n\">463원</div><div class=\"l\">km당 금액</div></div>\n    </div>\n    <div class=\"range\">중간 금액 범위: 92,000~186,000원</div>\n    <div class=\"timebox\"><div class=\"tl\">대략적인 시간 부담</div>동남권은 목적지에 따라 차이가 큽니다. 서울·수도권에서 부산·울산·경남권까지 내려가면 <b>편도 5시간 안팎에서 7시간 이상</b>까지도 봐야 합니다. 오후에 잡으면 그날은 사실상 이 오더 하나로 끝날 수 있습니다.</div>\n\n    <p>동남권은 숫자만 보면 가장 좋아 보일 수 있습니다. <b>139,000원 / 298.9km / km당 463원</b>입니다. 금액은 크지만 거리와 시간이 같이 커집니다. 그래서 광주권보다 훨씬 넉넉하다고 보기는 어렵습니다. 특히 도착지가 어디냐에 따라 체감 시간이 크게 갈립니다.</p>\n\n    <div class=\"card\">\n      <div class=\"small\"><b>갈 때 오더가 많이 보인 시간대</b></div>\n      <div class=\"bars\">\n        <div class=\"bar\"><div class=\"bt\"><span>오후 14~17시</span><span>38.9%</span></div><div class=\"track\"><i style=\"width:100%\"></i></div></div>\n        <div class=\"bar green\"><div class=\"bt\"><span>점심 11~13시</span><span>28.4%</span></div><div class=\"track\"><i style=\"width:73%\"></i></div></div>\n        <div class=\"bar green\"><div class=\"bt\"><span>오전 06~10시</span><span>27.4%</span></div><div class=\"track\"><i style=\"width:70%\"></i></div></div>\n      </div>\n    </div>\n\n    <p>동남권은 오후 비중이 가장 높습니다. 그런데 오후에 부산·울산·경남권으로 내려가면 복귀는 거의 밤을 각오해야 합니다. 금액이 커도 남은 하루를 통째로 묶을 수 있습니다. 그래서 이 권역은 “얼마냐”보다 “오늘 이걸 잡으면 하루가 어떻게 끝나냐”를 같이 봐야 합니다.</p>\n    <p>그래도 기준선은 보입니다. 서울·수도권에서 동남권으로 제대로 내려간다면 <b>14만원 전후</b>가 하나의 기준처럼 보입니다. 그보다 낮다면 거리, 짐, 상하차, 도착 시간을 더 까다롭게 봐야 합니다. 돌아오는 흐름은 적어서 참고 정도로만 봐야 하고, 금액은 <b>154,000원</b> 정도였습니다.</p>\n  </div>\n\n  <div class=\"sec\">\n    <h2><span class=\"num\">4</span><span>마지막 판단은 적요란에서 갈린다</span></h2>\n    <p>장거리 오더는 금액이 커서 눈이 갑니다. 하지만 현장에서는 적요란이 더 중요할 때가 많습니다. 전화 먼저, 시간 지정, 짐 정보, 상하차 조건, 혼적 가능 여부, 직송 요청 같은 내용이 여기 들어갑니다.</p>\n    <p>같은 12만원이라도 박스 하나를 바로 싣고 내리는 오더와, 시간 맞춰 들어가야 하고 상하차가 까다로운 오더는 완전히 다릅니다. 장거리에서는 <span class=\"hi\">짐이 뭔지, 몇 개인지, 누가 싣고 내리는지, 언제까지 가야 하는지</span>가 실제 판단을 바꿉니다.</p>\n\n    <div class=\"pull\">\n      <div class=\"pt\">장거리 오더를 볼 때 같이 봐야 할 것</div>\n      <p><b>금액</b>만 보지 말고, 먼저 <b>대략 몇 시간이 묶이는지</b>를 봐야 합니다. 거리와 km당 금액은 그 시간을 가늠하기 위한 참고 지표입니다. 그다음 적요란에서 짐 정보와 상하차 조건, 시간 조건을 확인해야 합니다. 큰 금액처럼 보여도 시간이 오래 묶이면 하루 효율은 떨어질 수 있습니다.</p>\n    </div>\n\n    <p>문제는 적요란이 항상 친절하지 않다는 점입니다. 어떤 오더는 짐과 시간 조건이 자세히 적혀 있고, 어떤 오더는 중요한 내용이 빠져 있습니다. 장거리에서 이 차이는 큽니다. 정보가 부족하면 현장에 도착해서야 짐이 많거나, 상하차가 어렵거나, 대기 시간이 생기는 일이 벌어집니다.</p>\n    <p>그래서 장거리 오더는 금액 하나만 크게 보여주면 부족합니다. 금액, 거리, km당 금액도 필요하지만, 최종 판단은 시간입니다. 이 길이 편도로 몇 시간짜리인지, 상하차까지 붙으면 하루 중 몇 시간을 가져가는지, 적요란이 그 판단을 도와주는지까지 같이 봐야 합니다. 그래야 기사님이 “이 길을 지금 들어갈 만한가”를 더 빨리 판단할 수 있습니다.</p>\n  </div>\n\n  <div class=\"note\">\n    <b>읽는 기준.</b> 여기의 거리는 출발지에서 도착지까지의 직선거리 기준입니다. 실제 운행거리는 도로 상황에 따라 더 길어질 수 있습니다. 소요 시간은 도로 상황, 시간대, 상하차, 대기 여부에 따라 달라지므로 정확한 확정값이 아니라 판단을 돕기 위한 범위로 봐야 합니다. 전체 시장의 모든 오더를 뜻하지는 않습니다.\n  </div>\n\n  <div class=\"foot\">\n    QuickPilot 특별 리포트 · 2026.07.09 · 서울·수도권 출발 장거리 오더 흐름 읽기\n  </div>\n</div>\n</body>\n</html>\n"};</script>
+<!-- REPORT_DRAFT_DATA_END -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoZSnKoTu6nBdE0VfJAiCmWgjfKgLHqus",
+      authDomain: "quickpilot-39d72.firebaseapp.com",
+      databaseURL: "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "quickpilot-39d72",
+      storageBucket: "quickpilot-39d72.firebasestorage.app",
+      messagingSenderId: "530394028123",
+      appId: "1:530394028123:web:ab56e0951f214401d0c77e6",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const ownerEmail = "pnomade12@gmail.com";
+    const pageTitle = document.getElementById("pageTitle");
+    let reports = [
+      { id: "col1", number: "1호", title: "오더맵이 말해주는 3가지 진실", source: "column-1-ordermap.html", status: "발행 완료", published: true },
+      { id: "col2", number: "2호", title: "몇 시에 출근하고 몇 시에 퇴근해야 할까", source: "column-2-worktime.html", status: "발행 완료", published: true },
+      { id: "col3", number: "3호", title: "콜이 많은 곳은 좋은 곳일까", source: "column-3-crowd.html", status: "발행 완료", published: true },
+      { id: "special_memo", number: "특별", title: "적요의 미스터리 · 정작 짐 얘기는 어디에", source: "special-memo.html", status: "발행 완료", published: true },
+      { id: "col4", number: "4호", title: "장거리 고단가의 함정", source: "column-4-longhaul.html", status: "발행 완료", published: true },
+      { id: "col5", number: "5호", title: "짐을 많이 실을수록 요금을 많이 줄까?", source: "column-5-cargo-load.html", status: "발행 완료", published: true },
+      { id: "col6", number: "6호", title: "기사가 꼭 해야 되는 것 다섯 가지, 절대 하지 말아야 되는 것 다섯 가지", source: "column-6-memo-rules.html", status: "발행 대기" },
+      { id: "col7", number: "7호", title: "하차지는 다음 상차지가 될 수 있을까", source: "column-7-destination-origin.html", status: "발행 대기" },
+      { id: "night", number: "초안", title: "저녁에도 일이 있을까", source: "drafts/column-3-night.html", status: "보관 초안" },
+      { id: "weekend", number: "초안", title: "주말엔 어떻게 일해야 할까", source: "drafts/column-3-weekend.html", status: "보관 초안" },
+      { id: "longhaul-special", number: "특별", title: "서울에서 멀리 갈 때, 얼마면 잡을 만한가", source: "special-longhaul-report-20260709.html", status: "웹 공개 · 앱 미등록" },
+    ];
+    const storageKey = (id) => `quickpilot-report-editor:${id}`;
+    const notesKey = (id) => `quickpilot-report-editor-notes:${id}`;
+    const storageMetaKey = (id) => `quickpilot-report-editor:${id}:updated`;
+    const autoStorageKey = (id) => `quickpilot-report-editor-autosave:${id}`;
+    const autoNotesKey = (id) => `quickpilot-report-editor-autosave-notes:${id}`;
+    const autoMetaKey = (id) => `quickpilot-report-editor-autosave:${id}:updated`;
+    const storageTitleKey = (id) => `quickpilot-report-editor:${id}:title`;
+    const autoTitleKey = (id) => `quickpilot-report-editor-autosave:${id}:title`;
+    const status = document.getElementById("status");
+    const editorBlocks = document.getElementById("editorBlocks");
+    const saveButton = document.getElementById("saveButton");
+    const resetButton = document.getElementById("resetButton");
+    const backLink = document.querySelector(".back");
+    const exitModal = document.getElementById("exitModal");
+    const exitSaveButton = document.getElementById("exitSaveButton");
+    const exitDiscardButton = document.getElementById("exitDiscardButton");
+    const exitCancelButton = document.getElementById("exitCancelButton");
+    let selected = null;
+    let sourceHtml = "";
+    let currentUser = null;
+    let editorModel = null;
+    let notesByVisual = {};
+    let hasUnsavedChanges = false;
+    let pendingExit = null;
+    let exitInProgress = false;
+    let autoSaveTimer = null;
+    let editRevision = 0;
+    let authReadyResolve;
+    const authReady = new Promise((resolve) => { authReadyResolve = resolve; });
+    let authReadyDone = false;
+
+    function setStatus(message, isEditing = false) {
+      status.textContent = message;
+      status.classList.toggle("editing", isEditing);
+    }
+
+    function markDirty() {
+      hasUnsavedChanges = true;
+      editRevision += 1;
+      setStatus("수정 내용이 있습니다. 저장하세요.", true);
+      scheduleAutoSave();
+    }
+
+    function draftRef(report) {
+      return db.ref(`v1/report_editor_drafts/${report.id}`);
+    }
+
+    function notesRef(report) {
+      return db.ref(`v1/report_editor_notes/${report.id}`);
+    }
+
+    function refreshControls() {
+      const ready = Boolean(selected);
+      saveButton.disabled = !ready;
+      resetButton.disabled = !ready;
+      editorBlocks.querySelectorAll("textarea").forEach((field) => { field.disabled = !ready; });
+    }
+
+    const visualSelector = ".hours, .rbar, .donut, .dtable, .stat, .vs, .metric, .bars, .omap, .hero, .cloud, .symbols, .chips";
+
+    function isVisualRoot(element) {
+      return element.matches(visualSelector)
+        || (element.classList.contains("card")
+          && element.querySelector(".bar, .hours, .rbar, .donut, .dtable, .stat, .vs, .metric, .bars, .omap, svg"));
+    }
+
+    function isEditableElement(element) {
+      const tag = element.tagName.toLowerCase();
+      return ["h1", "h2", "h3", "p", "li", "footer"].includes(tag)
+        || element.classList.contains("kicker")
+        || element.classList.contains("subhead");
+    }
+
+    function cleanReportTitle(title) {
+      return String(title || "")
+        .replace(/^QP\s+/, "")
+        .replace(/^데이터 리포트\s+\d+호\s*·\s*/, "")
+        .replace(/^특별분석\s*·\s*/, "")
+        .replace(/^특별 분석\s*·\s*/, "")
+        .replace(/^특별\s*·\s*/, "")
+        .trim();
+    }
+
+    function appTitlePrefix(report) {
+      if (!report) return "리포트";
+      if (report.number === "특별") return "QP 특별분석";
+      if (report.number === "초안") return "리포트 초안";
+      return `데이터 리포트 ${report.number}`;
+    }
+
+    function appTitleFor(report, title) {
+      return `${appTitlePrefix(report)} · ${cleanReportTitle(title)}`.trim();
+    }
+
+    function bodyTitleFromAppTitle(value) {
+      const text = String(value || "").trim();
+      const separator = text.indexOf(" · ");
+      return separator >= 0 ? text.slice(separator + 3).trim() : text;
+    }
+
+    function collectEditableElements(document) {
+      const elements = [];
+      function walk(element) {
+        if (isVisualRoot(element)) return;
+        if (isEditableElement(element)) {
+          elements.push(element);
+          return;
+        }
+        for (const child of element.children) walk(child);
+      }
+      walk(document.body);
+      return elements;
+    }
+
+    function plainText(element) {
+      const clone = element.cloneNode(true);
+      clone.querySelectorAll("br").forEach((br) => br.replaceWith("\n"));
+      clone.querySelectorAll(".num").forEach((number) => number.remove());
+      return clone.textContent.replace(/\r/g, "").trim();
+    }
+
+    function markdownPrefix(element) {
+      const tag = element.tagName.toLowerCase();
+      if (tag === "h1") return "# ";
+      if (tag === "h2") return "## ";
+      if (tag === "h3") return "### ";
+      if (tag === "li") return "- ";
+      return "";
+    }
+
+    function htmlToMarkdown(html) {
+      const document = new DOMParser().parseFromString(html, "text/html");
+      const lines = [];
+      let visualNumber = 0;
+
+      function walk(element) {
+        if (isVisualRoot(element)) {
+          visualNumber += 1;
+          lines.push(`<!-- 시각화 자료 ${visualNumber}: 저장할 때 그대로 유지 -->`, "");
+          return;
+        }
+        if (isEditableElement(element)) {
+          const text = plainText(element).replace(/<!--/g, "&lt;!--");
+          if (text) lines.push(markdownPrefix(element) + text, "");
+          return;
+        }
+        for (const child of element.children) walk(child);
+      }
+
+      walk(document.body);
+      return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+    }
+
+    function parseMarkdown(markdown) {
+      const blocks = [];
+      let current = null;
+      const flush = () => {
+        if (!current) return;
+        const text = current.lines.join("\n").trim();
+        if (text) blocks.push({ type: current.type, text });
+        current = null;
+      };
+      for (const rawLine of markdown.replace(/\r/g, "").split("\n")) {
+        const line = rawLine.trimEnd();
+        if (!line.trim() || line.trim().startsWith("<!--")) {
+          flush();
+          continue;
+        }
+        const heading = line.match(/^(#{1,3})\s+(.*)$/);
+        if (heading) {
+          flush();
+          current = { type: `h${heading[1].length}`, lines: [heading[2]] };
+          continue;
+        }
+        const item = line.match(/^[-*]\s+(.*)$/);
+        if (item) {
+          flush();
+          blocks.push({ type: "li", text: item[1].trim() });
+          continue;
+        }
+        if (!current) current = { type: "p", lines: [] };
+        current.lines.push(line);
+      }
+      flush();
+      return blocks;
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
+    }
+
+    function inlineMarkdownToHtml(text) {
+      return escapeHtml(text)
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+        .replace(/__([^_]+)__/g, "<strong>$1</strong>")
+        .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+        .replace(/  \n/g, "<br>")
+        .replace(/\n/g, "<br>");
+    }
+
+    function setElementText(element, text) {
+      const number = element.querySelector(":scope > .num");
+      if (number) {
+        const target = [...element.children].find((child) => child !== number);
+        if (target) target.innerHTML = inlineMarkdownToHtml(text);
+        return;
+      }
+      element.innerHTML = inlineMarkdownToHtml(text);
+    }
+
+    function applyMarkdownToHtml(html, markdown) {
+      const document = new DOMParser().parseFromString(html, "text/html");
+      const elements = collectEditableElements(document);
+      const blocks = parseMarkdown(markdown);
+      const count = Math.min(elements.length, blocks.length);
+      for (let index = 0; index < count; index += 1) {
+        setElementText(elements[index], blocks[index].text);
+      }
+      return {
+        html: "<!doctype html>\n" + document.documentElement.outerHTML,
+        expected: elements.length,
+        received: blocks.length,
+      };
+    }
+
+    function buildBlockModel(html) {
+      const document = new DOMParser().parseFromString(html, "text/html");
+      const blocks = [];
+      let visualNumber = 0;
+      let titleFound = false;
+
+      function walk(element) {
+        if (isVisualRoot(element)) {
+          visualNumber += 1;
+          const id = `visual-${String(visualNumber).padStart(2, "0")}`;
+          element.dataset.editorVisualId = id;
+          blocks.push({ kind: "visual", id });
+          return;
+        }
+        if (isEditableElement(element)) {
+          const text = plainText(element);
+          if (text) {
+            const isTitle = element.tagName.toLowerCase() === "h1" && !titleFound;
+            if (isTitle) titleFound = true;
+            blocks.push({
+              kind: "text",
+              value: isTitle ? appTitleFor(selected, text) : markdownPrefix(element) + text,
+              role: isTitle ? "app-title" : "",
+            });
+          }
+          return;
+        }
+        for (const child of element.children) walk(child);
+      }
+
+      walk(document.body);
+      return {
+        html: "<!doctype html>\n" + document.documentElement.outerHTML,
+        blocks,
+      };
+    }
+
+    function growTextarea(field) {
+      field.style.height = "auto";
+      field.style.height = `${Math.max(field.scrollHeight, 48)}px`;
+    }
+
+    function resizeEditorFields() {
+      editorBlocks.querySelectorAll("textarea").forEach(growTextarea);
+    }
+
+    function isolateVisualFrame(iframe, visualId) {
+      try {
+        const document = iframe.contentDocument;
+        const target = document.querySelector(`[data-editor-visual-id="${visualId}"]`);
+        if (!target) return;
+        document.body.querySelectorAll("*").forEach((element) => {
+          if (element === target || target.contains(element) || element.contains(target)) return;
+          element.style.display = "none";
+        });
+        document.querySelectorAll(".sheet, .wrap").forEach((element) => {
+          element.style.minHeight = "0";
+        });
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+        requestAnimationFrame(() => {
+          const bottom = target.getBoundingClientRect().bottom + 24;
+          iframe.style.height = `${Math.max(100, Math.ceil(bottom))}px`;
+        });
+      } catch (error) {
+        iframe.style.height = "120px";
+      }
+    }
+
+    function renderBlocks(model, savedNotes = {}, savedAppTitle = "") {
+      editorModel = model;
+      notesByVisual = savedNotes && typeof savedNotes === "object" ? savedNotes : {};
+      pageTitle.textContent = savedAppTitle || appTitleFor(selected, selected?.title);
+      editorBlocks.replaceChildren();
+      model.blocks.forEach((block) => {
+        if (block.kind === "text") {
+          const field = document.createElement("textarea");
+          field.className = "text-block";
+          field.spellcheck = false;
+          field.value = block.role === "app-title" && savedAppTitle ? savedAppTitle : block.value;
+          if (block.role) field.dataset.role = block.role;
+          if (block.role === "app-title") {
+            const label = document.createElement("div");
+            label.className = "block-label";
+            label.textContent = "앱 제목";
+            field.setAttribute("aria-label", "앱 제목 수정");
+            pageTitle.textContent = field.value.trim();
+            editorBlocks.appendChild(label);
+          }
+          field.addEventListener("input", () => {
+            growTextarea(field);
+            if (field.dataset.role === "app-title") pageTitle.textContent = field.value.trim();
+            markDirty();
+          });
+          editorBlocks.appendChild(field);
+          growTextarea(field);
+          return;
+        }
+
+        const visual = document.createElement("section");
+        visual.className = "visual-block";
+        const caption = document.createElement("div");
+        caption.className = "visual-caption";
+        caption.textContent = `시각화 ${block.id.replace("visual-", "")}`;
+        const frame = document.createElement("iframe");
+        frame.className = "visual-frame";
+        frame.title = `${selected?.title || "리포트"} ${caption.textContent}`;
+        frame.setAttribute("scrolling", "no");
+        frame.setAttribute("sandbox", "allow-scripts allow-same-origin");
+        frame.srcdoc = model.html;
+        frame.addEventListener("load", () => isolateVisualFrame(frame, block.id));
+        const note = document.createElement("textarea");
+        note.className = "visual-note";
+        note.dataset.visualId = block.id;
+        note.placeholder = "이 시각화에 수정·변경 요청을 적으세요";
+        note.value = notesByVisual[block.id]?.text || "";
+        note.addEventListener("input", () => {
+          growTextarea(note);
+          markDirty();
+        });
+        visual.append(caption, frame, note);
+        editorBlocks.appendChild(visual);
+        growTextarea(note);
+      });
+      hasUnsavedChanges = false;
+      refreshControls();
+    }
+
+    window.addEventListener("resize", () => requestAnimationFrame(resizeEditorFields));
+
+    function collectNotes() {
+      const notes = {};
+      editorBlocks.querySelectorAll(".visual-note").forEach((field) => {
+        const text = field.value.trim();
+        if (text) notes[field.dataset.visualId] = { text };
+      });
+      return notes;
+    }
+
+    function collectTextMarkdown() {
+      return [...editorBlocks.querySelectorAll(".text-block")]
+        .map((field) => {
+          const value = field.value.replace(/\r/g, "").trim();
+          return field.dataset.role === "app-title" ? `# ${bodyTitleFromAppTitle(value)}` : value;
+        })
+        .filter(Boolean)
+        .join("\n\n");
+    }
+
+    function collectAppTitle() {
+      return editorBlocks.querySelector('.text-block[data-role="app-title"]')?.value.trim()
+        || appTitleFor(selected, selected?.title);
+    }
+
+    function saveLocalDraft(html, notes, automatic, title = collectAppTitle()) {
+      const htmlKey = automatic ? autoStorageKey(selected.id) : storageKey(selected.id);
+      const noteKey = automatic ? autoNotesKey(selected.id) : notesKey(selected.id);
+      const metaKey = automatic ? autoMetaKey(selected.id) : storageMetaKey(selected.id);
+      const titleKey = automatic ? autoTitleKey(selected.id) : storageTitleKey(selected.id);
+      localStorage.setItem(htmlKey, html);
+      localStorage.setItem(noteKey, JSON.stringify(notes));
+      localStorage.setItem(metaKey, String(Date.now()));
+      localStorage.setItem(titleKey, title);
+    }
+
+    function clearLocalDraft(automatic) {
+      const htmlKey = automatic ? autoStorageKey(selected.id) : storageKey(selected.id);
+      const noteKey = automatic ? autoNotesKey(selected.id) : notesKey(selected.id);
+      const metaKey = automatic ? autoMetaKey(selected.id) : storageMetaKey(selected.id);
+      const titleKey = automatic ? autoTitleKey(selected.id) : storageTitleKey(selected.id);
+      localStorage.removeItem(htmlKey);
+      localStorage.removeItem(noteKey);
+      localStorage.removeItem(metaKey);
+      localStorage.removeItem(titleKey);
+    }
+
+    async function writeDraftToServer(html, notes, title) {
+      if (!currentUser) return false;
+      const actor = currentUser.email || currentUser.uid || "editor";
+      const noteData = {};
+      Object.entries(notes).forEach(([visualId, value]) => {
+        noteData[visualId] = {
+          text: value.text,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP,
+          updatedBy: actor,
+        };
+      });
+      await db.ref("v1").update({
+        [`report_editor_drafts/${selected.id}`]: {
+          title,
+          html,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP,
+          updatedBy: actor,
+        },
+        [`report_editor_notes/${selected.id}`]: noteData,
+      });
+      return true;
+    }
+
+    function buildAutoDraftLocally() {
+      if (!selected || !sourceHtml || !hasUnsavedChanges) return false;
+      const html = buildSavedHtml(true);
+      if (!html) return false;
+      saveLocalDraft(html, collectNotes(), true, collectAppTitle());
+      return true;
+    }
+
+    async function autoSaveCurrentReport(revision) {
+      if (!selected || !sourceHtml || !hasUnsavedChanges || revision !== editRevision) return;
+      const html = buildSavedHtml(true);
+      if (!html) return;
+      const notes = collectNotes();
+      const title = collectAppTitle();
+      saveLocalDraft(html, notes, true, title);
+      if (revision === editRevision) {
+        hasUnsavedChanges = false;
+        setStatus("자동 저장되었습니다. 이 기기에 보관했습니다.");
+      }
+      let serverSaved = false;
+      if (currentUser && revision === editRevision) {
+        try {
+          serverSaved = await writeDraftToServer(html, notes, title);
+        } catch (error) {
+          serverSaved = false;
+        }
+      }
+      if (revision !== editRevision) return;
+      if (serverSaved) setStatus("자동 저장되었습니다.");
+    }
+
+    function scheduleAutoSave() {
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        autoSaveTimer = null;
+        void autoSaveCurrentReport(editRevision);
+      }, 900);
+    }
+
+    auth.onAuthStateChanged((user) => {
+      currentUser = user || null;
+      if (!authReadyDone) {
+        authReadyDone = true;
+        authReadyResolve(currentUser);
+      }
+      refreshControls();
+    });
+
+    async function ensureEditorSession() {
+      await authReady;
+      if (currentUser) return currentUser;
+      try {
+        await auth.signInAnonymously();
+        return currentUser;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function sourceFromUrl(url) {
+      try {
+        return new URL(url, location.href).pathname.replace(/^\/+/, "");
+      } catch (error) {
+        return "";
+      }
+    }
+
+    async function syncPublishedReports() {
+      const response = await fetch(`${firebaseConfig.databaseURL}/v1/reports.json?editor=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const live = await response.json() || {};
+      for (const [id, record] of Object.entries(live)) {
+        if (!record || typeof record !== "object") continue;
+        const source = sourceFromUrl(record.url);
+        if (!source) continue;
+        const existing = reports.find((report) => report.id === id);
+        if (existing) {
+          existing.title = record.title || existing.title;
+          existing.source = source;
+          existing.published = true;
+          existing.status = "발행 완료";
+        } else {
+          reports.push({ id, number: id.match(/^col(\d+)$/)?.[1] ? `${id.match(/^col(\d+)$/)[1]}호` : "특별", title: record.title || id, source, status: "발행 완료", published: true });
+        }
+      }
+    }
+
+    async function loadReport(report) {
+      selected = report;
+      pageTitle.textContent = appTitleFor(report, report.title);
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = null;
+      hasUnsavedChanges = false;
+      refreshControls();
+      setStatus("초안을 불러오는 중입니다.");
+      try {
+        let serverHtml = "";
+        let serverTitle = "";
+        let serverNotes = {};
+        let serverUpdatedAt = 0;
+        if (currentUser) {
+          try {
+            const snapshot = await draftRef(report).once("value");
+            const record = snapshot.val() || {};
+            serverHtml = record.html || "";
+            serverTitle = record.title || "";
+            serverUpdatedAt = Number(record.updatedAt) || 0;
+          } catch (error) {
+            serverHtml = "";
+          }
+          try {
+            const snapshot = await notesRef(report).once("value");
+            serverNotes = snapshot.val() || {};
+          } catch (error) {
+            serverNotes = {};
+          }
+        }
+        const saved = localStorage.getItem(storageKey(report.id));
+        const autoSaved = localStorage.getItem(autoStorageKey(report.id));
+        const savedTitle = localStorage.getItem(storageTitleKey(report.id)) || "";
+        const autoTitle = localStorage.getItem(autoTitleKey(report.id)) || "";
+        const savedAt = Number(localStorage.getItem(storageMetaKey(report.id))) || 0;
+        const autoSavedAt = Number(localStorage.getItem(autoMetaKey(report.id))) || 0;
+        let localNotes = {};
+        let autoNotes = {};
+        try {
+          localNotes = JSON.parse(localStorage.getItem(notesKey(report.id)) || "{}");
+        } catch (error) {
+          localNotes = {};
+        }
+        try {
+          autoNotes = JSON.parse(localStorage.getItem(autoNotesKey(report.id)) || "{}");
+        } catch (error) {
+          autoNotes = {};
+        }
+
+        const serverIsNewest = serverHtml && serverUpdatedAt >= Math.max(savedAt, autoSavedAt);
+        const autoIsNewest = autoSaved && autoSavedAt >= savedAt && autoSavedAt > serverUpdatedAt;
+        let loadedTitle = appTitleFor(report, report.title);
+        if (serverIsNewest) {
+          sourceHtml = serverHtml;
+          loadedTitle = serverTitle || loadedTitle;
+          setStatus("서버에 저장된 수정본을 열었습니다.");
+          notesByVisual = serverNotes;
+        } else if (autoIsNewest) {
+          sourceHtml = autoSaved;
+          loadedTitle = autoTitle || loadedTitle;
+          setStatus("자동 저장된 수정본을 열었습니다.");
+          notesByVisual = autoNotes;
+        } else if (saved) {
+          sourceHtml = saved;
+          loadedTitle = savedTitle || loadedTitle;
+          setStatus("이 휴대폰에 저장한 수정본을 열었습니다.");
+          notesByVisual = localNotes;
+        } else if (serverHtml) {
+          sourceHtml = serverHtml;
+          loadedTitle = serverTitle || loadedTitle;
+          setStatus("서버에 저장된 수정본을 열었습니다.");
+          notesByVisual = serverNotes;
+        } else {
+          sourceHtml = window.REPORT_DRAFTS[report.source] || "";
+          if (!sourceHtml) {
+            const response = await fetch(report.source, { cache: "no-store" });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            sourceHtml = await response.text();
+          }
+          setStatus("원본 초안을 열었습니다.");
+          notesByVisual = {};
+        }
+        const model = buildBlockModel(sourceHtml);
+        renderBlocks(model, notesByVisual, loadedTitle);
+        refreshControls();
+      } catch (error) {
+        sourceHtml = "";
+        editorModel = null;
+        notesByVisual = {};
+        editorBlocks.replaceChildren();
+        setStatus("초안을 불러오지 못했습니다. 새로고침해 주세요.");
+      }
+    }
+
+    function buildSavedHtml(silent = false) {
+      if (!selected || !sourceHtml) return "";
+      const result = applyMarkdownToHtml(sourceHtml, collectTextMarkdown());
+      const structureMessage = result.expected === result.received
+        ? "마크다운 내용을 저장할 수 있습니다."
+        : `제목·문단 수가 원본과 다릅니다. 반영 ${Math.min(result.expected, result.received)}개 / 원본 ${result.expected}개`;
+      if (!silent) setStatus(structureMessage, result.expected !== result.received);
+      return result.html;
+    }
+
+    async function saveCurrentReport() {
+      if (!selected) return false;
+      const html = buildSavedHtml();
+      if (!html) return false;
+      const notes = collectNotes();
+      const title = collectAppTitle();
+      let serverSaved = false;
+      try {
+        saveLocalDraft(html, notes, false, title);
+        serverSaved = await writeDraftToServer(html, notes, title);
+        clearLocalDraft(true);
+        sourceHtml = html;
+      } catch (error) {
+        try { saveLocalDraft(html, notes, false, title); } catch (localError) { /* keep the editor open */ }
+        clearLocalDraft(true);
+        sourceHtml = html;
+      }
+      hasUnsavedChanges = false;
+      setStatus(serverSaved ? "서버에 저장했습니다. 아직 공개되지 않았습니다." : "서버 연결 없이 이 기기에 저장했습니다.");
+      return true;
+    }
+
+    saveButton.addEventListener("click", saveCurrentReport);
+
+    resetButton.addEventListener("click", async () => {
+      if (!selected || !confirm("이 휴대폰에 저장한 수정본을 지우고 원본 초안으로 돌아갈까요?")) return;
+      try {
+        clearLocalDraft(false);
+        clearLocalDraft(true);
+        if (currentUser) {
+          await draftRef(selected).remove();
+          await notesRef(selected).remove();
+        }
+        await loadReport(selected);
+        setStatus("저장한 수정본을 지우고 원본 초안을 다시 열었습니다.");
+      } catch (error) {
+        setStatus("저장본을 지우지 못했습니다.");
+      }
+    });
+
+    function closeExitModal() {
+      exitModal.hidden = true;
+      pendingExit = null;
+      exitSaveButton.disabled = false;
+      exitDiscardButton.disabled = false;
+      exitCancelButton.disabled = false;
+    }
+
+    function navigateAfterExit(exit) {
+      if (!exit) return;
+      exitInProgress = true;
+      closeExitModal();
+      if (exit.mode === "history") {
+        history.go(exit.steps);
+      } else {
+        location.href = exit.href;
+      }
+    }
+
+    function requestExit(exit) {
+      if (exitInProgress) return;
+      if (!hasUnsavedChanges) {
+        navigateAfterExit(exit);
+        return;
+      }
+      pendingExit = exit;
+      exitModal.hidden = false;
+      exitCancelButton.focus();
+    }
+
+    backLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      requestExit({ mode: "location", href: backLink.href });
+    });
+
+    exitCancelButton.addEventListener("click", closeExitModal);
+
+    exitDiscardButton.addEventListener("click", () => {
+      const exit = pendingExit;
+      if (selected) clearLocalDraft(true);
+      hasUnsavedChanges = false;
+      navigateAfterExit(exit);
+    });
+
+    exitSaveButton.addEventListener("click", async () => {
+      const exit = pendingExit;
+      if (!exit) return;
+      exitSaveButton.disabled = true;
+      exitDiscardButton.disabled = true;
+      exitCancelButton.disabled = true;
+      setStatus("저장하는 중입니다.");
+      const saved = await saveCurrentReport();
+      if (saved) {
+        navigateAfterExit(exit);
+      } else {
+        exitSaveButton.disabled = false;
+        exitDiscardButton.disabled = false;
+        exitCancelButton.disabled = false;
+        setStatus("저장하지 못했습니다. 계속 편집할 수 있습니다.", true);
+      }
+    });
+
+    exitModal.addEventListener("click", (event) => {
+      if (event.target === exitModal) closeExitModal();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !exitModal.hidden) closeExitModal();
+    });
+
+    history.pushState({ reportEditorGuard: true }, "", location.href);
+    window.addEventListener("popstate", () => {
+      if (exitInProgress) return;
+      if (!exitModal.hidden) {
+        history.pushState({ reportEditorGuard: true }, "", location.href);
+        return;
+      }
+      if (hasUnsavedChanges) {
+        history.pushState({ reportEditorGuard: true }, "", location.href);
+        requestExit({ mode: "history", steps: -2 });
+        return;
+      }
+      exitInProgress = true;
+      history.go(-1);
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") buildAutoDraftLocally();
+    });
+
+    window.addEventListener("pagehide", buildAutoDraftLocally);
+
+    window.addEventListener("beforeunload", (event) => {
+      if (!hasUnsavedChanges || exitInProgress) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
+
+    (async () => {
+      try {
+        await syncPublishedReports();
+      } catch (error) {
+        setStatus("발행 목록 동기화에 실패했습니다. 저장된 초안을 먼저 확인합니다.");
+      }
+      const requestedId = new URLSearchParams(location.search).get("id") || "col6";
+      const report = reports.find((item) => item.id === requestedId);
+      if (!report) {
+        setStatus("선택한 리포트를 찾지 못했습니다.");
+        return;
+      }
+      await ensureEditorSession();
+      await loadReport(report);
+    })();
+  </script>
+</body>
+</html>

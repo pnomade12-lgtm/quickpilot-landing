@@ -1,0 +1,22 @@
+{
+  "hosting": {
+    "site": "quickpilot-report-editor",
+    "public": "report-editor-hosting",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate, max-age=0"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>데이터 리포트 목록</title>
+  <style>
+    :root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069}
+    *{box-sizing:border-box}
+    body{margin:0;background:#e8dec9;color:var(--tm);font-family:-apple-system,"Noto Sans KR",sans-serif;line-height:1.55;-webkit-text-size-adjust:100%}
+    main{max-width:760px;min-height:100vh;margin:0 auto;padding:24px 16px 44px;background:var(--bg)}
+    .kicker{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.08em}
+    h1{margin:5px 0 4px;font-size:24px;line-height:1.3}
+    .desc{margin:0 0 18px;color:var(--ts);font-size:14px;word-break:keep-all}
+    .sync{min-height:20px;margin:0 0 17px;color:var(--ts);font-size:12px}
+    .group{margin:0 0 26px}
+    .group h2{display:flex;align-items:baseline;gap:7px;margin:0 0 8px;padding-bottom:7px;border-bottom:1px solid var(--bd);font-size:15px;line-height:1.35}
+    .group h2 span{color:var(--ts);font-size:12px;font-weight:400}
+    .report{display:flex;align-items:center;gap:10px;width:100%;margin:7px 0;padding:13px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tm);text-decoration:none}
+    .report:active{background:#f4f8ef}
+    .badge{display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;border-radius:8px;background:var(--tm);color:#fff;font-size:12px;font-weight:800}
+    .copy{min-width:0;flex:1}
+    .title{display:block;font-size:14px;font-weight:800;line-height:1.4;word-break:keep-all}
+    .meta{display:block;margin-top:3px;color:var(--ts);font-size:12px;line-height:1.35;word-break:keep-all}
+    .date{color:#8d806b;font-size:11px;white-space:nowrap}
+    .pending{background:#f3ecdf}
+    .pending .badge{background:#a59a86;color:#f8f1e5}
+    .pending .title{color:#9b907d}
+    .pending .meta{color:#aaa08f}
+    .published .title{color:var(--tm)}
+    .empty{margin:10px 0;color:var(--ts);font-size:13px}
+    @media(max-width:430px){main{padding:21px 12px 36px}h1{font-size:22px}.report{padding:12px}.title{font-size:13.5px}.date{font-size:10.5px}}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="kicker">데이터 리포트 · 편집 전용</div>
+    <h1>리포트 목록</h1>
+    <p class="desc">미발행 글은 위에, 발행된 글은 실제 발행 순서대로 아래에 표시됩니다. 제목을 누르면 편집 화면으로 이동합니다.</p>
+    <div class="sync" id="syncStatus" aria-live="polite">발행 목록을 확인하는 중입니다.</div>
+
+    <section class="group">
+      <h2>미발행 · 편집 대기 <span id="pendingCount"></span></h2>
+      <div id="pendingList"></div>
+    </section>
+
+    <section class="group">
+      <h2>발행 완료 · 최신 발행순 <span id="publishedCount"></span></h2>
+      <div id="publishedList"></div>
+    </section>
+  </main>
+  <script>
+    const databaseUrl = "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app";
+    const pendingReports = [
+      { id: "col6", number: "6호", title: "기사가 꼭 해야 되는 것 다섯 가지, 절대 하지 말아야 되는 것 다섯 가지", status: "발행 대기", source: "column-6-memo-rules.html" },
+      { id: "col7", number: "7호", title: "하차지는 다음 상차지가 될 수 있을까", status: "발행 대기", source: "column-7-destination-origin.html" },
+      { id: "night", number: "초안", title: "저녁에도 일이 있을까", status: "보관 초안", source: "drafts/column-3-night.html" },
+      { id: "weekend", number: "초안", title: "주말엔 어떻게 일해야 할까", status: "보관 초안", source: "drafts/column-3-weekend.html" },
+      { id: "longhaul-special", number: "특별", title: "서울에서 멀리 갈 때, 얼마면 잡을 만한가", status: "웹 공개 · 앱 미등록", source: "special-longhaul-report-20260709.html" },
+    ];
+    const knownPublished = [
+      { id: "col1", number: "1호", title: "오더맵이 말해주는 3가지 진실", url: "column-1-ordermap.html", ts: 1780988851895 },
+      { id: "col2", number: "2호", title: "몇 시에 출근하고 몇 시에 퇴근해야 할까", url: "column-2-worktime.html", ts: 1781140688199 },
+      { id: "col3", number: "3호", title: "콜이 많은 곳은 좋은 곳일까", url: "column-3-crowd.html", ts: 1781833382915 },
+      { id: "special_memo", number: "특별", title: "적요의 미스터리 · 정작 짐 얘기는 어디에", url: "special-memo.html", ts: 1781925255335 },
+      { id: "col4", number: "4호", title: "장거리 고단가의 함정", url: "column-4-longhaul.html", ts: 1782008007087 },
+      { id: "col5", number: "5호", title: "짐을 많이 실을수록 요금을 많이 줄까?", url: "column-5-cargo-load.html", ts: 1783060793277 },
+    ];
+
+    const pendingList = document.getElementById("pendingList");
+    const publishedList = document.getElementById("publishedList");
+    const pendingCount = document.getElementById("pendingCount");
+    const publishedCount = document.getElementById("publishedCount");
+    const syncStatus = document.getElementById("syncStatus");
+
+    function cleanTitle(title) {
+      return String(title || "")
+        .replace(/^QP\s+/, "")
+        .replace(/^데이터 리포트\s+\d+호\s*·\s*/, "")
+        .replace(/^특별분석\s*·\s*/, "")
+        .replace(/^특별 분석\s*·\s*/, "")
+        .trim();
+    }
+
+    function numberFor(id, title) {
+      const match = String(id).match(/^col(\d+)$/);
+      if (match) return `${match[1]}호`;
+      if (id === "special_memo" || String(title).includes("특별")) return "특별";
+      return "리포트";
+    }
+
+    function dateLabel(ts) {
+      if (!Number.isFinite(Number(ts))) return "";
+      return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", year: "numeric", month: "numeric", day: "numeric" }).format(new Date(Number(ts)));
+    }
+
+    function addLink(container, report, kind) {
+      const link = document.createElement("a");
+      link.className = `report ${kind}`;
+      link.href = `report-editor-edit.html?id=${encodeURIComponent(report.id)}`;
+
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = report.number;
+
+      const copy = document.createElement("span");
+      copy.className = "copy";
+      const title = document.createElement("strong");
+      title.className = "title";
+      title.textContent = cleanTitle(report.title);
+      const meta = document.createElement("span");
+      meta.className = "meta";
+      meta.textContent = report.status || "발행 완료";
+      copy.append(title, meta);
+
+      const date = document.createElement("span");
+      date.className = "date";
+      date.textContent = dateLabel(report.ts);
+      link.append(badge, copy, date);
+      container.appendChild(link);
+    }
+
+    function render(published, syncMessage) {
+      const publishedIds = new Set(published.map((report) => report.id));
+      const visiblePending = pendingReports.filter((report) => !publishedIds.has(report.id));
+      pendingList.replaceChildren();
+      publishedList.replaceChildren();
+      visiblePending.forEach((report) => addLink(pendingList, report, "pending"));
+      published.forEach((report) => addLink(publishedList, report, "published"));
+      if (!visiblePending.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "현재 미발행 목록이 없습니다.";
+        pendingList.appendChild(empty);
+      }
+      if (!published.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "발행 목록이 없습니다.";
+        publishedList.appendChild(empty);
+      }
+      pendingCount.textContent = `(${visiblePending.length})`;
+      publishedCount.textContent = `(${published.length})`;
+      syncStatus.textContent = syncMessage;
+    }
+
+    async function loadPublished() {
+      const response = await fetch(`${databaseUrl}/v1/reports.json?editor=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json() || {};
+      return Object.entries(data)
+        .filter(([, report]) => report && typeof report === "object" && report.url)
+        .map(([id, report]) => ({
+          id,
+          number: numberFor(id, report.title),
+          title: report.title || id,
+          url: report.url,
+          ts: Number(report.ts) || 0,
+          status: "발행 완료",
+        }))
+        .sort((a, b) => b.ts - a.ts);
+    }
+
+    (async () => {
+      try {
+        const published = await loadPublished();
+        render(published, `실제 발행 목록과 동기화됨 · ${new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`);
+      } catch (error) {
+        render([...knownPublished].sort((a, b) => b.ts - a.ts), "실시간 발행 목록을 불러오지 못해 마지막 확인 목록을 표시합니다.");
+      }
+    })();
+  </script>
+</body>
+</html>
