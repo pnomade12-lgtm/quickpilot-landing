@@ -73,6 +73,9 @@
     const pendingCount = document.getElementById("pendingCount");
     const publishedCount = document.getElementById("publishedCount");
     const syncStatus = document.getElementById("syncStatus");
+    let latestPublished = [];
+    let latestSyncMessage = "";
+    let listLoaded = false;
 
     function cleanTitle(title) {
       return String(title || "")
@@ -88,6 +91,26 @@
       if (match) return `${match[1]}호`;
       if (id === "special_memo" || String(title).includes("특별")) return "특별";
       return "리포트";
+    }
+
+    function localTitleFor(report) {
+      try {
+        const savedTitle = localStorage.getItem(`quickpilot-report-editor:${report.id}:title`) || "";
+        const autoTitle = localStorage.getItem(`quickpilot-report-editor-autosave:${report.id}:title`) || "";
+        const savedAt = Number(localStorage.getItem(`quickpilot-report-editor:${report.id}:updated`)) || 0;
+        const autoAt = Number(localStorage.getItem(`quickpilot-report-editor-autosave:${report.id}:updated`)) || 0;
+        if (autoTitle && autoAt > savedAt) return autoTitle;
+        return savedTitle;
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function withLocalTitles(reports) {
+      return reports.map((report) => ({
+        ...report,
+        title: localTitleFor(report) || report.title,
+      }));
     }
 
     function dateLabel(ts) {
@@ -122,26 +145,31 @@
     }
 
     function render(published, syncMessage) {
-      const publishedIds = new Set(published.map((report) => report.id));
-      const visiblePending = pendingReports.filter((report) => !publishedIds.has(report.id));
+      latestPublished = published;
+      latestSyncMessage = syncMessage;
+      listLoaded = true;
+      const displayedPublished = withLocalTitles(published);
+      const displayedPending = withLocalTitles(pendingReports);
+      const publishedIds = new Set(displayedPublished.map((report) => report.id));
+      const visiblePending = displayedPending.filter((report) => !publishedIds.has(report.id));
       pendingList.replaceChildren();
       publishedList.replaceChildren();
       visiblePending.forEach((report) => addLink(pendingList, report, "pending"));
-      published.forEach((report) => addLink(publishedList, report, "published"));
+      displayedPublished.forEach((report) => addLink(publishedList, report, "published"));
       if (!visiblePending.length) {
         const empty = document.createElement("div");
         empty.className = "empty";
         empty.textContent = "현재 미발행 목록이 없습니다.";
         pendingList.appendChild(empty);
       }
-      if (!published.length) {
+      if (!displayedPublished.length) {
         const empty = document.createElement("div");
         empty.className = "empty";
         empty.textContent = "발행 목록이 없습니다.";
         publishedList.appendChild(empty);
       }
       pendingCount.textContent = `(${visiblePending.length})`;
-      publishedCount.textContent = `(${published.length})`;
+      publishedCount.textContent = `(${displayedPublished.length})`;
       syncStatus.textContent = syncMessage;
     }
 
@@ -170,6 +198,10 @@
         render([...knownPublished].sort((a, b) => b.ts - a.ts), "실시간 발행 목록을 불러오지 못해 마지막 확인 목록을 표시합니다.");
       }
     })();
+
+    window.addEventListener("pageshow", () => {
+      if (listLoaded) render(latestPublished, latestSyncMessage);
+    });
   </script>
 </body>
 </html>
