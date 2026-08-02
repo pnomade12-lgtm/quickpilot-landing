@@ -10,15 +10,16 @@
   <style>
     :root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069;--red:#E0734A}
     *{box-sizing:border-box}
+    html,body{height:100%;overflow:hidden}
     body{margin:0;background:#e8dec9;color:var(--tm);font-family:-apple-system,"Noto Sans KR",sans-serif;line-height:1.55}
-    main{max-width:760px;min-height:100vh;margin:0 auto;padding:22px 16px 40px;background:var(--bg)}
+    main{display:flex;flex-direction:column;width:100%;height:100vh;height:100dvh;min-height:0;max-width:1100px;margin:0 auto;padding:12px 18px 12px;background:var(--bg);overflow:hidden}
     .kicker{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.08em}
     h1{margin:5px 0 4px;font-size:24px;line-height:1.3}
-    .desc{margin:0 0 18px;color:var(--ts);font-size:14px;word-break:keep-all}
-    .back{display:inline-block;margin:0 0 14px;color:var(--ts);font-size:13px;text-decoration:none}
+    .desc{display:none}
+    .back{display:inline-block;flex:0 0 auto;margin:0 0 8px;color:var(--ts);font-size:13px;text-decoration:none}
     .back:active{color:var(--tm)}
-    .notice{margin:14px 0;padding:12px 13px;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;background:#fffdf5;color:#5a4d2e;font-size:13px;word-break:keep-all}
-    .auth{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;padding:11px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--card);font-size:13px}
+    .notice{display:none}
+    .auth{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:0 0 auto;margin:8px 0;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);font-size:13px}
     .auth span{color:var(--ts);word-break:keep-all}
     .auth button{min-height:38px;padding:0 12px;white-space:nowrap}
     .list{display:grid;gap:8px;margin:14px 0}
@@ -29,18 +30,17 @@
     .report b,.report span{display:block;word-break:keep-all}
     .report b{font-size:14px;line-height:1.35}
     .report span{margin-top:2px;color:var(--ts);font-size:12px}
-    .toolbar{position:sticky;z-index:2;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px -16px 0;padding:12px 16px;background:rgba(245,238,224,.96);border-top:1px solid var(--bd)}
+    .toolbar{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;flex:0 0 auto;margin:8px -18px -12px;padding:10px 18px;background:rgba(245,238,224,.98);border-top:1px solid var(--bd)}
     button{min-height:44px;border:1px solid var(--bd);border-radius:7px;background:var(--card);color:var(--tm);font:inherit;font-size:14px;font-weight:800;cursor:pointer}
     button.primary{border-color:#668c53;background:var(--grn);color:#fff}
     button.warn{border-color:#d9a18d;color:#9a4429}
     button:disabled{opacity:.45;cursor:default}
-    .status{min-height:22px;margin:9px 2px;color:var(--ts);font-size:12px}
+    .status{flex:0 0 auto;min-height:19px;margin:5px 2px;color:var(--ts);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .status.editing{color:#9a4429;font-weight:800}
-    .editor-label{display:block;margin:16px 0 6px;color:var(--ts);font-size:12px;font-weight:800}
-    .markdown{display:block;width:100%;min-height:42vh;padding:13px;border:1px solid var(--bd);border-radius:8px;background:#fffdf8;color:var(--tm);font:14px/1.7 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono","Noto Sans Mono",monospace;resize:vertical;white-space:pre-wrap;overflow-wrap:anywhere}
+    .editor-label{display:block;flex:0 0 auto;margin:5px 0 5px;color:var(--ts);font-size:12px;font-weight:800}
+    .markdown{display:block;flex:1 1 auto;width:100%;min-height:0;padding:15px;border:1px solid var(--bd);border-radius:8px;background:#fffdf8;color:var(--tm);font:15px/1.75 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono","Noto Sans Mono",monospace;resize:none;white-space:pre-wrap;overflow:auto;overflow-wrap:anywhere}
     .markdown:focus{outline:2px solid rgba(127,176,105,.45);outline-offset:1px}
-    .preview{width:100%;height:72vh;min-height:560px;border:1px solid var(--bd);border-radius:8px;background:#fff}
-    @media(max-width:430px){main{padding:20px 12px 34px}h1{font-size:22px}.toolbar{margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}.preview{height:68vh;min-height:520px}.toolbar button{font-size:13px}.markdown{min-height:48vh;font-size:13px}}
+    @media(max-width:430px){main{padding:10px 10px 8px}h1{font-size:21px}.toolbar{margin-left:-10px;margin-right:-10px;padding-left:10px;padding-right:10px}.toolbar button{font-size:13px}.markdown{font-size:13px;padding:12px}}
   </style>
 </head>
 <body>
@@ -48,16 +48,12 @@
     <a class="back" href="report-editor.html">← 전체 목록</a>
     <div class="kicker">데이터 리포트 · 편집 전용</div>
     <h1 id="pageTitle">리포트 편집</h1>
-    <p class="desc">본문은 마크다운으로 고칩니다. 기존 시각화 자료는 원본 그대로 유지됩니다.</p>
     <div class="auth"><span id="authStatus">저장하려면 디렉터 계정으로 로그인하세요.</span><button id="authButton" type="button">로그인</button></div>
 
-    <div class="notice">저장한 수정본은 서버에 보관되지만 공개 페이지와 앱 목록은 바뀌지 않습니다. 발행은 별도 지시 뒤 진행합니다.</div>
     <div class="status" id="status" aria-live="polite">리포트를 고르세요.</div>
     <label class="editor-label" for="markdownEditor">본문 마크다운</label>
     <textarea class="markdown" id="markdownEditor" spellcheck="false" disabled></textarea>
-    <iframe class="preview" id="preview" title="리포트 미리보기" sandbox="allow-same-origin"></iframe>
     <div class="toolbar">
-      <button id="previewButton" type="button" disabled>미리보기</button>
       <button id="saveButton" class="primary" type="button" disabled>저장</button>
       <button id="resetButton" class="warn" type="button" disabled>저장본 지우기</button>
     </div>
@@ -97,10 +93,8 @@
       { id: "longhaul-special", number: "특별", title: "서울에서 멀리 갈 때, 얼마면 잡을 만한가", source: "special-longhaul-report-20260709.html", status: "웹 공개 · 앱 미등록" },
     ];
     const storageKey = (id) => `quickpilot-report-editor:${id}`;
-    const preview = document.getElementById("preview");
     const status = document.getElementById("status");
     const markdownEditor = document.getElementById("markdownEditor");
-    const previewButton = document.getElementById("previewButton");
     const saveButton = document.getElementById("saveButton");
     const resetButton = document.getElementById("resetButton");
     let selected = null;
@@ -119,7 +113,6 @@
     function refreshControls() {
       const ready = Boolean(selected);
       markdownEditor.disabled = !ready;
-      previewButton.disabled = !ready;
       saveButton.disabled = !ready || !currentUser;
       resetButton.disabled = !ready;
     }
@@ -287,10 +280,6 @@
       if (selected) loadReport(selected);
     });
 
-    function writePreview(html) {
-      preview.srcdoc = html.replace("<head>", '<head><base href="./">');
-    }
-
     function sourceFromUrl(url) {
       try {
         return new URL(url, location.href).pathname.replace(/^\/+/, "");
@@ -347,21 +336,19 @@
           setStatus("원본 초안을 열었습니다.");
         }
         markdownEditor.value = htmlToMarkdown(sourceHtml);
-        writePreview(sourceHtml);
         refreshControls();
       } catch (error) {
         sourceHtml = "";
-        preview.srcdoc = "";
+        markdownEditor.value = "";
         setStatus("초안을 불러오지 못했습니다. 새로고침해 주세요.");
       }
     }
 
-    function renderMarkdown() {
+    function buildSavedHtml() {
       if (!selected || !sourceHtml) return "";
       const result = applyMarkdownToHtml(sourceHtml, markdownEditor.value);
-      writePreview(result.html);
       const structureMessage = result.expected === result.received
-        ? "마크다운을 미리보기에 반영했습니다."
+        ? "마크다운 내용을 저장할 수 있습니다."
         : `제목·문단 수가 원본과 다릅니다. 반영 ${Math.min(result.expected, result.received)}개 / 원본 ${result.expected}개`;
       setStatus(structureMessage, result.expected !== result.received);
       return result.html;
@@ -371,11 +358,9 @@
       setStatus("수정 내용이 있습니다. 미리보기 또는 저장을 누르세요.", true);
     });
 
-    previewButton.addEventListener("click", renderMarkdown);
-
     saveButton.addEventListener("click", async () => {
       if (!selected || !currentUser) return;
-      const html = renderMarkdown();
+      const html = buildSavedHtml();
       if (!html) return;
       try {
         await draftRef(selected).set({

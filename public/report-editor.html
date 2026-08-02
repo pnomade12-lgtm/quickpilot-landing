@@ -46,7 +46,7 @@
     </section>
 
     <section class="group">
-      <h2>발행 완료 · 실제 발행 순서 <span id="publishedCount"></span></h2>
+      <h2>발행 완료 · 최신 발행순 <span id="publishedCount"></span></h2>
       <div id="publishedList"></div>
     </section>
   </main>
@@ -159,7 +159,7 @@
           ts: Number(report.ts) || 0,
           status: "발행 완료",
         }))
-        .sort((a, b) => a.ts - b.ts);
+        .sort((a, b) => b.ts - a.ts);
     }
 
     (async () => {
@@ -167,7 +167,7 @@
         const published = await loadPublished();
         render(published, `실제 발행 목록과 동기화됨 · ${new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`);
       } catch (error) {
-        render([...knownPublished].sort((a, b) => a.ts - b.ts), "실시간 발행 목록을 불러오지 못해 마지막 확인 목록을 표시합니다.");
+        render([...knownPublished].sort((a, b) => b.ts - a.ts), "실시간 발행 목록을 불러오지 못해 마지막 확인 목록을 표시합니다.");
       }
     })();
   </script>
