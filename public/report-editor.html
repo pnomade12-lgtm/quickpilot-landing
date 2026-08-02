@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex">
   <title>데이터 리포트 목록</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <style>
     :root{--bg:#F5EEE0;--card:#FAF6EC;--bd:#E5DCC8;--tm:#2C2416;--ts:#7c6f57;--gold:#C9962E;--grn:#7FB069}
     *{box-sizing:border-box}
@@ -52,6 +55,22 @@
   </main>
   <script>
     const databaseUrl = "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app";
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoZSnKoTu6nBdE0VfJAiCmWgjfKgLHqus",
+      authDomain: "quickpilot-39d72.firebaseapp.com",
+      databaseURL: databaseUrl,
+      projectId: "quickpilot-39d72",
+      storageBucket: "quickpilot-39d72.firebasestorage.app",
+      messagingSenderId: "530394028123",
+      appId: "1:530394028123:web:ab56e0951f214401d0c77e6",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    let currentUser = null;
+    let authReadyResolve;
+    const authReady = new Promise((resolve) => { authReadyResolve = resolve; });
+    let authReadyDone = false;
     const pendingReports = [
       { id: "col6", number: "6호", title: "기사가 꼭 해야 되는 것 다섯 가지, 절대 하지 말아야 되는 것 다섯 가지", status: "발행 대기", source: "column-6-memo-rules.html" },
       { id: "col7", number: "7호", title: "하차지는 다음 상차지가 될 수 있을까", status: "발행 대기", source: "column-7-destination-origin.html" },
@@ -76,6 +95,26 @@
     let latestPublished = [];
     let latestSyncMessage = "";
     let listLoaded = false;
+    let serverTitlesById = {};
+
+    auth.onAuthStateChanged((user) => {
+      currentUser = user || null;
+      if (!authReadyDone) {
+        authReadyDone = true;
+        authReadyResolve(currentUser);
+      }
+    });
+
+    async function ensureEditorSession() {
+      await authReady;
+      if (currentUser) return currentUser;
+      try {
+        await auth.signInAnonymously();
+        return currentUser;
+      } catch (error) {
+        return null;
+      }
+    }
 
     function cleanTitle(title) {
       return String(title || "")
@@ -93,23 +132,29 @@
       return "리포트";
     }
 
-    function localTitleFor(report) {
+    function localTitleInfo(report) {
       try {
         const savedTitle = localStorage.getItem(`quickpilot-report-editor:${report.id}:title`) || "";
         const autoTitle = localStorage.getItem(`quickpilot-report-editor-autosave:${report.id}:title`) || "";
         const savedAt = Number(localStorage.getItem(`quickpilot-report-editor:${report.id}:updated`)) || 0;
         const autoAt = Number(localStorage.getItem(`quickpilot-report-editor-autosave:${report.id}:updated`)) || 0;
-        if (autoTitle && autoAt > savedAt) return autoTitle;
-        return savedTitle;
+        if (autoTitle && autoAt > savedAt) return { title: autoTitle, updatedAt: autoAt };
+        if (savedTitle) return { title: savedTitle, updatedAt: savedAt };
+        return null;
       } catch (error) {
-        return "";
+        return null;
       }
     }
 
-    function withLocalTitles(reports) {
+    function withSavedTitles(reports) {
       return reports.map((report) => ({
         ...report,
-        title: localTitleFor(report) || report.title,
+        title: (() => {
+          const local = localTitleInfo(report);
+          const server = serverTitlesById[report.id];
+          if (server?.title && Number(server.updatedAt) >= Number(local?.updatedAt || 0)) return server.title;
+          return local?.title || server?.title || report.title;
+        })(),
       }));
     }
 
@@ -148,8 +193,8 @@
       latestPublished = published;
       latestSyncMessage = syncMessage;
       listLoaded = true;
-      const displayedPublished = withLocalTitles(published);
-      const displayedPending = withLocalTitles(pendingReports);
+      const displayedPublished = withSavedTitles(published);
+      const displayedPending = withSavedTitles(pendingReports);
       const publishedIds = new Set(displayedPublished.map((report) => report.id));
       const visiblePending = displayedPending.filter((report) => !publishedIds.has(report.id));
       pendingList.replaceChildren();
@@ -190,7 +235,29 @@
         .sort((a, b) => b.ts - a.ts);
     }
 
+    async function loadServerTitles() {
+      if (!currentUser) return;
+      const reportsToRead = [...new Map(
+        [...pendingReports, ...knownPublished].map((report) => [report.id, report]),
+      ).values()];
+      const entries = await Promise.all(reportsToRead.map(async (report) => {
+        try {
+          const snapshot = await db.ref(`v1/report_editor_drafts/${report.id}`).once("value");
+          const record = snapshot.val();
+          if (record && typeof record === "object" && record.title) {
+            return [report.id, { title: record.title, updatedAt: Number(record.updatedAt) || 0 }];
+          }
+        } catch (error) {
+          // A missing or unreadable draft must not block the report list.
+        }
+        return null;
+      }));
+      serverTitlesById = Object.fromEntries(entries.filter(Boolean));
+    }
+
     (async () => {
+      await ensureEditorSession();
+      await loadServerTitles();
       try {
         const published = await loadPublished();
         render(published, `실제 발행 목록과 동기화됨 · ${new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`);
@@ -200,7 +267,8 @@
     })();
 
     window.addEventListener("pageshow", () => {
-      if (listLoaded) render(latestPublished, latestSyncMessage);
+      if (!listLoaded) return;
+      void loadServerTitles().finally(() => render(latestPublished, latestSyncMessage));
     });
   </script>
 </body>

@@ -521,15 +521,18 @@
           updatedBy: actor,
         };
       });
-      await db.ref("v1").update({
+      const updates = {
         [`report_editor_drafts/${selected.id}`]: {
           title,
           html,
           updatedAt: firebase.database.ServerValue.TIMESTAMP,
           updatedBy: actor,
         },
-        [`report_editor_notes/${selected.id}`]: noteData,
-      });
+      };
+      if (Object.keys(noteData).length) {
+        updates[`report_editor_notes/${selected.id}`] = noteData;
+      }
+      await db.ref("v1").update(updates);
       return true;
     }
 
@@ -672,6 +675,7 @@
         const serverIsNewest = serverHtml && serverUpdatedAt >= Math.max(savedAt, autoSavedAt);
         const autoIsNewest = autoSaved && autoSavedAt >= savedAt && autoSavedAt > serverUpdatedAt;
         let loadedTitle = appTitleFor(report, report.title);
+        let needsServerSync = false;
         if (serverIsNewest) {
           sourceHtml = serverHtml;
           loadedTitle = serverTitle || loadedTitle;
@@ -680,11 +684,13 @@
         } else if (autoIsNewest) {
           sourceHtml = autoSaved;
           loadedTitle = autoTitle || loadedTitle;
+          needsServerSync = true;
           setStatus("자동 저장된 수정본을 열었습니다.");
           notesByVisual = autoNotes;
         } else if (saved) {
           sourceHtml = saved;
           loadedTitle = savedTitle || loadedTitle;
+          needsServerSync = true;
           setStatus("이 휴대폰에 저장한 수정본을 열었습니다.");
           notesByVisual = localNotes;
         } else if (serverHtml) {
@@ -705,6 +711,14 @@
         const model = buildBlockModel(sourceHtml);
         renderBlocks(model, notesByVisual, loadedTitle);
         refreshControls();
+        if (needsServerSync && currentUser) {
+          try {
+            await writeDraftToServer(sourceHtml, notesByVisual, loadedTitle);
+            setStatus("서버에 저장된 수정본을 열었습니다.");
+          } catch (error) {
+            // Keep the local draft available when server migration is unavailable.
+          }
+        }
       } catch (error) {
         sourceHtml = "";
         editorModel = null;
@@ -755,7 +769,10 @@
         clearLocalDraft(true);
         if (currentUser) {
           await draftRef(selected).remove();
-          await notesRef(selected).remove();
+          const visualIds = editorModel?.blocks
+            ?.filter((block) => block.kind === "visual")
+            .map((block) => block.id) || [];
+          await Promise.all(visualIds.map((visualId) => notesRef(selected).child(visualId).remove()));
         }
         await loadReport(selected);
         setStatus("저장한 수정본을 지우고 원본 초안을 다시 열었습니다.");
