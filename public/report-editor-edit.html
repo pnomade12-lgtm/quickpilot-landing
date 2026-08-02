@@ -114,6 +114,8 @@
     const autoStorageKey = (id) => `quickpilot-report-editor-autosave:${id}`;
     const autoNotesKey = (id) => `quickpilot-report-editor-autosave-notes:${id}`;
     const autoMetaKey = (id) => `quickpilot-report-editor-autosave:${id}:updated`;
+    const storageTitleKey = (id) => `quickpilot-report-editor:${id}:title`;
+    const autoTitleKey = (id) => `quickpilot-report-editor-autosave:${id}:title`;
     const status = document.getElementById("status");
     const editorBlocks = document.getElementById("editorBlocks");
     const saveButton = document.getElementById("saveButton");
@@ -177,6 +179,33 @@
       return ["h1", "h2", "h3", "p", "li", "footer"].includes(tag)
         || element.classList.contains("kicker")
         || element.classList.contains("subhead");
+    }
+
+    function cleanReportTitle(title) {
+      return String(title || "")
+        .replace(/^QP\s+/, "")
+        .replace(/^데이터 리포트\s+\d+호\s*·\s*/, "")
+        .replace(/^특별분석\s*·\s*/, "")
+        .replace(/^특별 분석\s*·\s*/, "")
+        .replace(/^특별\s*·\s*/, "")
+        .trim();
+    }
+
+    function appTitlePrefix(report) {
+      if (!report) return "리포트";
+      if (report.number === "특별") return "QP 특별분석";
+      if (report.number === "초안") return "리포트 초안";
+      return `데이터 리포트 ${report.number}`;
+    }
+
+    function appTitleFor(report, title) {
+      return `${appTitlePrefix(report)} · ${cleanReportTitle(title)}`.trim();
+    }
+
+    function bodyTitleFromAppTitle(value) {
+      const text = String(value || "").trim();
+      const separator = text.indexOf(" · ");
+      return separator >= 0 ? text.slice(separator + 3).trim() : text;
     }
 
     function collectEditableElements(document) {
@@ -324,7 +353,11 @@
           if (text) {
             const isTitle = element.tagName.toLowerCase() === "h1" && !titleFound;
             if (isTitle) titleFound = true;
-            blocks.push({ kind: "text", value: markdownPrefix(element) + text, role: isTitle ? "title" : "" });
+            blocks.push({
+              kind: "text",
+              value: isTitle ? appTitleFor(selected, text) : markdownPrefix(element) + text,
+              role: isTitle ? "app-title" : "",
+            });
           }
           return;
         }
@@ -370,29 +403,29 @@
       }
     }
 
-    function renderBlocks(model, savedNotes = {}) {
+    function renderBlocks(model, savedNotes = {}, savedAppTitle = "") {
       editorModel = model;
       notesByVisual = savedNotes && typeof savedNotes === "object" ? savedNotes : {};
-      pageTitle.textContent = `${selected?.number || ""} · ${String(selected?.title || "").replace(/^QP\s+/, "").replace(/^데이터 리포트\s+\d+호\s*·\s*/, "").replace(/^특별분석\s*·\s*/, "")}`;
+      pageTitle.textContent = savedAppTitle || appTitleFor(selected, selected?.title);
       editorBlocks.replaceChildren();
       model.blocks.forEach((block) => {
         if (block.kind === "text") {
           const field = document.createElement("textarea");
           field.className = "text-block";
           field.spellcheck = false;
-          field.value = block.value;
+          field.value = block.role === "app-title" && savedAppTitle ? savedAppTitle : block.value;
           if (block.role) field.dataset.role = block.role;
-          if (block.role === "title") {
+          if (block.role === "app-title") {
             const label = document.createElement("div");
             label.className = "block-label";
-            label.textContent = "제목";
-            field.setAttribute("aria-label", "제목 수정");
-            pageTitle.textContent = `${selected?.number || ""} · ${block.value.replace(/^#\s+/, "").replace(/\s+/g, " ").trim()}`;
+            label.textContent = "앱 제목";
+            field.setAttribute("aria-label", "앱 제목 수정");
+            pageTitle.textContent = field.value.trim();
             editorBlocks.appendChild(label);
           }
           field.addEventListener("input", () => {
             growTextarea(field);
-            if (field.dataset.role === "title") pageTitle.textContent = `${selected?.number || ""} · ${field.value.replace(/^#\s+/, "").replace(/\s+/g, " ").trim()}`;
+            if (field.dataset.role === "app-title") pageTitle.textContent = field.value.trim();
             markDirty();
           });
           editorBlocks.appendChild(field);
@@ -442,30 +475,42 @@
 
     function collectTextMarkdown() {
       return [...editorBlocks.querySelectorAll(".text-block")]
-        .map((field) => field.value.replace(/\r/g, "").trim())
+        .map((field) => {
+          const value = field.value.replace(/\r/g, "").trim();
+          return field.dataset.role === "app-title" ? `# ${bodyTitleFromAppTitle(value)}` : value;
+        })
         .filter(Boolean)
         .join("\n\n");
     }
 
-    function saveLocalDraft(html, notes, automatic) {
+    function collectAppTitle() {
+      return editorBlocks.querySelector('.text-block[data-role="app-title"]')?.value.trim()
+        || appTitleFor(selected, selected?.title);
+    }
+
+    function saveLocalDraft(html, notes, automatic, title = collectAppTitle()) {
       const htmlKey = automatic ? autoStorageKey(selected.id) : storageKey(selected.id);
       const noteKey = automatic ? autoNotesKey(selected.id) : notesKey(selected.id);
       const metaKey = automatic ? autoMetaKey(selected.id) : storageMetaKey(selected.id);
+      const titleKey = automatic ? autoTitleKey(selected.id) : storageTitleKey(selected.id);
       localStorage.setItem(htmlKey, html);
       localStorage.setItem(noteKey, JSON.stringify(notes));
       localStorage.setItem(metaKey, String(Date.now()));
+      localStorage.setItem(titleKey, title);
     }
 
     function clearLocalDraft(automatic) {
       const htmlKey = automatic ? autoStorageKey(selected.id) : storageKey(selected.id);
       const noteKey = automatic ? autoNotesKey(selected.id) : notesKey(selected.id);
       const metaKey = automatic ? autoMetaKey(selected.id) : storageMetaKey(selected.id);
+      const titleKey = automatic ? autoTitleKey(selected.id) : storageTitleKey(selected.id);
       localStorage.removeItem(htmlKey);
       localStorage.removeItem(noteKey);
       localStorage.removeItem(metaKey);
+      localStorage.removeItem(titleKey);
     }
 
-    async function writeDraftToServer(html, notes) {
+    async function writeDraftToServer(html, notes, title) {
       if (!currentUser) return false;
       const actor = currentUser.email || currentUser.uid || "editor";
       const noteData = {};
@@ -478,6 +523,7 @@
       });
       await db.ref("v1").update({
         [`report_editor_drafts/${selected.id}`]: {
+          title,
           html,
           updatedAt: firebase.database.ServerValue.TIMESTAMP,
           updatedBy: actor,
@@ -491,7 +537,7 @@
       if (!selected || !sourceHtml || !hasUnsavedChanges) return false;
       const html = buildSavedHtml(true);
       if (!html) return false;
-      saveLocalDraft(html, collectNotes(), true);
+      saveLocalDraft(html, collectNotes(), true, collectAppTitle());
       return true;
     }
 
@@ -500,7 +546,8 @@
       const html = buildSavedHtml(true);
       if (!html) return;
       const notes = collectNotes();
-      saveLocalDraft(html, notes, true);
+      const title = collectAppTitle();
+      saveLocalDraft(html, notes, true, title);
       if (revision === editRevision) {
         hasUnsavedChanges = false;
         setStatus("자동 저장되었습니다. 이 기기에 보관했습니다.");
@@ -508,7 +555,7 @@
       let serverSaved = false;
       if (currentUser && revision === editRevision) {
         try {
-          serverSaved = await writeDraftToServer(html, notes);
+          serverSaved = await writeDraftToServer(html, notes, title);
         } catch (error) {
           serverSaved = false;
         }
@@ -575,7 +622,7 @@
 
     async function loadReport(report) {
       selected = report;
-      pageTitle.textContent = `${report.number} · ${String(report.title).replace(/^QP\s+/, "").replace(/^데이터 리포트\s+\d+호\s*·\s*/, "").replace(/^특별분석\s*·\s*/, "")}`;
+      pageTitle.textContent = appTitleFor(report, report.title);
       clearTimeout(autoSaveTimer);
       autoSaveTimer = null;
       hasUnsavedChanges = false;
@@ -583,6 +630,7 @@
       setStatus("초안을 불러오는 중입니다.");
       try {
         let serverHtml = "";
+        let serverTitle = "";
         let serverNotes = {};
         let serverUpdatedAt = 0;
         if (currentUser) {
@@ -590,6 +638,7 @@
             const snapshot = await draftRef(report).once("value");
             const record = snapshot.val() || {};
             serverHtml = record.html || "";
+            serverTitle = record.title || "";
             serverUpdatedAt = Number(record.updatedAt) || 0;
           } catch (error) {
             serverHtml = "";
@@ -603,6 +652,8 @@
         }
         const saved = localStorage.getItem(storageKey(report.id));
         const autoSaved = localStorage.getItem(autoStorageKey(report.id));
+        const savedTitle = localStorage.getItem(storageTitleKey(report.id)) || "";
+        const autoTitle = localStorage.getItem(autoTitleKey(report.id)) || "";
         const savedAt = Number(localStorage.getItem(storageMetaKey(report.id))) || 0;
         const autoSavedAt = Number(localStorage.getItem(autoMetaKey(report.id))) || 0;
         let localNotes = {};
@@ -620,20 +671,25 @@
 
         const serverIsNewest = serverHtml && serverUpdatedAt >= Math.max(savedAt, autoSavedAt);
         const autoIsNewest = autoSaved && autoSavedAt >= savedAt && autoSavedAt > serverUpdatedAt;
+        let loadedTitle = appTitleFor(report, report.title);
         if (serverIsNewest) {
           sourceHtml = serverHtml;
+          loadedTitle = serverTitle || loadedTitle;
           setStatus("서버에 저장된 수정본을 열었습니다.");
           notesByVisual = serverNotes;
         } else if (autoIsNewest) {
           sourceHtml = autoSaved;
+          loadedTitle = autoTitle || loadedTitle;
           setStatus("자동 저장된 수정본을 열었습니다.");
           notesByVisual = autoNotes;
         } else if (saved) {
           sourceHtml = saved;
+          loadedTitle = savedTitle || loadedTitle;
           setStatus("이 휴대폰에 저장한 수정본을 열었습니다.");
           notesByVisual = localNotes;
         } else if (serverHtml) {
           sourceHtml = serverHtml;
+          loadedTitle = serverTitle || loadedTitle;
           setStatus("서버에 저장된 수정본을 열었습니다.");
           notesByVisual = serverNotes;
         } else {
@@ -647,7 +703,7 @@
           notesByVisual = {};
         }
         const model = buildBlockModel(sourceHtml);
-        renderBlocks(model, notesByVisual);
+        renderBlocks(model, notesByVisual, loadedTitle);
         refreshControls();
       } catch (error) {
         sourceHtml = "";
@@ -673,14 +729,15 @@
       const html = buildSavedHtml();
       if (!html) return false;
       const notes = collectNotes();
+      const title = collectAppTitle();
       let serverSaved = false;
       try {
-        saveLocalDraft(html, notes, false);
-        serverSaved = await writeDraftToServer(html, notes);
+        saveLocalDraft(html, notes, false, title);
+        serverSaved = await writeDraftToServer(html, notes, title);
         clearLocalDraft(true);
         sourceHtml = html;
       } catch (error) {
-        try { saveLocalDraft(html, notes, false); } catch (localError) { /* keep the editor open */ }
+        try { saveLocalDraft(html, notes, false, title); } catch (localError) { /* keep the editor open */ }
         clearLocalDraft(true);
         sourceHtml = html;
       }
