@@ -1,0 +1,8 @@
+{
+  "database": {
+    "rules": "rules/database.rules.order-sync-candidate.json",
+    "predeploy": [
+      "node scripts/verify-order-sync-rules-candidate.js --live-baseline"
+    ]
+  }
+}

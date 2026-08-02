@@ -1,0 +1,17 @@
+{
+  "name": "quickpilot-order-live-release",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isolated QuickPilot orderLive cost-safety release package",
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "test": "node --test test/order-live-guard.test.js"
+  },
+  "dependencies": {
+    "firebase-admin": "12.1.0",
+    "firebase-functions": "5.0.1"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "functions": {
+    "source": "functions-order-live-release",
+    "runtime": "nodejs20",
+    "ignore": [
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "node_modules"
+    ],
+    "predeploy": [
+      "node scripts/verify-order-live-cost-gate.js"
+    ]
+  }
+}

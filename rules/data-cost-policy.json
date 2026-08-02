@@ -1,0 +1,154 @@
+{
+  "schema_version": 2,
+  "policy_id": "QP-DATA-COST-SAFETY-V2-20260801",
+  "intent": "Keep user-visible QuickPilot features working while bounding Firebase storage, reads, writes, function fan-out, and mobile-data use.",
+  "truth_data": {
+    "retention": "preserve",
+    "paths": [
+      "/licenses/{phone}",
+      "/v1/users/{uid}/profile",
+      "/v1/users/{uid}/status",
+      "/v1/users/{uid}/app_version",
+      "/v1/users/{uid}/orders/{date}/{representative_id}",
+      "/v1/users/{uid}/earnings/{date}",
+      "/v1/users/{uid}/expenses",
+      "/v1/users/{uid}/manual_edits",
+      "/v1/users/{uid}/order_edits",
+      "/v1/users/{uid}/global_memos",
+      "/v1/agencies",
+      "/v1/buildings",
+      "/v1/social_feed",
+      "/v1/reports",
+      "/v1/app/notice",
+      "/v1/app/board",
+      "/v1/app/board_list",
+      "/v1/app/update_signal"
+    ],
+    "deletion_rule": "Never delete, merge, hide, or rewrite these paths to solve traffic, duplication, display, or settlement defects."
+  },
+  "compact_product_data": {
+    "retention": "preserve_until_explicit_rebuild_or_archive",
+    "paths": [
+      "/v1/users/{uid}/daily_drive/{date}",
+      "/v1/app/data_live/{date}",
+      "/v1/app/data_maps/{date}",
+      "/v1/app/data_cache/{date}"
+    ],
+    "read_rule": "Read the exact UID and date summary first. Raw fallback is allowed only when the summary is absent and must create or repair the summary once."
+  },
+  "bounded_raw_data": [
+    {
+      "path": "/v1/users/{uid}/gps_track/{role}/{bucket}",
+      "default_upload": "single_owner_only",
+      "retention_days": 7,
+      "deletion_precondition": "A verified daily_drive summary exists for the same UID/date and a sampled restore check has passed."
+    },
+    {
+      "path": "/v1/users/{uid}/system_events/{bucket}",
+      "default_upload": "off_except_incident_scope",
+      "retention_days": 3,
+      "deletion_precondition": "Keep named state-transition evidence; routine screen, toast, and heartbeat events may expire."
+    },
+    {
+      "path": "/v1/users/{uid}/crash_logs",
+      "default_upload": "bounded",
+      "retention_days": 14,
+      "deletion_precondition": "Preserve the latest unresolved crash signature and its first/last occurrence summary."
+    },
+    {
+      "path": "/v1/users/{uid}/geo_trace",
+      "default_upload": "bounded",
+      "retention_days": 7,
+      "deletion_precondition": "Preserve compact geo cache and miss summaries needed by the address feature."
+    },
+    {
+      "path": "/v1/users/{uid}/geo_misses",
+      "default_upload": "bounded",
+      "retention_days": 7,
+      "deletion_precondition": "Preserve compact geo cache and miss summaries needed by the address feature."
+    }
+  ],
+  "forbidden_new_raw_uploads": [
+    "/v1/users/{uid}/window_dumps",
+    "/v1/users/{uid}/order_logs",
+    "/v1/users/{uid}/diag"
+  ],
+  "incident_only_uploads": [
+    "/v1/users/{uid}/user_actions",
+    "/v1/users/{uid}/system_events"
+  ],
+  "legacy_cleanup_rule": "Existing raw data is not an automatic deletion target. Cleanup requires a path allow-list, backup with SHA-256, dry-run counts, explicit director approval, deletion readback, and a restore sample.",
+  "read_contract": {
+    "client": "Exact UID/date/representative ID or shallow date keys only. No full-history body download, RTDB root scan, or reconnect bootstrap replay.",
+    "scheduled_functions": "Incremental summary/index reads for one exact date only. No all-user all-history raw read in a scheduled function.",
+    "manual_maintenance": "An expensive historical read must be a separately authorized manual job with explicit date/UID bounds, dry-run estimate, concurrency limit, and byte budget."
+  },
+  "maintenance_limits": {
+    "authentication": "release_admin_required",
+    "dry_run_default": true,
+    "max_uids": 10,
+    "max_dates": 1,
+    "max_concurrency": 2,
+    "max_read_bytes": 5242880,
+    "raw_window_hours": 2,
+    "raw_max_records": 500,
+    "raw_max_bytes": 1048576
+  },
+  "order_write_budget": {
+    "semantic_noop_client_transactions": 0,
+    "semantic_noop_function_database_operations": 0,
+    "one_semantic_change_client_transactions": 1,
+    "one_semantic_change_function_invocations": 1,
+    "one_semantic_change_max_downstream_committed_writes": 11,
+    "permission_denied_retries": 0,
+    "historical_permission_backlog_release": 0
+  },
+  "field_budgets": {
+    "blocked_quiet_order_requests": 0,
+    "canary_idle_minutes": 2,
+    "canary_idle_max_bytes": 1048576,
+    "canary_active_minutes": 10,
+    "canary_active_max_bytes": 5242880,
+    "version_observation_minutes": 60
+  },
+  "rollout_windows_seconds": [
+    120,
+    600,
+    3600
+  ],
+  "automatic_stop_thresholds": {
+    "denied_order_requests": 0,
+    "blocked_idle_order_operations": 0,
+    "max_invocations_per_semantic_change": 1,
+    "order_live_invocations_per_minute": 300,
+    "outbound_bytes_per_minute": 20971520,
+    "resource_load_percent": 85,
+    "historical_replay_rows": 0
+  },
+  "service_isolation": {
+    "automatic_stop_scope": "order_sync_only",
+    "must_remain_available": [
+      "login",
+      "read",
+      "social",
+      "hosting",
+      "update"
+    ]
+  },
+  "rollout_contract": [
+    "BLOCKED",
+    "EXACT_UID_DATE_CANARY",
+    "MEASURED_CANARY_PASS",
+    "VERSION",
+    "MEASURED_VERSION_PASS"
+  ],
+  "automatic_stop_signals": [
+    "Any denied order write after the protected client is installed",
+    "Any order request during a BLOCKED quiet window",
+    "Any semantic no-op that reaches a database operation",
+    "More than one client order transaction or one function invocation for one semantic order change",
+    "Any historical BLOCKED_PERMISSION backlog becoming sendable from a new permit",
+    "Any canary byte budget breach or accelerating one-minute request rate"
+  ],
+  "stop_action": "Publish a newer-generation BLOCKED order_sync_control first, preserve evidence, and diagnose afterward. Do not disable unrelated login, read, social, Hosting, or update services."
+}

@@ -1,0 +1,15 @@
+{
+  "functions": {
+    "source": "functions-order-sync-watchdog-release",
+    "runtime": "nodejs20",
+    "ignore": [
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "node_modules"
+    ],
+    "predeploy": [
+      "node scripts/verify-order-sync-watchdog-gate.js"
+    ]
+  }
+}
