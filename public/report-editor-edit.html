@@ -35,7 +35,7 @@
     .status{flex:0 0 auto;min-height:19px;margin:5px 2px;color:var(--ts);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .status.editing{color:#9a4429;font-weight:800}
     .blocks{display:flex;flex:1 1 auto;min-height:0;flex-direction:column;gap:10px;overflow:auto;padding:2px 2px 10px}
-    .text-block{display:block;width:100%;min-height:74px;padding:12px;border:1px solid var(--bd);border-radius:8px;background:#fffdf8;color:var(--tm);font:14px/1.75 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono","Noto Sans Mono",monospace;resize:none;overflow:hidden;overflow-wrap:anywhere}
+    .text-block{display:block;flex:0 0 auto;width:100%;min-height:74px;padding:12px;border:1px solid var(--bd);border-radius:8px;background:#fffdf8;color:var(--tm);font:14px/1.75 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono","Noto Sans Mono",monospace;resize:none;overflow:hidden;overflow-wrap:anywhere}
     .text-block:focus,.visual-note:focus{outline:2px solid rgba(127,176,105,.45);outline-offset:1px}
     .visual-block{flex:0 0 auto;border:1px solid var(--bd);border-radius:8px;background:var(--card);overflow:hidden}
     .visual-caption{padding:7px 10px;color:var(--ts);font-size:11px;font-weight:800}
@@ -298,6 +298,10 @@
       field.style.height = `${Math.max(field.scrollHeight, 48)}px`;
     }
 
+    function resizeEditorFields() {
+      editorBlocks.querySelectorAll("textarea").forEach(growTextarea);
+    }
+
     function isolateVisualFrame(iframe, visualId) {
       try {
         const document = iframe.contentDocument;
@@ -367,6 +371,8 @@
       });
       refreshControls();
     }
+
+    window.addEventListener("resize", () => requestAnimationFrame(resizeEditorFields));
 
     function collectNotes() {
       const notes = {};
