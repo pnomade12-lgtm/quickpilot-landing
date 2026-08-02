@@ -34,10 +34,15 @@
     button:disabled{opacity:.45;cursor:default}
     .status{flex:0 0 auto;min-height:19px;margin:5px 2px;color:var(--ts);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .status.editing{color:#9a4429;font-weight:800}
-    .editor-label{display:block;flex:0 0 auto;margin:5px 0 5px;color:var(--ts);font-size:12px;font-weight:800}
-    .markdown{display:block;flex:1 1 auto;width:100%;min-height:0;padding:15px;border:1px solid var(--bd);border-radius:8px;background:#fffdf8;color:var(--tm);font:15px/1.75 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono","Noto Sans Mono",monospace;resize:none;white-space:pre-wrap;overflow:auto;overflow-wrap:anywhere}
-    .markdown:focus{outline:2px solid rgba(127,176,105,.45);outline-offset:1px}
-    @media(max-width:430px){main{padding:10px 10px 8px}h1{font-size:21px}.toolbar{margin-left:-10px;margin-right:-10px;padding-left:10px;padding-right:10px}.toolbar button{font-size:13px}.markdown{font-size:13px;padding:12px}}
+    .blocks{display:flex;flex:1 1 auto;min-height:0;flex-direction:column;gap:10px;overflow:auto;padding:2px 2px 10px}
+    .text-block{display:block;width:100%;min-height:74px;padding:12px;border:1px solid var(--bd);border-radius:8px;background:#fffdf8;color:var(--tm);font:14px/1.75 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono","Noto Sans Mono",monospace;resize:none;overflow:hidden;overflow-wrap:anywhere}
+    .text-block:focus,.visual-note:focus{outline:2px solid rgba(127,176,105,.45);outline-offset:1px}
+    .visual-block{flex:0 0 auto;border:1px solid var(--bd);border-radius:8px;background:var(--card);overflow:hidden}
+    .visual-caption{padding:7px 10px;color:var(--ts);font-size:11px;font-weight:800}
+    .visual-frame{display:block;width:100%;height:120px;border:0;background:#fff;overflow:hidden}
+    .visual-note{display:block;width:100%;min-height:48px;padding:9px 10px;border:0;border-top:1px dashed var(--bd);background:#fffdf8;color:var(--tm);font:13px/1.5 -apple-system,"Noto Sans KR",sans-serif;resize:none;overflow:hidden}
+    .visual-note::placeholder{color:#a39a89}
+    @media(max-width:430px){main{padding:10px 10px 8px}h1{font-size:21px}.toolbar{margin-left:-10px;margin-right:-10px;padding-left:10px;padding-right:10px}.toolbar button{font-size:13px}.text-block{font-size:13px;padding:11px}}
   </style>
 </head>
 <body>
@@ -46,8 +51,7 @@
     <div class="kicker">데이터 리포트 · 편집 전용</div>
     <h1 id="pageTitle">리포트 편집</h1>
     <div class="status" id="status" aria-live="polite">리포트를 고르세요.</div>
-    <label class="editor-label" for="markdownEditor">본문 마크다운</label>
-    <textarea class="markdown" id="markdownEditor" spellcheck="false" disabled></textarea>
+    <div class="blocks" id="editorBlocks"></div>
     <div class="toolbar">
       <button id="saveButton" class="primary" type="button" disabled>저장</button>
       <button id="resetButton" class="warn" type="button" disabled>저장본 지우기</button>
@@ -86,13 +90,19 @@
       { id: "longhaul-special", number: "특별", title: "서울에서 멀리 갈 때, 얼마면 잡을 만한가", source: "special-longhaul-report-20260709.html", status: "웹 공개 · 앱 미등록" },
     ];
     const storageKey = (id) => `quickpilot-report-editor:${id}`;
+    const notesKey = (id) => `quickpilot-report-editor-notes:${id}`;
     const status = document.getElementById("status");
-    const markdownEditor = document.getElementById("markdownEditor");
+    const editorBlocks = document.getElementById("editorBlocks");
     const saveButton = document.getElementById("saveButton");
     const resetButton = document.getElementById("resetButton");
     let selected = null;
     let sourceHtml = "";
     let currentUser = null;
+    let editorModel = null;
+    let notesByVisual = {};
+    let authReadyResolve;
+    const authReady = new Promise((resolve) => { authReadyResolve = resolve; });
+    let authReadyDone = false;
 
     function setStatus(message, isEditing = false) {
       status.textContent = message;
@@ -103,17 +113,23 @@
       return db.ref(`v1/report_editor_drafts/${report.id}`);
     }
 
-    function refreshControls() {
-      const ready = Boolean(selected);
-      markdownEditor.disabled = !ready;
-      saveButton.disabled = !ready;
-      resetButton.disabled = !ready;
+    function notesRef(report) {
+      return db.ref(`v1/report_editor_notes/${report.id}`);
     }
 
-    const visualSelector = ".hours, .rbar, .donut, .dtable, .stat, .vs, .metric, .bars, .hero, .cloud, .symbols, .chips";
+    function refreshControls() {
+      const ready = Boolean(selected);
+      saveButton.disabled = !ready;
+      resetButton.disabled = !ready;
+      editorBlocks.querySelectorAll("textarea").forEach((field) => { field.disabled = !ready; });
+    }
+
+    const visualSelector = ".hours, .rbar, .donut, .dtable, .stat, .vs, .metric, .bars, .omap, .hero, .cloud, .symbols, .chips";
 
     function isVisualRoot(element) {
-      return element.matches(visualSelector);
+      return element.matches(visualSelector)
+        || (element.classList.contains("card")
+          && element.querySelector(".bar, .hours, .rbar, .donut, .dtable, .stat, .vs, .metric, .bars, .omap, svg"));
     }
 
     function isEditableElement(element) {
@@ -249,11 +265,144 @@
       };
     }
 
-    auth.onAuthStateChanged((user) => {
-      currentUser = user && user.email === ownerEmail ? user : null;
+    function buildBlockModel(html) {
+      const document = new DOMParser().parseFromString(html, "text/html");
+      const blocks = [];
+      let visualNumber = 0;
+
+      function walk(element) {
+        if (isVisualRoot(element)) {
+          visualNumber += 1;
+          const id = `visual-${String(visualNumber).padStart(2, "0")}`;
+          element.dataset.editorVisualId = id;
+          blocks.push({ kind: "visual", id });
+          return;
+        }
+        if (isEditableElement(element)) {
+          const text = plainText(element);
+          if (text) blocks.push({ kind: "text", value: markdownPrefix(element) + text });
+          return;
+        }
+        for (const child of element.children) walk(child);
+      }
+
+      walk(document.body);
+      return {
+        html: "<!doctype html>\n" + document.documentElement.outerHTML,
+        blocks,
+      };
+    }
+
+    function growTextarea(field) {
+      field.style.height = "auto";
+      field.style.height = `${Math.max(field.scrollHeight, 48)}px`;
+    }
+
+    function isolateVisualFrame(iframe, visualId) {
+      try {
+        const document = iframe.contentDocument;
+        const target = document.querySelector(`[data-editor-visual-id="${visualId}"]`);
+        if (!target) return;
+        document.body.querySelectorAll("*").forEach((element) => {
+          if (element === target || target.contains(element) || element.contains(target)) return;
+          element.style.display = "none";
+        });
+        document.querySelectorAll(".sheet, .wrap").forEach((element) => {
+          element.style.minHeight = "0";
+        });
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+        requestAnimationFrame(() => {
+          const bottom = target.getBoundingClientRect().bottom + 24;
+          iframe.style.height = `${Math.max(100, Math.ceil(bottom))}px`;
+        });
+      } catch (error) {
+        iframe.style.height = "120px";
+      }
+    }
+
+    function renderBlocks(model, savedNotes = {}) {
+      editorModel = model;
+      notesByVisual = savedNotes && typeof savedNotes === "object" ? savedNotes : {};
+      editorBlocks.replaceChildren();
+      model.blocks.forEach((block) => {
+        if (block.kind === "text") {
+          const field = document.createElement("textarea");
+          field.className = "text-block";
+          field.spellcheck = false;
+          field.value = block.value;
+          field.addEventListener("input", () => {
+            growTextarea(field);
+            setStatus("수정 내용이 있습니다. 저장하세요.", true);
+          });
+          editorBlocks.appendChild(field);
+          growTextarea(field);
+          return;
+        }
+
+        const visual = document.createElement("section");
+        visual.className = "visual-block";
+        const caption = document.createElement("div");
+        caption.className = "visual-caption";
+        caption.textContent = `시각화 ${block.id.replace("visual-", "")}`;
+        const frame = document.createElement("iframe");
+        frame.className = "visual-frame";
+        frame.title = `${selected?.title || "리포트"} ${caption.textContent}`;
+        frame.setAttribute("scrolling", "no");
+        frame.setAttribute("sandbox", "allow-scripts allow-same-origin");
+        frame.srcdoc = model.html;
+        frame.addEventListener("load", () => isolateVisualFrame(frame, block.id));
+        const note = document.createElement("textarea");
+        note.className = "visual-note";
+        note.dataset.visualId = block.id;
+        note.placeholder = "이 시각화에 수정·변경 요청을 적으세요";
+        note.value = notesByVisual[block.id]?.text || "";
+        note.addEventListener("input", () => {
+          growTextarea(note);
+          setStatus("수정 내용이 있습니다. 저장하세요.", true);
+        });
+        visual.append(caption, frame, note);
+        editorBlocks.appendChild(visual);
+        growTextarea(note);
+      });
       refreshControls();
-      if (selected) loadReport(selected);
+    }
+
+    function collectNotes() {
+      const notes = {};
+      editorBlocks.querySelectorAll(".visual-note").forEach((field) => {
+        const text = field.value.trim();
+        if (text) notes[field.dataset.visualId] = { text };
+      });
+      return notes;
+    }
+
+    function collectTextMarkdown() {
+      return [...editorBlocks.querySelectorAll(".text-block")]
+        .map((field) => field.value.replace(/\r/g, "").trim())
+        .filter(Boolean)
+        .join("\n\n");
+    }
+
+    auth.onAuthStateChanged((user) => {
+      currentUser = user || null;
+      if (!authReadyDone) {
+        authReadyDone = true;
+        authReadyResolve(currentUser);
+      }
+      refreshControls();
     });
+
+    async function ensureEditorSession() {
+      await authReady;
+      if (currentUser) return currentUser;
+      try {
+        await auth.signInAnonymously();
+        return currentUser;
+      } catch (error) {
+        return null;
+      }
+    }
 
     function sourceFromUrl(url) {
       try {
@@ -290,11 +439,28 @@
       setStatus("초안을 불러오는 중입니다.");
       try {
         let serverHtml = "";
+        let serverNotes = {};
         if (currentUser) {
-          const snapshot = await draftRef(report).once("value");
-          serverHtml = snapshot.val()?.html || "";
+          try {
+            const snapshot = await draftRef(report).once("value");
+            serverHtml = snapshot.val()?.html || "";
+          } catch (error) {
+            serverHtml = "";
+          }
+          try {
+            const snapshot = await notesRef(report).once("value");
+            serverNotes = snapshot.val() || {};
+          } catch (error) {
+            serverNotes = {};
+          }
         }
         const saved = localStorage.getItem(storageKey(report.id));
+        let localNotes = {};
+        try {
+          localNotes = JSON.parse(localStorage.getItem(notesKey(report.id)) || "{}");
+        } catch (error) {
+          localNotes = {};
+        }
         if (serverHtml) {
           sourceHtml = serverHtml;
           setStatus("서버에 저장된 수정본을 열었습니다.");
@@ -310,18 +476,21 @@
           }
           setStatus("원본 초안을 열었습니다.");
         }
-        markdownEditor.value = htmlToMarkdown(sourceHtml);
+        const model = buildBlockModel(sourceHtml);
+        renderBlocks(model, Object.keys(serverNotes).length ? serverNotes : localNotes);
         refreshControls();
       } catch (error) {
         sourceHtml = "";
-        markdownEditor.value = "";
+        editorModel = null;
+        notesByVisual = {};
+        editorBlocks.replaceChildren();
         setStatus("초안을 불러오지 못했습니다. 새로고침해 주세요.");
       }
     }
 
     function buildSavedHtml() {
       if (!selected || !sourceHtml) return "";
-      const result = applyMarkdownToHtml(sourceHtml, markdownEditor.value);
+      const result = applyMarkdownToHtml(sourceHtml, collectTextMarkdown());
       const structureMessage = result.expected === result.received
         ? "마크다운 내용을 저장할 수 있습니다."
         : `제목·문단 수가 원본과 다릅니다. 반영 ${Math.min(result.expected, result.received)}개 / 원본 ${result.expected}개`;
@@ -329,28 +498,39 @@
       return result.html;
     }
 
-    markdownEditor.addEventListener("input", () => {
-      setStatus("수정 내용이 있습니다. 저장하세요.", true);
-    });
-
     saveButton.addEventListener("click", async () => {
       if (!selected) return;
       const html = buildSavedHtml();
       if (!html) return;
+      const notes = collectNotes();
       let saveMessage = "이 기기에 저장했습니다.";
       try {
         if (currentUser) {
-          await draftRef(selected).set({
-            html,
-            updatedAt: firebase.database.ServerValue.TIMESTAMP,
-            updatedBy: currentUser.email,
+          const actor = currentUser.email || currentUser.uid || "editor";
+          const noteData = {};
+          Object.entries(notes).forEach(([visualId, value]) => {
+            noteData[visualId] = {
+              text: value.text,
+              updatedAt: firebase.database.ServerValue.TIMESTAMP,
+              updatedBy: actor,
+            };
+          });
+          await db.ref("v1").update({
+            [`report_editor_drafts/${selected.id}`]: {
+              html,
+              updatedAt: firebase.database.ServerValue.TIMESTAMP,
+              updatedBy: actor,
+            },
+            [`report_editor_notes/${selected.id}`]: noteData,
           });
           saveMessage = "서버에 저장했습니다. 아직 공개되지 않았습니다.";
         }
         localStorage.setItem(storageKey(selected.id), html);
+        localStorage.setItem(notesKey(selected.id), JSON.stringify(notes));
         sourceHtml = html;
       } catch (error) {
         localStorage.setItem(storageKey(selected.id), html);
+        localStorage.setItem(notesKey(selected.id), JSON.stringify(notes));
         sourceHtml = html;
         saveMessage = "서버 연결 없이 이 기기에 저장했습니다.";
       }
@@ -361,7 +541,11 @@
       if (!selected || !confirm("이 휴대폰에 저장한 수정본을 지우고 원본 초안으로 돌아갈까요?")) return;
       try {
         localStorage.removeItem(storageKey(selected.id));
-        if (currentUser) await draftRef(selected).remove();
+        localStorage.removeItem(notesKey(selected.id));
+        if (currentUser) {
+          await draftRef(selected).remove();
+          await notesRef(selected).remove();
+        }
         await loadReport(selected);
         setStatus("저장한 수정본을 지우고 원본 초안을 다시 열었습니다.");
       } catch (error) {
@@ -381,6 +565,7 @@
         setStatus("선택한 리포트를 찾지 못했습니다.");
         return;
       }
+      await ensureEditorSession();
       await loadReport(report);
     })();
   </script>
