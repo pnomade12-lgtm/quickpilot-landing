@@ -250,46 +250,52 @@
   }
 
   function setStatus(id, status) {
+    const a = cache[id];
+    const phone = a ? (a.phone || "").replace(/[^\d]/g, "") : "";
+    let pendingSms = null;
+    let pendingSmsWarning = "";
     if (status === "approved") {
-      const a = cache[id];
-      const ph = a ? (a.phone || "").replace(/[^\d]/g, "") : "";
       const nm = a ? (a.name || "").trim() : "";
-      const byP = ph && expiredPhones.has(ph), byN = nm && expiredNames.has(nm);
+      const byP = phone && expiredPhones.has(phone), byN = nm && expiredNames.has(nm);
       if ((byP || byN) &&
-          !confirm("⚠ 주의\n\n이 신청자 (" + nm + " / " + ph + ") 는 과거 '미설치 72시간 만료' 이력이 있습니다 (" + (byP ? "번호" : "") + (byP && byN ? "·" : "") + (byN ? "이름" : "") + " 일치).\n\n그래도 승인(라이선스 발급)하시겠습니까?")) {
+          !confirm("⚠ 주의\n\n이 신청자 (" + nm + " / " + phone + ") 는 과거 '미설치 72시간 만료' 이력이 있습니다 (" + (byP ? "번호" : "") + (byP && byN ? "·" : "") + (byN ? "이름" : "") + " 일치).\n\n그래도 승인(라이선스 발급)하시겠습니까?")) {
         return;
       }
-      // SMS 미리채움 — 유저 탭 컨텍스트 안에서 (db.set 이전)
-      if (ph && smsTemplate) {
+      if (phone && smsTemplate) {
         const shortName = nm.slice(1) || "";
         const body = smsTemplate.replace(/\{이름\}/g, shortName);
-        location.href = "sms:" + ph + "?body=" + encodeURIComponent(body);
-      } else if (!ph) {
-        flashMsg("번호 없음 — 문자 생략, status만 처리합니다.", false);
+        pendingSms = { phone, body };
+      } else if (!phone) {
+        pendingSmsWarning = "번호 없음 — 문자 생략, status만 처리합니다.";
       } else {
-        flashMsg("문자 문구 미설정 — 문자 생략. 상단 '문자 문구 설정'에서 입력하세요.", false);
+        pendingSmsWarning = "문자 문구 미설정 — 문자 생략. 상단 '문자 문구 설정'에서 입력하세요.";
       }
     }
     db.ref(`applications/${id}/status`).set(status)
       .then(() => {
-        const a = cache[id];
-        if (!a) return;
-        const phone = (a.phone || "").replace(/[^\d]/g, "");
-        if (!phone) return;
+        if (!phone) return null;
         if (status === "approved") {
-          // 승인 → 본인 전화번호로 라이선스 자동 발급 (테스트 버전 한정 유효)
-          db.ref(`licenses/${phone}`).set({
-            name: a.name || "",
+          return db.ref(`licenses/${phone}`).set({
+            name: (a && a.name) || "",
             phone: phone,
             appKey: id,
             status: "active",
             build: "test",
             grantedAt: firebase.database.ServerValue.TIMESTAMP
-          }).then(() => flashLic(`✓ ${a.name} 라이선스 발급 (${phone})`))
-            .catch(e => alert("라이선스 발급 실패: " + e.message));
-        } else {
-          // 승인 외(대기·거절·삭제)로 바꾸면 라이선스 비활성
-          db.ref(`licenses/${phone}/status`).set("revoked").catch(() => {});
+          });
+        }
+        return db.ref(`licenses/${phone}/status`).set("revoked");
+      })
+      .then(() => {
+        if (status === "approved") {
+          if (phone) flashLic(`✓ ${a.name} 라이선스 발급 (${phone})`);
+          if (pendingSms) {
+            setTimeout(() => {
+              location.href = "sms:" + pendingSms.phone + "?body=" + encodeURIComponent(pendingSms.body);
+            }, 150);
+          } else if (pendingSmsWarning) {
+            flashMsg(pendingSmsWarning, false);
+          }
         }
       })
       .catch(e => alert("상태 변경 실패: " + e.message));

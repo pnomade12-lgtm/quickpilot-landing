@@ -8,6 +8,24 @@
 <meta property="og:title" content="QuickPilot">
 <meta property="og:description" content="운전 중에 콜 하나 더 잡겠다고 뒤질 뻔한 적, 한두 번이 아닙니다. 더럽고 열 받아서 내가 만들었습니다.">
 <meta property="og:type" content="website">
+
+<!-- 5/17 디렉터 명시 — Firebase 전환 (GitHub PAT 폐기) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyBoZSnKoTu6nBdE0VfJAiCmWgjfKgLHqus",
+    authDomain: "quickpilot-39d72.firebaseapp.com",
+    databaseURL: "https://quickpilot-39d72-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "quickpilot-39d72",
+    storageBucket: "quickpilot-39d72.firebasestorage.app",
+    messagingSenderId: "530394028123",
+    appId: "1:530394028123:web:ab56e0951f214401d0c77e"
+  });
+</script>
+
 <style>
   :root {
     --bg: #0a0a0a;
@@ -265,11 +283,80 @@
   #edit-status.show { display: block; }
   #edit-status.error { border-color: #ff4040; color: #ff8888; background: #2a0000; }
   #edit-status.ok { border-color: #40c040; color: #88ff88; background: #002a00; }
+
+  /* 5/17 — 옵시디언 시각과 동일하게 (단일 .md 흐름) */
+  #landing-content {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    font-size: 18px;
+    line-height: 1.75;
+    color: #dcddde;
+    background: transparent;
+    border: none;
+  }
+  #landing-content .box-content { padding: 0; }
+  #landing-content h1, #landing-content h2, #landing-content h3, #landing-content h4 {
+    color: #fff;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 1.6em 0 0.6em;
+    letter-spacing: -0.01em;
+  }
+  #landing-content h1 { font-size: 1.9em; }
+  #landing-content h2 { font-size: 1.45em; border-bottom: 1px solid #2a2a2a; padding-bottom: 0.3em; }
+  #landing-content h3 { font-size: 1.18em; }
+  #landing-content h1:first-child, #landing-content h2:first-child, #landing-content h3:first-child { margin-top: 0; }
+  #landing-content p { margin: 0.7em 0; }
+  #landing-content hr {
+    border: none;
+    border-top: 1px solid #3a3a3a;
+    margin: 2.5em 0;
+  }
+  #landing-content blockquote {
+    border-left: 4px solid #555;
+    padding: 0.6em 1em;
+    margin: 1.2em 0;
+    background: rgba(255,255,255,0.03);
+    color: #b9bbbe;
+    font-style: normal;
+  }
+  #landing-content ul, #landing-content ol { padding-left: 1.6em; margin: 0.6em 0; }
+  #landing-content li { margin: 0.3em 0; }
+  #landing-content a { color: #4da3ff; text-decoration: none; }
+  #landing-content a:hover { text-decoration: underline; }
+  #landing-content u { text-decoration: underline; text-underline-offset: 3px; }
+  #landing-content code {
+    background: #2a2a2a;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: #ffd60a;
+  }
+  #landing-content .hot {
+    background: rgba(255,59,48,0.15);
+    color: #ff6b60;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-weight: 700;
+  }
+  #landing-content strong { color: #fff; font-weight: 700; }
+  #landing-content em { color: #dcddde; font-style: italic; }
+
+  @media (max-width: 600px) {
+    #landing-content { padding: 24px 18px 60px; font-size: 17px; line-height: 1.7; }
+    #landing-content h1 { font-size: 1.6em; }
+    #landing-content h2 { font-size: 1.3em; }
+  }
 </style>
 <style data-emotion="css" data-s=""></style></head>
 <body><div data-wxt-integrated=""><div id="__endic_crx__"><div class="css-1rld6j7"></div></div></div>
 <main>
-
+  <article id="landing-content" class="box">
+    <div class="box-content">로딩 중…</div>
+  </article>
+</main>
+<template id="__deleted">
   <!-- HERO -->
   <header class="hero box" data-box="hero">
     <div class="box-content"><h1>운전 중에 좋은 콜 하나 더 잡겠다고 핸드폰 2개 세팅해 놓고 어플 서너개 조작하다가
@@ -334,42 +421,43 @@
       <h3>아무나 막 쓰는 도구로 안 만듭니다.</h3>
       <p>무료로 드리는 이유는 단 하나입니다. 여러분이 큐피를 쓰면서 쏘아 올려주는 자료가 다음 사용자들의 큐피를 더 똑똑하게 만들기 때문입니다. 그래서 신청해 주신 분 한 분 한 분 직접 확인하고 등록해 드립니다.</p>
       <p class="dim">본인 인증된 핸드폰 번호로 라이센스가 발급됩니다. 등록된 본인만 쓸 수 있습니다.</p>
-      <a class="btn" href="#apply">베타 테스터 신청하기</a>
-      <p class="small">신청 폼 연결 자리 — 구글폼 또는 자체 폼 박을 위치.</p>
+      <a class="btn" href="apply.html">베타 테스터 신청하기</a>
     </div>
   </section>
-
-</main>
+</template>
 
 <footer>
   © QuickPilot · 현장 기사가 직접 만드는 도구
 </footer>
 
-<!-- 5/17 디렉터 명시 — 모바일 sticky 편집 toolbar -->
-<div id="edit-toolbar">
-  <button type="button" class="primary" data-act="save">저장</button>
-  <button type="button" data-act="cancel">취소</button>
-  <div class="sep"></div>
-  <button type="button" class="tool" data-act="bold" title="굵게"><b>B</b></button>
-  <button type="button" class="tool hot" data-act="highlight" title="빨강 강조"><b>색</b></button>
-  <button type="button" class="tool" data-act="unbold" title="해제">평</button>
-  <div class="sep"></div>
-  <button type="button" class="tool" data-act="br" title="줄바꿈">↵</button>
-</div>
+<!-- 편집 toolbar 폐기 — 옵시디언에서 편집 -->
 
 
 
 <script>
 (function () {
-  const REPO = 'pnomade12-lgtm/quickpilot-landing';
-  const PATH = 'index.html';
-  const BRANCH = 'master';
-  const OWNER_LOGIN = 'pnomade12-lgtm';
-  const PAT_KEY = 'qp_landing_pat';
+  const db = firebase.database();
+  const target = document.querySelector('#landing-content .box-content');
+
+  function render(html) {
+    if (!html) { target.innerHTML = '<p class="dim">아직 자료 없음 — 옵시디언 sync 대기 중</p>'; return; }
+    target.innerHTML = html;
+  }
+
+  // 실시간 구독 — 옵시디언에서 push되면 즉시 반영
+  db.ref('landing/html').on('value', snap => render(snap.val()), err => {
+    console.error('[landing] RTDB error', err);
+    target.innerHTML = '<p class="dim">로드 실패: ' + err.message + '</p>';
+  });
+})();
+</script>
+<script type="text/plain" id="__old_editor_disabled">
+(function () {
+  const OWNER_EMAIL = 'pnomade12@gmail.com';
+  const auth = firebase.auth();
+  const db = firebase.database();
 
   function ensureStatus() {
-    // 5/17 본질 fix — saveEdit cloneNode에서 #edit-status 같이 삭제됐던 자료.
-    //   HTML source에 박혔다 사라진 자료 자료 자료. 매번 자동 재생성 박음.
     let s = document.getElementById('edit-status');
     if (!s) {
       s = document.createElement('div');
@@ -379,7 +467,6 @@
     return s;
   }
   function flash(msg, kind) {
-    // kind: 'ok' | 'error' | undefined
     const status = ensureStatus();
     status.textContent = msg;
     status.className = 'show' + (kind ? ' ' + kind : '');
@@ -388,19 +475,36 @@
     flash._t = setTimeout(() => status.className = '', 4000);
   }
 
-  async function getPAT() {
-    let pat = localStorage.getItem(PAT_KEY);
-    if (pat) return pat;
-    pat = prompt('GitHub Personal Access Token (repo 권한 필요):');
-    if (!pat) return null;
-    const r = await fetch('https://api.github.com/user', {
-      headers: { Authorization: 'token ' + pat }
-    });
-    if (!r.ok) { alert('PAT 인증 실패'); return null; }
-    const u = await r.json();
-    if (u.login !== OWNER_LOGIN) { alert('디렉터 본인 계정만 편집 가능'); return null; }
-    localStorage.setItem(PAT_KEY, pat);
-    return pat;
+  async function signIn() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const r = await auth.signInWithPopup(provider);
+    if (r.user.email !== OWNER_EMAIL) {
+      await auth.signOut();
+      throw new Error('디렉터 본인 계정만 편집 가능');
+    }
+    return r.user;
+  }
+
+  async function ensureOwner() {
+    if (auth.currentUser && auth.currentUser.email === OWNER_EMAIL) return auth.currentUser;
+    return await signIn();
+  }
+
+  // 페이지 로드 — RTDB에서 박힌 box html 자료 fetch 후 덮어쓰기
+  async function loadFromRTDB() {
+    try {
+      const snap = await db.ref('landing/boxes').once('value');
+      const data = snap.val() || {};
+      Object.entries(data).forEach(([boxId, entry]) => {
+        if (!entry || !entry.html) return;
+        const box = document.querySelector(`.box[data-box="${boxId}"]`);
+        if (!box) return;
+        const content = box.querySelector(':scope > .box-content');
+        if (content) content.innerHTML = entry.html;
+      });
+    } catch (e) {
+      console.warn('[QP edit] RTDB load fail (계속)', e);
+    }
   }
 
   function attachEditButtons() {
@@ -410,7 +514,14 @@
       btn.className = 'edit-btn';
       btn.type = 'button';
       btn.textContent = '✏️ 수정';
-      btn.addEventListener('click', () => enterEdit(box));
+      btn.addEventListener('click', async () => {
+        try {
+          await ensureOwner();
+          enterEdit(box);
+        } catch (e) {
+          flash('로그인 실패: ' + e.message, 'error');
+        }
+      });
       box.appendChild(btn);
 
       const actions = document.createElement('div');
@@ -433,29 +544,63 @@
       if (!t || !_activeBox) return;
       const act = t.dataset.act;
       const content = _activeBox.querySelector(':scope > .box-content');
-      if (act === 'save') saveEdit(_activeBox);
-      else if (act === 'cancel') cancelEdit(_activeBox);
-      else if (act === 'bold') { content.focus(); document.execCommand('bold'); }
-      else if (act === 'unbold') { content.focus(); document.execCommand('removeFormat'); }
-      else if (act === 'highlight') {
-        content.focus();
-        // hot span 자료 박음
+      content.focus();
+      const exec = (cmd, val) => document.execCommand(cmd, false, val);
+      const wrap = (tag) => {
         const sel = window.getSelection();
-        if (sel && sel.rangeCount && !sel.isCollapsed) {
-          const range = sel.getRangeAt(0);
-          const span = document.createElement('span');
-          span.className = 'hot';
-          span.style.color = '#ff3b30';
-          span.style.fontWeight = '700';
-          try { range.surroundContents(span); } catch (_) {
-            // 자료 자료 자료 자료 자료 — execCommand fallback
-            document.execCommand('foreColor', false, '#ff3b30');
+        if (!sel || !sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
+        if (sel.isCollapsed) return;
+        const el = document.createElement(tag);
+        try { range.surroundContents(el); } catch (_) {}
+      };
+      switch (act) {
+        case 'save': saveEdit(_activeBox); break;
+        case 'cancel': cancelEdit(_activeBox); break;
+        case 'bold': exec('bold'); break;
+        case 'italic': exec('italic'); break;
+        case 'underline': exec('underline'); break;
+        case 'strike': exec('strikeThrough'); break;
+        case 'unbold': exec('removeFormat'); break;
+        case 'size-up': {
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount && !sel.isCollapsed) {
+            const range = sel.getRangeAt(0);
+            const span = document.createElement('span');
+            span.style.fontSize = '1.3em';
+            try { range.surroundContents(span); } catch (_) {}
           }
+          break;
         }
-      }
-      else if (act === 'br') {
-        content.focus();
-        document.execCommand('insertHTML', false, '<br>');
+        case 'size-down': {
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount && !sel.isCollapsed) {
+            const range = sel.getRangeAt(0);
+            const span = document.createElement('span');
+            span.style.fontSize = '0.85em';
+            try { range.surroundContents(span); } catch (_) {}
+          }
+          break;
+        }
+        case 'color-red': exec('foreColor', '#ff3b30'); break;
+        case 'color-yellow': exec('foreColor', '#ffd60a'); break;
+        case 'color-blue': exec('foreColor', '#4da3ff'); break;
+        case 'color-dim': exec('foreColor', '#9a9a9a'); break;
+        case 'align-left': exec('justifyLeft'); break;
+        case 'align-center': exec('justifyCenter'); break;
+        case 'align-right': exec('justifyRight'); break;
+        case 'ul': exec('insertUnorderedList'); break;
+        case 'ol': exec('insertOrderedList'); break;
+        case 'quote': exec('formatBlock', 'blockquote'); break;
+        case 'br': exec('insertHTML', '<br>'); break;
+        case 'hr': exec('insertHorizontalRule'); break;
+        case 'link': {
+          const url = prompt('링크 URL:', 'https://');
+          if (url) exec('createLink', url);
+          break;
+        }
+        case 'undo': exec('undo'); break;
+        case 'redo': exec('redo'); break;
       }
     });
   }
@@ -492,65 +637,30 @@
   }
 
   async function saveEdit(box) {
-    flash('저장 시작...');
-    const pat = await getPAT();
-    if (!pat) { flash('PAT 없음 — 저장 취소', 'error'); return; }
+    flash('저장 중...');
     const content = box.querySelector(':scope > .box-content');
-    content.contentEditable = 'false';
-    box.classList.remove('editing');
+    const boxId = box.dataset.box;
+    if (!boxId) { flash('data-box 없음', 'error'); return; }
 
     const saveBtn = box.querySelector('.edit-actions .save');
     if (saveBtn) saveBtn.disabled = true;
-    flash('GitHub 저장 중...');
 
     try {
-      const docClone = document.documentElement.cloneNode(true);
-      docClone.querySelectorAll('.edit-btn, .edit-actions, #edit-status').forEach(el => el.remove());
-      docClone.querySelectorAll('.box.editing').forEach(el => el.classList.remove('editing'));
-      docClone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
-      const html = '<!doctype html>\n' + docClone.outerHTML;
-
-      // 5/17 본질 fix — 409 conflict (sha 자료 자료) 시 자동 retry (최대 3회)
-      //   디렉터 페이지가 옛 자료 자료 자료 박힌 경우 본인이 GitHub에서 새 sha 받아 재시도
-      let putOk = false; let lastErr = '';
-      for (let attempt = 0; attempt < 3 && !putOk; attempt++) {
-        // 5/17 본질 fix — Cache-Control 헤더 제거 (GitHub API CORS preflight fail 원인).
-        //   캐시 회피는 URL에 박힌 _=Date.now() 만으로 충분.
-        const metaRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}?ref=${BRANCH}&_=${Date.now()}`, {
-          headers: { Authorization: 'token ' + pat }
-        });
-        if (!metaRes.ok) {
-          const errTxt = await metaRes.text();
-          throw new Error('SHA fetch ' + metaRes.status + ' — ' + errTxt.slice(0, 150));
-        }
-        const meta = await metaRes.json();
-
-        const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}`, {
-          method: 'PUT',
-          headers: { Authorization: 'token ' + pat, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: `편집: ${box.dataset.box} 박스 (랜딩 편집 UI)`,
-            content: btoa(unescape(encodeURIComponent(html))),
-            sha: meta.sha,
-            branch: BRANCH
-          })
-        });
-        if (putRes.ok) { putOk = true; break; }
-        const err = await putRes.text();
-        lastErr = 'PUT ' + putRes.status + ' — ' + err.slice(0, 200);
-        if (putRes.status !== 409) throw new Error(lastErr);
-        // 409 = sha conflict, retry with fresh sha
-        flash(`sha 자료 자료 — 재시도 ${attempt + 1}/3`);
-      }
-      if (!putOk) throw new Error('재시도 실패: ' + lastErr);
+      await ensureOwner();
+      const html = content.innerHTML;
+      await db.ref(`landing/boxes/${boxId}`).set({
+        html: html,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP,
+        updatedBy: auth.currentUser.email
+      });
+      content.contentEditable = 'false';
+      box.classList.remove('editing');
       box._snapshot = null;
-      flash('저장 완료 ✓ (1~2분 후 라이브 반영)', 'ok');
+      flash('저장 완료 ✓', 'ok');
       hideToolbar();
     } catch (e) {
       console.error('[QP edit] save fail', e);
       flash('저장 실패: ' + e.message, 'error');
-      if (box._snapshot != null) content.innerHTML = box._snapshot;
-      // editing 상태 복원해서 재시도 가능하게
       content.contentEditable = 'true';
       box.classList.add('editing');
       _activeBox = box;
@@ -559,8 +669,11 @@
     }
   }
 
-  attachEditButtons();
-  attachToolbar();
+  // init — RTDB 자료 먼저 로드 후 편집 버튼 부착
+  loadFromRTDB().finally(() => {
+    attachEditButtons();
+    attachToolbar();
+  });
 })();
 </script>
 

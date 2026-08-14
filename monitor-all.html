@@ -99,6 +99,12 @@
   .agrow .agph { color:var(--dim); font-size:12px; white-space:nowrap; margin-right:auto; }
   .agrow .agcnt { color:var(--dim); font-size:12px; white-space:nowrap; }
   .agrow .agheart { color:#ff6b6b; font-size:12px; white-space:nowrap; }
+  .agrow { flex-wrap:wrap; }
+  .agrow .agmain { display:flex; align-items:center; gap:8px; min-width:0; flex:1 1 100%; }
+  .agrow .agstats { flex:1 1 100%; color:var(--dim); font-size:12px; padding-left:2px; }
+  .agrow .agrate { font-weight:400; }
+  .agrow .agtrust { font-weight:400; }
+  .agrow .agstars { color:#ffd60a; letter-spacing:1px; }
   .adblk { padding:8px 2px; border-bottom:1px solid var(--line); }
   .adblk .adname { font-weight:700; font-size:14px; margin-bottom:3px; }
   .adblk .adcmt { font-size:13px; line-height:1.5; margin:2px 0; }
@@ -260,36 +266,65 @@
   document.querySelector("#agencyModal .detail-card").onclick = e => e.stopPropagation();
   document.querySelector("#addrModal .detail-card").onclick = e => e.stopPropagation();
 
-  // 주선사 — 오더에서 자동 수집된 주선사 목록 + 하트 수(하트는 아직 미수집이면 0). 하트 많은 순 → 최근 등장 순.
+  // 주선사 — 서버 집계 기준. 최신 집계만 표시하고, 신뢰도는 적요 점수만 쓴다.
   let agencyList = [];
   async function openAgencies() {
     openLayer("agencyModal");
     $("ag-search").value = "";
-    const box = $("ag-body"); box.textContent = "불러오는 중…";
+    const box = $("ag-body");
+    box.textContent = "불러오는 중...";
     try {
-      const o = (await db.ref("v1/agencies").once("value")).val() || {};
-      // [6/16] 주선사 감지수 = 열 때마다 data_live(orderLive가 전 유저 일별 중복제거로 실시간 누적) 전 날짜 합산 → 화면 열 때 갱신.
-      // cleanCount(과거 1회 백필·자동갱신 없어 정체)는 data_live에 없는 주선사만 폴백.
-      const dl = (await db.ref("v1/app/data_live").once("value")).val() || {};
-      const liveAgg = {};
-      Object.values(dl).forEach(d => { const ag = d && d.agencies; if (ag) for (const ph in ag) liveAgg[ph] = (liveAgg[ph] || 0) + (Number(ag[ph]) || 0); });
-      const heartN = a => { const h = a.hearts; if (h && typeof h === "object") return Object.keys(h).length; if (h != null) return Number(h) || 0; return a.heartedBy ? Object.keys(a.heartedBy).length : 0; };   // hearts={uid:true} 객체면 누른 사람 수, 숫자면 그대로
-      const cntN = a => { const ph = (a.phone || "").replace(/[^0-9]/g, ""); const live = liveAgg[ph] || 0, clean = (a.cleanCount != null ? Number(a.cleanCount) : 0) || 0; return Math.max(live, clean); };   // 둘 중 큰 값. data_live(6/12~ 본격, 기간 짧음)가 옛 cleanCount 백필보다 작은 주선사 다수 → 안 줄도록 max. 활발 주선사는 data_live로 갱신. 전 주선사 정확 갱신은 서버 재집계 별건.
-      agencyList = Object.values(o).filter(a => a && a.name)
-        .map(a => ({ name: a.name, phone: a.phone || "", cnt: cntN(a), heart: heartN(a), lastTs: a.lastTs || 0 }))
-        .sort((x, y) => y.cnt - x.cnt || y.heart - x.heart || y.lastTs - x.lastTs);
+      const agencySnap = await db.ref("v1/agencies").once("value");
+      const o = agencySnap.val() || {};
+      const heartN = a => { const h = a.hearts; if (h && typeof h === "object") return Object.keys(h).length; if (h != null) return Number(h) || 0; return a.heartedBy ? Object.keys(a.heartedBy).length : 0; };
+      const n = v => Number(v || 0) || 0;
+      const byPhone = new Map();
+      Object.entries(o).filter(([, a]) => a && a.name)
+        .map(([key, a]) => ({
+          name: a.name,
+          phone: String(a.phone || key).replace(/\D/g, ""),
+          cnt: n(a.cleanCount),
+          heart: heartN(a),
+          rate: a.medianWonPerKm == null ? (a.wonPerKmMedian == null ? (a.avgWonPerKm == null ? null : n(a.avgWonPerKm)) : n(a.wonPerKmMedian)) : n(a.medianWonPerKm),
+          rateSamples: n(a.wonPerKmSampleCount),
+          trust: a.trustScore == null ? null : n(a.trustScore),
+          stars: n(a.volumeStars),
+          method: a.statsMethod || "",
+          windowFrom: a.statsWindowFrom || "",
+          statsAt: n(a.statsUpdatedAt),
+          lastTs: a.lastTs || 0
+        }))
+        .filter(a => a.phone.length >= 7 && a.cnt >= 10)
+        .forEach(a => {
+          const current = byPhone.get(a.phone);
+          if (!current || a.cnt > current.cnt || (a.cnt === current.cnt && a.lastTs > current.lastTs)) byPhone.set(a.phone, a);
+        });
+      agencyList = Array.from(byPhone.values())
+        .sort((x, y) => y.heart - x.heart || y.cnt - x.cnt || y.trust - x.trust || y.lastTs - x.lastTs);
       renderAgencies("");
-    } catch (e) { box.textContent = "로드 실패: " + e.message; }
+    } catch (e) {
+      box.textContent = "로드 실패: " + e.message;
+    }
   }
   function renderAgencies(q) {
     const esc = s => String(s == null ? "" : s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+    const stars = n => {
+      const count = Math.max(0, Math.min(5, Number(n) || 0));
+      return count > 0 ? "⭐️".repeat(count) : "-";
+    };
+    const won = n => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const rateColor = v => v < 500 ? "#B71C1C" : v < 700 ? "#D9540F" : v < 900 ? "#C7791D" : v < 1100 ? "#558B2F" : v < 1300 ? "#1B5E20" : v < 1500 ? "#01579B" : "#1565C0";
+    const trustColor = v => v >= 90 ? "#1565C0" : v >= 80 ? "#01579B" : v >= 70 ? "#1B5E20" : v >= 60 ? "#558B2F" : v >= 50 ? "#C7791D" : v >= 40 ? "#D9540F" : "#B71C1C";
     const kw = (q || "").trim();
     const list = kw ? agencyList.filter(a => (a.name + " " + a.phone).indexOf(kw) >= 0) : agencyList;
     $("ag-count").textContent = kw ? (list.length + "/" + agencyList.length + "개사") : (agencyList.length + "개사");
-    $("ag-body").innerHTML = list.map(a => `<div class="agrow"><span class="agname">${esc(a.name)}</span><span class="agph">${esc(a.phone)}</span><span class="agcnt">감지 ${a.cnt}</span><span class="agheart">❤ ${a.heart}</span></div>`).join("") || "검색 결과 없음";
+    $("ag-body").innerHTML = list.map(a => {
+      const rate = a.rate > 0 ? `<span class="agrate" title="표본 ${a.rateSamples || 0}건">평단가 <span style="color:${rateColor(a.rate)}">${won(a.rate)}원/km</span></span> · ` : "";
+      const trust = a.trust == null ? "-" : `<span style="color:${trustColor(a.trust)}">${a.trust}%</span>`;
+      return `<div class="agrow"><div class="agmain"><span class="agname">${esc(a.name)}</span><span class="agph">${esc(a.phone)}</span><span class="agcnt">감지 ${a.cnt}</span><span class="agheart">♥${a.heart}</span></div><div class="agstats">${rate}<span class="agtrust">신뢰도 ${trust}</span> · 오더량 <span class="agstars">${stars(a.stars)}</span></div></div>`;
+    }).join("") || "검색 결과 없음";
   }
 
-  // 주소지 — 공식 주소 DB 연동 전. 누군가 남긴 건물 코멘트가 있으면 그대로 표시(최근 코멘트 순).
   async function openAddrs() {
     openLayer("addrModal");
     const box = $("ad-body"); box.textContent = "불러오는 중…";

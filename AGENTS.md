@@ -68,6 +68,9 @@ This repository serves the live QuickPilot Firebase project. Preserve unrelated 
   control/current-metrics nodes, writes only a newer-generation `BLOCKED` control on a breach, and leaves
   login, reads, social, Hosting, and updates untouched. Deploy it only through its isolated dry-run-first
   script; collector loss or stale metrics is a fail-closed order-sync condition.
+- The paired metrics collector may query only the exact Cloud Monitoring series for RTDB denied writes,
+  billed outbound bytes, database load, and `orderLive` invocations. It writes one compact
+  `order_sync_metrics/current` sample per minute; it must never scan RTDB user/order paths.
 - Rules candidates take the minimum client version from the app repository's `.version_lock`; never copy a
   previous release number into a new rules or release gate.
 

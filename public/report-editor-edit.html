@@ -27,16 +27,18 @@
     .report b,.report span{display:block;word-break:keep-all}
     .report b{font-size:14px;line-height:1.35}
     .report span{margin-top:2px;color:var(--ts);font-size:12px}
-    .toolbar{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;flex:0 0 auto;margin:8px -18px -12px;padding:10px 18px;background:rgba(245,238,224,.98);border-top:1px solid var(--bd)}
+    .toolbar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:0 0 auto;margin:8px -18px -12px;padding:10px 18px;background:rgba(245,238,224,.98);border-top:1px solid var(--bd)}
     button{min-height:44px;border:1px solid var(--bd);border-radius:7px;background:var(--card);color:var(--tm);font:inherit;font-size:14px;font-weight:800;cursor:pointer}
     button.primary{border-color:#668c53;background:var(--grn);color:#fff}
+    button.toggle.active{border-color:#668c53;background:var(--grn);color:#fff}
     button.warn{border-color:#d9a18d;color:#9a4429}
     button:disabled{opacity:.45;cursor:default}
     .status{flex:0 0 auto;min-height:19px;margin:5px 2px;color:var(--ts);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .status.editing{color:#9a4429;font-weight:800}
     .block-label{flex:0 0 auto;margin:3px 2px -3px;color:var(--gold);font-size:11px;font-weight:800}
     .blocks{display:flex;flex:1 1 auto;min-height:0;flex-direction:column;gap:10px;overflow:auto;padding:2px 2px 10px}
-    .text-block{display:block;flex:0 0 auto;width:100%;min-height:74px;padding:12px;border:1px solid var(--bd);border-radius:8px;background:#fffdf8;color:var(--tm);font:14px/1.75 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono","Noto Sans Mono",monospace;resize:none;overflow:hidden;overflow-wrap:anywhere}
+    .text-block{display:block;flex:0 0 auto;width:100%;min-height:74px;padding:13px 14px;border:1px solid var(--bd);border-radius:8px;background:#fffdf8;color:var(--tm);font:15px/1.6 -apple-system,"Noto Sans KR",sans-serif;letter-spacing:0;resize:none;overflow:hidden;overflow-wrap:anywhere;white-space:pre-wrap}
+    .text-block[data-role="app-title"]{font-size:16px;font-weight:800;line-height:1.5}
     .text-block:focus,.visual-note:focus{outline:2px solid rgba(127,176,105,.45);outline-offset:1px}
     .visual-block{flex:0 0 auto;border:1px solid var(--bd);border-radius:8px;background:var(--card);overflow:hidden}
     .visual-caption{padding:7px 10px;color:var(--ts);font-size:11px;font-weight:800}
@@ -50,7 +52,14 @@
     .exit-dialog p{margin:0 0 15px;color:var(--ts);font-size:13px;line-height:1.55}
     .exit-actions{display:grid;gap:8px}
     .exit-actions button{width:100%}
-    @media(max-width:430px){main{padding:10px 10px 8px}h1{font-size:21px}.toolbar{margin-left:-10px;margin-right:-10px;padding-left:10px;padding-right:10px}.toolbar button{font-size:13px}.text-block{font-size:13px;padding:11px}}
+    .preview-modal{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:0;background:rgba(44,36,22,.48)}
+    .preview-modal[hidden]{display:none}
+    .preview-dialog{display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;border:0;border-radius:0;background:#fff;box-shadow:0 12px 30px rgba(44,36,22,.24)}
+    .preview-head{display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;padding:9px 12px;background:var(--bg);border-bottom:1px solid var(--bd);font-size:13px;font-weight:800}
+    .preview-head button{min-height:34px;padding:0 12px;font-size:12px}
+    .preview-frame{display:block;width:100%;height:100%;border:0;background:#fff}
+    @media(min-width:761px){.preview-modal{padding:12px}.preview-dialog{width:min(100%,760px);height:min(100%,calc(100dvh - 24px));border:1px solid var(--bd);border-radius:10px}}
+    @media(max-width:430px){main{padding:10px 10px 8px}h1{font-size:21px}.toolbar{margin-left:-10px;margin-right:-10px;padding-left:10px;padding-right:10px}.toolbar button{font-size:13px}.text-block{font-size:14px;padding:12px}}
   </style>
 </head>
 <body>
@@ -62,9 +71,19 @@
     <div class="blocks" id="editorBlocks"></div>
     <div class="toolbar">
       <button id="saveButton" class="primary" type="button" disabled>저장</button>
-      <button id="resetButton" class="warn" type="button" disabled>저장본 지우기</button>
+      <button id="previewButton" type="button" disabled>미리보기</button>
+      <button id="publishButton" class="toggle" type="button" aria-pressed="false" disabled>발행 예약</button>
     </div>
   </main>
+  <div class="preview-modal" id="previewModal" hidden>
+    <div class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+      <div class="preview-head">
+        <span id="previewTitle">앱 미리보기</span>
+        <button id="previewCloseButton" type="button">닫기</button>
+      </div>
+      <iframe id="previewFrame" class="preview-frame" title="리포트 앱 미리보기"></iframe>
+    </div>
+  </div>
   <div class="exit-modal" id="exitModal" hidden>
     <div class="exit-dialog" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
       <h2 id="exitTitle">편집을 종료할까요?</h2>
@@ -119,8 +138,12 @@
     const status = document.getElementById("status");
     const editorBlocks = document.getElementById("editorBlocks");
     const saveButton = document.getElementById("saveButton");
-    const resetButton = document.getElementById("resetButton");
+    const previewButton = document.getElementById("previewButton");
+    const publishButton = document.getElementById("publishButton");
     const backLink = document.querySelector(".back");
+    const previewModal = document.getElementById("previewModal");
+    const previewFrame = document.getElementById("previewFrame");
+    const previewCloseButton = document.getElementById("previewCloseButton");
     const exitModal = document.getElementById("exitModal");
     const exitSaveButton = document.getElementById("exitSaveButton");
     const exitDiscardButton = document.getElementById("exitDiscardButton");
@@ -135,9 +158,26 @@
     let exitInProgress = false;
     let autoSaveTimer = null;
     let editRevision = 0;
+    let publishReady = false;
+    let lastServerSaveSucceeded = false;
     let authReadyResolve;
     const authReady = new Promise((resolve) => { authReadyResolve = resolve; });
     let authReadyDone = false;
+    const readingStyleBlock = `<style id="qp-reading-style">
+body{font-family:-apple-system,"Noto Sans KR",sans-serif;line-height:1.7;letter-spacing:0}
+p{margin:0 0 18px;line-height:1.8}
+.lead{margin:0 0 20px;line-height:1.8}
+h1,h2,h3,h4{line-height:1.35}
+h2{margin-bottom:16px}
+.card,.note,.pull,.timebox,.metric{margin-top:18px;margin-bottom:18px}
+</style>`;
+
+    function ensureReadingStyle(html) {
+      const cleanHtml = String(html || "")
+        .replace(/<style\s+id=["']qp-reading-style["'][^>]*>[\s\S]*?<\/style>/gi, "");
+      if (/<\/head>/i.test(cleanHtml)) return cleanHtml.replace(/<\/head>/i, `${readingStyleBlock}</head>`);
+      return `${cleanHtml}${readingStyleBlock}`;
+    }
 
     function setStatus(message, isEditing = false) {
       status.textContent = message;
@@ -159,10 +199,22 @@
       return db.ref(`v1/report_editor_notes/${report.id}`);
     }
 
+    function publishQueueRef(report) {
+      return db.ref(`v1/report_editor_publish_queue/${report.id}`);
+    }
+
+    function refreshPublishButton() {
+      publishButton.disabled = !selected;
+      publishButton.setAttribute("aria-pressed", String(publishReady));
+      publishButton.classList.toggle("active", publishReady);
+      publishButton.textContent = publishReady ? "발행 예약됨" : "발행 예약";
+    }
+
     function refreshControls() {
       const ready = Boolean(selected);
       saveButton.disabled = !ready;
-      resetButton.disabled = !ready;
+      previewButton.disabled = !ready;
+      refreshPublishButton();
       editorBlocks.querySelectorAll("textarea").forEach((field) => { field.disabled = !ready; });
     }
 
@@ -177,7 +229,6 @@
     function isEditableElement(element) {
       const tag = element.tagName.toLowerCase();
       return ["h1", "h2", "h3", "p", "li", "footer"].includes(tag)
-        || element.classList.contains("kicker")
         || element.classList.contains("subhead");
     }
 
@@ -340,6 +391,15 @@
       let visualNumber = 0;
       let titleFound = false;
 
+      function addTextBlock(value, role = "", startsHeadline = false) {
+        const last = blocks[blocks.length - 1];
+        if (!role && !startsHeadline && last?.kind === "text" && !last.role) {
+          last.value += `\n\n${value}`;
+          return;
+        }
+        blocks.push({ kind: "text", value, role });
+      }
+
       function walk(element) {
         if (isVisualRoot(element)) {
           visualNumber += 1;
@@ -351,13 +411,16 @@
         if (isEditableElement(element)) {
           const text = plainText(element);
           if (text) {
-            const isTitle = element.tagName.toLowerCase() === "h1" && !titleFound;
+            const tag = element.tagName.toLowerCase();
+            const isTitle = tag === "h1" && !titleFound;
+            const startsHeadline = ["h1", "h2", "h3"].includes(tag)
+              || element.classList.contains("subhead");
             if (isTitle) titleFound = true;
-            blocks.push({
-              kind: "text",
-              value: isTitle ? appTitleFor(selected, text) : markdownPrefix(element) + text,
-              role: isTitle ? "app-title" : "",
-            });
+            addTextBlock(
+              isTitle ? appTitleFor(selected, text) : markdownPrefix(element) + text,
+              isTitle ? "app-title" : "",
+              startsHeadline,
+            );
           }
           return;
         }
@@ -412,7 +475,7 @@
         if (block.kind === "text") {
           const field = document.createElement("textarea");
           field.className = "text-block";
-          field.spellcheck = false;
+          field.spellcheck = true;
           field.value = block.role === "app-title" && savedAppTitle ? savedAppTitle : block.value;
           if (block.role) field.dataset.role = block.role;
           if (block.role === "app-title") {
@@ -422,6 +485,8 @@
             field.setAttribute("aria-label", "앱 제목 수정");
             pageTitle.textContent = field.value.trim();
             editorBlocks.appendChild(label);
+          } else {
+            field.setAttribute("aria-label", "본문 구간 수정");
           }
           field.addEventListener("input", () => {
             growTextarea(field);
@@ -528,7 +593,20 @@
           updatedAt: firebase.database.ServerValue.TIMESTAMP,
           updatedBy: actor,
         },
+        [`report_editor_title_index/${selected.id}`]: {
+          title,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP,
+          updatedBy: actor,
+        },
       };
+      if (publishReady) {
+        updates[`report_editor_publish_queue/${selected.id}`] = {
+          ready: true,
+          title,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP,
+          updatedBy: actor,
+        };
+      }
       if (Object.keys(noteData).length) {
         updates[`report_editor_notes/${selected.id}`] = noteData;
       }
@@ -625,6 +703,7 @@
 
     async function loadReport(report) {
       selected = report;
+      publishReady = false;
       pageTitle.textContent = appTitleFor(report, report.title);
       clearTimeout(autoSaveTimer);
       autoSaveTimer = null;
@@ -636,6 +715,7 @@
         let serverTitle = "";
         let serverNotes = {};
         let serverUpdatedAt = 0;
+        let serverPublishReady = false;
         if (currentUser) {
           try {
             const snapshot = await draftRef(report).once("value");
@@ -652,7 +732,15 @@
           } catch (error) {
             serverNotes = {};
           }
+          try {
+            const snapshot = await publishQueueRef(report).once("value");
+            const record = snapshot.val() || {};
+            serverPublishReady = record.ready === true;
+          } catch (error) {
+            serverPublishReady = false;
+          }
         }
+        publishReady = serverPublishReady;
         const saved = localStorage.getItem(storageKey(report.id));
         const autoSaved = localStorage.getItem(autoStorageKey(report.id));
         const savedTitle = localStorage.getItem(storageTitleKey(report.id)) || "";
@@ -735,7 +823,28 @@
         ? "마크다운 내용을 저장할 수 있습니다."
         : `제목·문단 수가 원본과 다릅니다. 반영 ${Math.min(result.expected, result.received)}개 / 원본 ${result.expected}개`;
       if (!silent) setStatus(structureMessage, result.expected !== result.received);
-      return result.html;
+      return ensureReadingStyle(result.html);
+    }
+
+    function openPreview() {
+      if (!selected || !sourceHtml) return;
+      const html = buildSavedHtml(true);
+      if (!html) {
+        setStatus("미리보기를 만들지 못했습니다.", true);
+        return;
+      }
+      const baseHref = "https://quickpilot-39d72.web.app/";
+      const previewHtml = /<base\s/i.test(html)
+        ? html
+        : html.replace(/<head(\s[^>]*)?>/i, (match) => `${match}<base href="${baseHref}">`);
+      previewFrame.srcdoc = previewHtml;
+      previewModal.hidden = false;
+      previewCloseButton.focus();
+    }
+
+    function closePreview() {
+      previewModal.hidden = true;
+      previewFrame.srcdoc = "";
     }
 
     async function saveCurrentReport() {
@@ -745,9 +854,11 @@
       const notes = collectNotes();
       const title = collectAppTitle();
       let serverSaved = false;
+      lastServerSaveSucceeded = false;
       try {
         saveLocalDraft(html, notes, false, title);
         serverSaved = await writeDraftToServer(html, notes, title);
+        lastServerSaveSucceeded = serverSaved;
         clearLocalDraft(true);
         sourceHtml = html;
       } catch (error) {
@@ -761,25 +872,62 @@
     }
 
     saveButton.addEventListener("click", saveCurrentReport);
-
-    resetButton.addEventListener("click", async () => {
-      if (!selected || !confirm("이 휴대폰에 저장한 수정본을 지우고 원본 초안으로 돌아갈까요?")) return;
-      try {
-        clearLocalDraft(false);
-        clearLocalDraft(true);
-        if (currentUser) {
-          await draftRef(selected).remove();
-          const visualIds = editorModel?.blocks
-            ?.filter((block) => block.kind === "visual")
-            .map((block) => block.id) || [];
-          await Promise.all(visualIds.map((visualId) => notesRef(selected).child(visualId).remove()));
-        }
-        await loadReport(selected);
-        setStatus("저장한 수정본을 지우고 원본 초안을 다시 열었습니다.");
-      } catch (error) {
-        setStatus("저장본을 지우지 못했습니다.");
+    previewButton.addEventListener("click", openPreview);
+    previewCloseButton.addEventListener("click", closePreview);
+    previewModal.addEventListener("click", (event) => {
+      if (event.target === previewModal) closePreview();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !previewModal.hidden) closePreview();
+      if (!(event.ctrlKey || event.metaKey)) return;
+      if (event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        void saveCurrentReport();
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        openPreview();
       }
     });
+
+    async function togglePublishReady() {
+      if (!selected) return;
+      if (!currentUser) {
+        setStatus("서버 연결 후 발행 예약을 사용할 수 있습니다.", true);
+        return;
+      }
+      const nextReady = !publishReady;
+      if (nextReady && hasUnsavedChanges) {
+        publishButton.disabled = true;
+        setStatus("수정 내용을 먼저 서버에 저장하는 중입니다.");
+        const saved = await saveCurrentReport();
+        if (!saved || !lastServerSaveSucceeded) {
+          refreshControls();
+          setStatus("수정 내용을 서버에 저장하지 못해 발행 예약을 멈췄습니다.", true);
+          return;
+        }
+      }
+      publishButton.disabled = true;
+      try {
+        const actor = currentUser.email || currentUser.uid || "editor";
+        const title = collectAppTitle();
+        await publishQueueRef(selected).set({
+          ready: nextReady,
+          title,
+          updatedAt: firebase.database.ServerValue.TIMESTAMP,
+          updatedBy: actor,
+        });
+        publishReady = nextReady;
+        refreshPublishButton();
+        setStatus(nextReady
+          ? "발행 예약했습니다. 나중에 지시하면 예약된 글을 발행합니다."
+          : "발행 예약을 해제했습니다.");
+      } catch (error) {
+        refreshPublishButton();
+        setStatus("발행 예약 상태를 저장하지 못했습니다.", true);
+      }
+    }
+
+    publishButton.addEventListener("click", togglePublishReady);
 
     function closeExitModal() {
       exitModal.hidden = true;

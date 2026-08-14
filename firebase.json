@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": ".",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -12,6 +12,10 @@
       "app-preview.html",
       "column-3-weekend.html",
       "column-3-night.html",
+      "column-6-memo-rules.html",
+      "column-7-destination-origin.html",
+      "report-editor-data.js",
+      "drafts/**",
       "geo_check.html",
       "geo_check2.html",
       "handle-preview.html",
@@ -25,10 +29,11 @@
       "qp-toast-compare.html",
       "qp-toast-totalcall.html",
       "qp-toast.html",
-      "v29-insung.html",
-      "qp-gwanje.apk"
+      "v29-insung.html"
     ],
     "headers": [
+      { "source": "/", "headers": [ { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate, max-age=0" } ] },
+      { "source": "**", "headers": [ { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate, max-age=0" } ] },
       { "source": "**/*.html", "headers": [ { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" } ] },
       { "source": "**/*.apk", "headers": [ { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" } ] }
     ]
@@ -38,7 +43,10 @@
     "runtime": "nodejs20"
   },
   "database": {
-    "rules": "database.rules.json"
+    "rules": "database.rules.json",
+    "predeploy": [
+      "node scripts/check-database-rules-safety.js"
+    ]
   },
   "storage": {
     "rules": "storage.rules"

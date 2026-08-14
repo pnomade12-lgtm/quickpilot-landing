@@ -2,6 +2,13 @@
   "hosting": {
     "site": "quickpilot-report-editor",
     "public": "report-editor-hosting",
+    "redirects": [
+      {
+        "source": "/",
+        "destination": "/report-editor.html",
+        "type": 302
+      }
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",

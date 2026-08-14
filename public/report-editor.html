@@ -65,7 +65,7 @@
       appId: "1:530394028123:web:ab56e0951f214401d0c77e6",
     };
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    let auth = null;
     const db = firebase.database();
     let currentUser = null;
     let authReadyResolve;
@@ -96,16 +96,56 @@
     let latestSyncMessage = "";
     let listLoaded = false;
     let serverTitlesById = {};
+    const listCacheKey = "quickpilot-report-editor:list-cache:v1";
 
-    auth.onAuthStateChanged((user) => {
-      currentUser = user || null;
-      if (!authReadyDone) {
-        authReadyDone = true;
-        authReadyResolve(currentUser);
+    function readListCache() {
+      try {
+        const cached = JSON.parse(sessionStorage.getItem(listCacheKey) || "null");
+        if (!cached || !Array.isArray(cached.published)) return null;
+        serverTitlesById = cached.serverTitlesById && typeof cached.serverTitlesById === "object"
+          ? cached.serverTitlesById
+          : {};
+        return cached;
+      } catch (error) {
+        return null;
       }
-    });
+    }
+
+    function writeListCache(published) {
+      try {
+        sessionStorage.setItem(listCacheKey, JSON.stringify({
+          published,
+          serverTitlesById,
+          savedAt: Date.now(),
+        }));
+      } catch (error) {
+        // The list still works when browser storage is unavailable.
+      }
+    }
+
+    function isReturningFromEditor() {
+      if (/\/report-editor-edit\.html(?:$|[?#])/.test(document.referrer || "")) return true;
+      try {
+        return performance.getEntriesByType("navigation")[0]?.type === "back_forward";
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function startAuth() {
+      if (auth) return;
+      auth = firebase.auth();
+      auth.onAuthStateChanged((user) => {
+        currentUser = user || null;
+        if (!authReadyDone) {
+          authReadyDone = true;
+          authReadyResolve(currentUser);
+        }
+      });
+    }
 
     async function ensureEditorSession() {
+      startAuth();
       await authReady;
       if (currentUser) return currentUser;
       try {
@@ -237,38 +277,50 @@
 
     async function loadServerTitles() {
       if (!currentUser) return;
-      const reportsToRead = [...new Map(
-        [...pendingReports, ...knownPublished].map((report) => [report.id, report]),
-      ).values()];
-      const entries = await Promise.all(reportsToRead.map(async (report) => {
-        try {
-          const snapshot = await db.ref(`v1/report_editor_drafts/${report.id}`).once("value");
-          const record = snapshot.val();
-          if (record && typeof record === "object" && record.title) {
-            return [report.id, { title: record.title, updatedAt: Number(record.updatedAt) || 0 }];
-          }
-        } catch (error) {
-          // A missing or unreadable draft must not block the report list.
-        }
-        return null;
-      }));
-      serverTitlesById = Object.fromEntries(entries.filter(Boolean));
+      try {
+        const snapshot = await db.ref("v1/report_editor_title_index").once("value");
+        const data = snapshot.val() || {};
+        serverTitlesById = Object.fromEntries(
+          Object.entries(data)
+            .filter(([, record]) => record && typeof record === "object" && record.title)
+            .map(([id, record]) => [id, {
+              title: record.title,
+              updatedAt: Number(record.updatedAt) || 0,
+            }]),
+        );
+      } catch (error) {
+        // The title index is optional while older deployments are being migrated.
+        serverTitlesById = {};
+      }
     }
 
     (async () => {
+      const cached = readListCache();
+      const returningFromEditor = isReturningFromEditor();
+      if (cached) {
+        render(cached.published, returningFromEditor
+          ? "저장된 목록을 바로 표시했습니다."
+          : "저장된 목록을 표시했습니다. 최신 목록을 확인하는 중입니다.");
+      }
+      if (cached && returningFromEditor) return;
+
+      const publishedPromise = loadPublished();
       await ensureEditorSession();
       await loadServerTitles();
       try {
-        const published = await loadPublished();
+        const published = await publishedPromise;
+        writeListCache(published);
         render(published, `실제 발행 목록과 동기화됨 · ${new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`);
       } catch (error) {
-        render([...knownPublished].sort((a, b) => b.ts - a.ts), "실시간 발행 목록을 불러오지 못해 마지막 확인 목록을 표시합니다.");
+        if (!cached) {
+          render([...knownPublished].sort((a, b) => b.ts - a.ts), "실시간 발행 목록을 불러오지 못해 마지막 확인 목록을 표시합니다.");
+        }
       }
     })();
 
     window.addEventListener("pageshow", () => {
       if (!listLoaded) return;
-      void loadServerTitles().finally(() => render(latestPublished, latestSyncMessage));
+      render(latestPublished, latestSyncMessage);
     });
   </script>
 </body>

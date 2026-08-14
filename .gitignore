@@ -1,0 +1,27 @@
+
+# Claude Code 세션별 모델 설정 (개인, 커밋 X)
+.claude/settings.local.json
+
+# Regenerable dependencies and Firebase local cache
+**/node_modules/
+.firebase/
+
+# Local server/tunnel logs
+*.log
+.cloudflared-*.log
+.firebase-serve-*.log
+
+# Local analysis inputs/outputs and backups (may contain operational data)
+/.agencies.json
+/.agency_counts.json
+/.agency_upd.json
+/.gen_*
+/.geo.json
+/.qp_ord.ndjson
+/data_live_seen_*.json
+/geo_cache.json
+/gps-heat.json
+/backups/
+
+# Full Hosting snapshots stay local; GitHub keeps their SHA-256 manifest only
+/release-staging/
