@@ -11,13 +11,13 @@ $Config = Join-Path $Root "firebase.order-sync-rules-only.json"
 
 Push-Location $Root
 try {
-    & node ".\scripts\build-order-sync-rules-candidate.js"
+    & node ".\scripts\build-order-sync-rules-candidate.js" "--write"
     if ($LASTEXITCODE -ne 0) {
         throw "Could not reproduce the exact rules candidate."
     }
-    & node ".\scripts\verify-order-sync-rules-candidate.js" "--live-baseline"
+    & node ".\scripts\verify-order-sync-rules-candidate.js" "--live-compatible-candidate"
     if ($LASTEXITCODE -ne 0) {
-        throw "Live rules are not the preserved fail-closed baseline."
+        throw "Live rules are not the compatible protected candidate."
     }
 
     $configJson = Get-Content -LiteralPath $Config -Raw -Encoding UTF8 |

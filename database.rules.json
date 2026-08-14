@@ -9,7 +9,7 @@
       ".read": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')",
       "$id": {
         ".write": "(!data.exists() && newData.child('name').isString() && newData.child('phone').isString() && newData.child('createdAt').exists()) || (auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com')",
-        ".validate": "newData.hasChildren(['name','phone','phoneModel','agreeData','agreeAccessibility','createdAt']) && newData.child('status').val() === 'pending' && newData.child('name').val().length <= 40 && newData.child('phone').val().length <= 20 && newData.child('agreeData').val() === true && newData.child('agreeAccessibility').val() === true && !newData.hasChild('appKey')"
+        ".validate": "newData.hasChildren(['name','phone','phoneModel','agreeData','agreeAccessibility','createdAt']) && newData.child('name').isString() && newData.child('phone').isString() && newData.child('phoneModel').isString() && newData.child('name').val().length <= 40 && newData.child('phone').val().length <= 20 && newData.child('agreeData').val() === true && newData.child('agreeAccessibility').val() === true && ((!data.exists() && newData.child('status').val() === 'pending' && !newData.hasChild('appKey')) || (auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com' && (newData.child('status').val() === 'pending' || newData.child('status').val() === 'approved' || newData.child('status').val() === 'rejected' || newData.child('status').val() === 'deleted')))"
       }
     },
 
@@ -17,34 +17,137 @@
       ".read": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')",
       ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'",
       "$phone": {
-        ".read": "auth != null && data.child('uid').val() === auth.uid"
+        ".read": "auth != null && (data.child('status').val() === 'active' || data.child('uid').val() === auth.uid || (auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')))"
       }
     },
 
     "v1": {
+      "report_editor_drafts": {
+        "$reportId": {
+          ".read": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+          ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+          ".validate": "newData.hasChildren(['html','updatedAt','updatedBy']) && newData.child('html').isString() && newData.child('html').val().length <= 300000 && newData.child('updatedAt').isNumber() && newData.child('updatedBy').isString() && (newData.child('updatedBy').val() === auth.token.email || newData.child('updatedBy').val() === auth.uid)"
+        }
+      },
+      "report_editor_title_index": {
+        ".read": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+        "$reportId": {
+          ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+          ".validate": "newData.hasChildren(['title','updatedAt','updatedBy']) && newData.child('title').isString() && newData.child('title').val().length <= 300 && newData.child('updatedAt').isNumber() && newData.child('updatedBy').isString() && (newData.child('updatedBy').val() === auth.token.email || newData.child('updatedBy').val() === auth.uid)"
+        }
+      },
+      "report_editor_publish_queue": {
+        ".read": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+        "$reportId": {
+          ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+          ".validate": "newData.hasChildren(['ready','title','updatedAt','updatedBy']) && newData.child('ready').isBoolean() && newData.child('title').isString() && newData.child('title').val().length <= 300 && newData.child('updatedAt').isNumber() && newData.child('updatedBy').isString() && (newData.child('updatedBy').val() === auth.token.email || newData.child('updatedBy').val() === auth.uid)"
+        }
+      },
+      "report_editor_notes": {
+        "$reportId": {
+          "$visualId": {
+            ".read": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+            ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+            ".validate": "newData.hasChildren(['text','updatedAt','updatedBy']) && newData.child('text').isString() && newData.child('text').val().length <= 10000 && newData.child('updatedAt').isNumber() && newData.child('updatedBy').isString() && (newData.child('updatedBy').val() === auth.token.email || newData.child('updatedBy').val() === auth.uid)"
+          }
+        }
+      },
       "users": {
         ".read": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')",
         "$uid": {
           ".read": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')))",
-          ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
           "profile": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
             "phone": {
               ".validate": "newData.isString() && newData.val().matches(/^[0-9]{10,11}$/) && (!data.exists() || data.val() === newData.val() || auth.token.email == 'pnomade12@gmail.com')"
             }
           },
+          "status": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "app_version": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
           "orders": {
+            ".write": false,
             "$date": {
+              ".indexOn": ["updated_at"],
               "$orderId": {
                 ".validate": "newData.hasChildren(['platform']) && newData.child('platform').isString()"
               }
             }
+          },
+          "earnings": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "expenses": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "manual_edits": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "order_edits": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "gps_track": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "geo_trace": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "geo_misses": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "crash_logs": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "system_events": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+            "$bucket": {
+              "$eventId": {
+                ".validate": "!newData.exists() || !(((newData.child('event').isString() && (newData.child('event').val() == 'order_toast_perf_trace' || newData.child('event').val() == 'order_toast_stale_on_navigation' || newData.child('event').val() == 'ui_state_render' || newData.child('event').val() == 'ui_render_after' || newData.child('event').val().matches(/^toast_.*$/) || newData.child('event').val().matches(/^settlement_.*$/) || newData.child('event').val().matches(/^unpaid_.*$/) || newData.child('event').val().matches(/^order_card_.*_render$/))) || (newData.child('eventType').isString() && (newData.child('eventType').val() == 'order_toast_perf_trace' || newData.child('eventType').val() == 'order_toast_stale_on_navigation' || newData.child('eventType').val() == 'ui_state_render' || newData.child('eventType').val() == 'ui_render_after' || newData.child('eventType').val().matches(/^toast_.*$/) || newData.child('eventType').val().matches(/^settlement_.*$/) || newData.child('eventType').val().matches(/^unpaid_.*$/) || newData.child('eventType').val().matches(/^order_card_.*_render$/))) || (newData.child('type').isString() && (newData.child('type').val() == 'order_toast_perf_trace' || newData.child('type').val() == 'order_toast_stale_on_navigation' || newData.child('type').val() == 'ui_state_render' || newData.child('type').val() == 'ui_render_after' || newData.child('type').val().matches(/^toast_.*$/) || newData.child('type').val().matches(/^settlement_.*$/) || newData.child('type').val().matches(/^unpaid_.*$/) || newData.child('type').val().matches(/^order_card_.*_render$/)))) || (((newData.child('event').isString() && newData.child('event').val() == 'order_sync_pair_audit') || (newData.child('eventType').isString() && newData.child('eventType').val() == 'order_sync_pair_audit') || (newData.child('type').isString() && newData.child('type').val() == 'order_sync_pair_audit')) && (!newData.child('version_code').isNumber() || newData.child('version_code').val() < 193)))"
+              }
+            }
+          },
+          "user_actions": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "global_memos": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "social_feed": {
+            ".write": "auth != null && (auth.uid === $uid || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))"
+          },
+          "window_dumps": {
+            ".write": false
+          },
+          "order_logs": {
+            ".write": false
+          },
+          "diag": {
+            ".write": false
           }
         }
       },
 
       "agencies": {
         ".read": "auth != null",
-        ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'"
+        ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'",
+        ".indexOn": ["phone", "trustScore", "volumeStars"],
+        "$agencyKey": {
+          "hearts": {
+            "$uid": {
+              ".write": "auth != null && auth.uid === $uid && (newData.val() === true || !newData.exists())",
+              ".validate": "newData.val() === true || !newData.exists()"
+            }
+          },
+          "dislikes": {
+            "$uid": {
+              ".write": "auth != null && auth.uid === $uid && (newData.val() === true || !newData.exists())",
+              ".validate": "newData.val() === true || !newData.exists()"
+            }
+          }
+        }
       },
 
       "buildings": {
@@ -61,22 +164,36 @@
 
       "social_feed": {
         ".read": "auth != null",
-        ".write": "auth != null"
+        ".write": "auth != null",
+        ".indexOn": ["ts"]
       },
 
       "reports": {
-        ".read": "auth != null",
-        ".write": "auth != null"
+        ".read": true,
+        ".write": "auth != null",
+        ".indexOn": ["ts"]
       },
 
       "app": {
         ".read": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')",
         ".write": false,
-        "notice":                      { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'" },
-        "update_notes_override":       { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'" },
-        "update_notes_title_override": { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'" },
-        "board":                       { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'" },
-        "board_list":                  { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'" },
+        "notice":                      { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')" },
+        "update_signal": {
+          ".read": true,
+          ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'",
+          "$channel": {
+            ".validate": "($channel === 'beta' || $channel === 'gwanje') && newData.hasChildren(['versionCode','versionName','apk'])",
+            "versionCode": { ".validate": "newData.isNumber() && newData.val() >= 1" },
+            "versionName": { ".validate": "newData.isString() && newData.val().length <= 40" },
+            "apk": { ".validate": "newData.isString() && (($channel === 'beta' && newData.val() === 'qp-beta.apk') || ($channel === 'gwanje' && newData.val() === 'qp-gwanje.apk'))" },
+            "$other": { ".validate": false }
+          }
+        },
+        "update_notes_override":       { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')" },
+        "update_notes_title_override": { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')" },
+        "update_notes_added":          { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')" },
+        "board":                       { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')" },
+        "board_list":                  { ".read": "auth != null", ".write": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')" },
         "data_live":                   { ".read": "auth != null", ".write": false },
         "data_maps":                   { ".read": "auth != null", ".write": false },
         "data_cache":                  { ".read": "auth != null", ".write": false },

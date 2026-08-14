@@ -15,6 +15,14 @@ function evaluateMetrics(metrics, thresholds, now) {
   ) {
     return ["collector_stale"];
   }
+  const monitoringObservedAt = number(metrics.monitoring_observed_at);
+  if (
+    monitoringObservedAt <= 0 ||
+    monitoringObservedAt > now + 30000 ||
+    now - monitoringObservedAt > thresholds.monitoring_max_lag_ms
+  ) {
+    return ["collector_signal_stale"];
+  }
 
   const breaches = [];
   if (number(metrics.denied_order_requests) > thresholds.denied_order_requests) {
@@ -53,6 +61,8 @@ function nextBlockedControl(current, evidenceId, now, breaches) {
     ...state,
     enabled: false,
     mode: "BLOCKED",
+    allowed_uid: "",
+    allowed_date: "",
     generation: number(state.generation) + 1,
     evidence_id: evidenceId,
     blocked_reason: breaches.join(","),

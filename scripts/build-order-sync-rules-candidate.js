@@ -5,16 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const baselinePath = path.resolve(
-  root,
-  "..",
-  "QuickPilot_beta",
-  "analysis",
-  "proof",
-  "20260730",
-  "billing_emergency_containment",
-  "database_rules_after_orders_block_20260730_1821.json",
-);
+const baselinePath = path.join(root, "database.rules.json");
 const controlTemplatePath = path.join(
   root,
   "rules",
@@ -27,7 +18,7 @@ const candidatePath = path.join(
 );
 const versionLockPath = path.resolve(root, "..", "QuickPilot_beta", ".version_lock");
 const expectedBaselineRawSha256 =
-  "5d89c19f60b47650f8baf8bbdc340488bc21d8fc624e9b2381990bd3ba052541";
+  "2eaeb9dbeaa9daef8aa9580078c5752fe082fc7482c5580a046c4849e7944467";
 
 function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
@@ -62,7 +53,7 @@ function loadBaseline() {
   const rawHash = sha256(raw);
   if (rawHash !== expectedBaselineRawSha256) {
     throw new Error(
-      `preserved after-block rules hash drifted: ${rawHash}`,
+      `preserved current fail-closed rules hash drifted: ${rawHash}`,
     );
   }
   return JSON.parse(raw.toString("utf8"));

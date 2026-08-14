@@ -106,7 +106,10 @@ function Read-ProtectedRelease {
     $remoteManifestResponse = Invoke-WebRequest `
         -Uri "https://quickpilot-39d72.web.app/qp-update.json?control_check=$cacheBuster" `
         -UseBasicParsing
-    $remoteManifest = "$($remoteManifestResponse.Content)" | ConvertFrom-Json
+    $remoteManifestText = [System.Text.Encoding]::UTF8.GetString(
+        $remoteManifestResponse.RawContentStream.ToArray()
+    )
+    $remoteManifest = $remoteManifestText | ConvertFrom-Json
     foreach ($channel in @("beta", "gwanje")) {
         $local = $release[$channel]
         $remote = $remoteManifest.$channel

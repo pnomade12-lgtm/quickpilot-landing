@@ -9,6 +9,7 @@ const release = path.join(root, "functions-order-sync-watchdog-release");
 const failures = [];
 const expectedFiles = [
   "index.js",
+  "monitoring-collector.js",
   "order-sync-watchdog.js",
   "package.json",
   "test/order-sync-watchdog.test.js",
@@ -30,6 +31,7 @@ for (const [key, expected] of Object.entries(policy.automatic_stop_thresholds ||
   if (thresholds[key] !== expected) failures.push(`watchdog threshold drifted: ${key}`);
 }
 if (thresholds.collector_max_age_ms !== 120000) failures.push("collector age must be 120000ms");
+if (thresholds.monitoring_max_lag_ms !== 300000) failures.push("monitoring lag must be 300000ms");
 
 const index = fs.readFileSync(path.join(release, "index.js"), "utf8");
 for (const marker of [
@@ -37,6 +39,9 @@ for (const marker of [
   "maxInstances: 1",
   'db.ref("v1/app/order_sync_control")',
   'db.ref("v1/app/order_sync_metrics/current")',
+  "exports.orderSyncMetricsCollector",
+  "https://monitoring.googleapis.com/v3/projects/",
+  "Promise.all",
   "if (breaches.length === 0) return null;",
   "nextBlockedControl",
 ]) {
@@ -44,6 +49,18 @@ for (const marker of [
 }
 for (const forbidden of ["functions/index.js", "database.rules.json", "hosting", "remove("] ) {
   if (index.includes(forbidden)) failures.push(`watchdog source contains forbidden scope: ${forbidden}`);
+}
+
+const deployScript = fs.readFileSync(
+  path.join(root, "scripts/deploy-order-sync-watchdog-only.ps1"),
+  "utf8",
+);
+for (const marker of [
+  "verify-data-cost-policy.js",
+  "functions:orderSyncMetricsCollector,functions:orderSyncWatchdog",
+  "read the live function list before retrying",
+]) {
+  if (!deployScript.includes(marker)) failures.push(`watchdog deploy lost marker: ${marker}`);
 }
 
 const testResult = spawnSync(process.execPath, ["--test", "test/order-sync-watchdog.test.js"], {

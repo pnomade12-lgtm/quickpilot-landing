@@ -19,6 +19,36 @@
       }
     },
     "v1": {
+      "report_editor_drafts": {
+        "$reportId": {
+          ".read": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+          ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+          ".validate": "newData.hasChildren(['html','updatedAt','updatedBy']) && newData.child('html').isString() && newData.child('html').val().length <= 300000 && newData.child('updatedAt').isNumber() && newData.child('updatedBy').isString() && (newData.child('updatedBy').val() === auth.token.email || newData.child('updatedBy').val() === auth.uid)"
+        }
+      },
+      "report_editor_title_index": {
+        ".read": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+        "$reportId": {
+          ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+          ".validate": "newData.hasChildren(['title','updatedAt','updatedBy']) && newData.child('title').isString() && newData.child('title').val().length <= 300 && newData.child('updatedAt').isNumber() && newData.child('updatedBy').isString() && (newData.child('updatedBy').val() === auth.token.email || newData.child('updatedBy').val() === auth.uid)"
+        }
+      },
+      "report_editor_publish_queue": {
+        ".read": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+        "$reportId": {
+          ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+          ".validate": "newData.hasChildren(['ready','title','updatedAt','updatedBy']) && newData.child('ready').isBoolean() && newData.child('title').isString() && newData.child('title').val().length <= 300 && newData.child('updatedAt').isNumber() && newData.child('updatedBy').isString() && (newData.child('updatedBy').val() === auth.token.email || newData.child('updatedBy').val() === auth.uid)"
+        }
+      },
+      "report_editor_notes": {
+        "$reportId": {
+          "$visualId": {
+            ".read": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+            ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || (auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'))",
+            ".validate": "newData.hasChildren(['text','updatedAt','updatedBy']) && newData.child('text').isString() && newData.child('text').val().length <= 10000 && newData.child('updatedAt').isNumber() && newData.child('updatedBy').isString() && (newData.child('updatedBy').val() === auth.token.email || newData.child('updatedBy').val() === auth.uid)"
+          }
+        }
+      },
       "users": {
         ".read": "auth != null && auth.token.email_verified === true && (auth.token.email == 'pnomade12@gmail.com' || auth.token.email == 'pnomade13@gmail.com')",
         "$uid": {
@@ -225,7 +255,7 @@
             ".validate": "newData.isString() && newData.val().length >= 8 && newData.val().length <= 120"
           },
           "minimum_client_version_code": {
-            ".validate": "newData.isNumber() && newData.val() >= 460"
+            ".validate": "newData.isNumber() && newData.val() >= 497"
           },
           "allowed_uid": {
             ".validate": "newData.isString() && newData.val().length <= 128"

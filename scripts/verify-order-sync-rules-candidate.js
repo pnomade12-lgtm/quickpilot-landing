@@ -115,9 +115,9 @@ if (config) {
     !Array.isArray(config.database?.predeploy) ||
     config.database.predeploy.length !== 1 ||
     config.database.predeploy[0] !==
-      "node scripts/verify-order-sync-rules-candidate.js --live-baseline"
+      "node scripts/verify-order-sync-rules-candidate.js --live-compatible-candidate"
   ) {
-    fail("rules-only config must enforce the exact live-baseline predeploy");
+    fail("rules-only config must enforce the compatible live-candidate predeploy");
   }
 }
 
@@ -159,6 +159,26 @@ if (process.argv.includes("--live-candidate") && expected) {
     if (canonicalJson(live) !== canonicalJson(expected.candidate)) {
       fail(
         `live rules are not the exact vc${requiredVersionCode} candidate: ${sha256(canonicalJson(live))}`,
+      );
+    }
+  } catch (error) {
+    fail(error.message);
+  }
+}
+
+if (process.argv.includes("--live-compatible-candidate") && expected) {
+  try {
+    const live = readLiveRules();
+    const differences = diffPaths(live, expected.candidate).sort();
+    const allowedLiveDiffs = [
+      "/rules/v1/app/order_sync_control/minimum_client_version_code/.validate",
+    ];
+    if (
+      differences.length !== 0 &&
+      JSON.stringify(differences) !== JSON.stringify(allowedLiveDiffs)
+    ) {
+      fail(
+        `live rules differ outside the minimum-version floor: ${JSON.stringify(differences)}`,
       );
     }
   } catch (error) {

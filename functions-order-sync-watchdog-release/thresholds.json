@@ -6,5 +6,6 @@
   "outbound_bytes_per_minute": 20971520,
   "resource_load_percent": 85,
   "historical_replay_rows": 0,
-  "collector_max_age_ms": 120000
+  "collector_max_age_ms": 120000,
+  "monitoring_max_lag_ms": 300000
 }
