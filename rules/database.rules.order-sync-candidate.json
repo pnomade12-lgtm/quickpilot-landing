@@ -255,7 +255,7 @@
             ".validate": "newData.isString() && newData.val().length >= 8 && newData.val().length <= 120"
           },
           "minimum_client_version_code": {
-            ".validate": "newData.isNumber() && newData.val() >= 498"
+            ".validate": "newData.isNumber() && newData.val() >= 499"
           },
           "allowed_uid": {
             ".validate": "newData.isString() && newData.val().length <= 128"
