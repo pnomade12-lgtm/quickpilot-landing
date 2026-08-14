@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "evidence_id": "VC498-PAIRED-DIRECTOR-TEST-HOSTING-20260814",
+  "recorded_at": "2026-08-14T19:59:01.5545072+09:00",
+  "scope": "beta and control director test links",
+  "source": {
+    "repository": "pnomade12-lgtm/QuickPilot_beta",
+    "branch": "backup/vc497-preserved-20260814",
+    "head": "1e5a6cdd42574f610ab1bc49bf73d8ee55364e45",
+    "annotated_tag": "wip-vc498-toast-address-state-20260814-r3",
+    "pattern_lock_sha256": "23cb934a3f6fa4672ee46b3a107182dbcf84092b0dc5aa1364171cf15ac6d0a5",
+    "ponytail_result": "PASS",
+    "full_tests": 1930,
+    "failures": 0,
+    "errors": 0
+  },
+  "director_test_artifacts": {
+    "beta": {
+      "url": "https://quickpilot-39d72.web.app/qp-beta-director-test.apk",
+      "version_code": 498,
+      "version_name": "beta-0.15f",
+      "label": "QP베타0.15f",
+      "bytes": 12820627,
+      "sha256": "aecd312427a20127bd8922ca396ac7d1a211bd4099c1538f92e1cf684733a21c"
+    },
+    "control": {
+      "url": "https://quickpilot-39d72.web.app/qp-gwanje-director-test.apk",
+      "version_code": 498,
+      "version_name": "관제-0.15f",
+      "label": "QP관제0.15f",
+      "bytes": 12820623,
+      "sha256": "ccde6265bae59f6bbc8b125c5d119bdcc09182f149d7315cadd4fa34498d0b62"
+    },
+    "package": "com.quickpilot.v1.beta",
+    "signer_sha256": "4674568937aec0d5f7bb8a5e87e118d91c35960249724d50896c9a0102ea3a43"
+  },
+  "hosting": {
+    "project": "quickpilot-39d72",
+    "repository": "pnomade12-lgtm/quickpilot-landing",
+    "branch": "backup/vc497-hosting-preserved-20260814",
+    "predeploy_head": "30cc02f7394e7461fb1d198de10463227f0a45d1",
+    "config": "firebase.vc498-paired-director-test-hosting.json",
+    "config_sha256": "d767119dfc11181d6c644a87a236fea487c9cca8c9c287d5cd4a3c3a1fe19b2d",
+    "base_manifest": "release-manifests/VC498_DIRECTOR_BETA_20260814.json",
+    "base_staging": "release-staging/vc498-beta-director-public-20260814",
+    "candidate_staging": "release-staging/vc498-paired-director-public-20260814",
+    "candidate_file_count": 71,
+    "candidate_total_bytes": 188921451,
+    "candidate_tree_sha256": "5e67dd506dfafa4482abc410a54832f784b7072fd4ef683ea9028caa333679a6",
+    "intentional_delta": {
+      "path": "qp-gwanje-director-test.apk",
+      "before_sha256": "2545823bcd1036874139747e049625370ac18967fea1d4d788390a7844d98f78",
+      "after_sha256": "ccde6265bae59f6bbc8b125c5d119bdcc09182f149d7315cadd4fa34498d0b62"
+    },
+    "firebase_deploy_status": "PASS",
+    "uploaded_new_files": 1,
+    "postdeploy_readback_files": 71,
+    "postdeploy_mismatches": 0
+  },
+  "unchanged_protected_files": {
+    "qp-beta.apk": "1b8b08b9d30f8d0bcd0e245250b12afba397195544a923adbf9584b0d8a2fef2",
+    "qp-gwanje.apk": "3821c329ea4771fb981fb13fbfd041ce5032b4352f95202276b7f8e017ca4842",
+    "qp-gwanje-latest.apk": "3821c329ea4771fb981fb13fbfd041ce5032b4352f95202276b7f8e017ca4842",
+    "qp-update.json": "2d86480bac405740ef44ea5993765b5a4d4b934d89476dc315ed4c146e94fe9f"
+  },
+  "safety": {
+    "data_cost_policy": "PASS",
+    "server_order_control_mutated": false,
+    "update_signal_mutated": false,
+    "fixed_release_links_mutated": false,
+    "real_business_order_action_performed": false,
+    "field_status": "FIELD_REQUIRED"
+  }
+}
