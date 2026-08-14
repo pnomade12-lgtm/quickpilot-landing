@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "evidence_id": "VC499-PREDEPLOY-HOSTING-BACKUP-20260815",
+  "recorded_at": "2026-08-15T01:49:14.4521754+09:00",
+  "repository": "pnomade12-lgtm/quickpilot-landing",
+  "baseline_branch": "backup/vc497-hosting-preserved-20260814",
+  "backup_branch": "backup/vc499-hosting-predeploy-20260815",
+  "baseline_head": "f40e80df6b4371492de1d02cb5f6254f6bbeb8e1",
+  "inventory": {
+    "tracked_files": 85,
+    "untracked_files": 163,
+    "policy": "Only allowlisted Hosting configuration and SHA manifests are committed. Local snapshots, APK working copies, logs, caches, dependencies, operational data, credentials, and personal data are excluded."
+  },
+  "protected_staging": [
+    {
+      "role": "rollback",
+      "path": "release-staging/paired-vc497-protected-public-20260814",
+      "file_count": 71,
+      "total_bytes": 188872247,
+      "tree_sha256": "7371c9b7b0a613b4a5138f9e6656912dd23225423ab895fd082a6aba35763e98",
+      "content_policy": "local-only; GitHub preserves the complete SHA manifest"
+    },
+    {
+      "role": "current",
+      "path": "release-staging/paired-vc498-protected-public-20260814",
+      "file_count": 71,
+      "total_bytes": 188946031,
+      "tree_sha256": "f4c130007442c066d9b34a6b40ecd40f8e1f1a491f48831b0672b5096a926577",
+      "content_policy": "local-only; GitHub preserves the complete SHA manifest"
+    }
+  ],
+  "preserved_references": [
+    {
+      "path": "release-manifests/VC497_HOSTING_PRESERVATION_20260814.json",
+      "bytes": 67014,
+      "sha256": "97fbc2bf4d30dcc33dec59baf99c31cbcc22ee7708897d8e072839c392a2263e"
+    },
+    {
+      "path": "release-manifests/VC498_PROTECTED_ROLLOUT_20260814.json",
+      "bytes": 4180,
+      "sha256": "19dce5eedb081ab7246e0372bb66622198f7e8b3b3b95371af20c975172c025a"
+    },
+    {
+      "path": "firebase.paired-vc497-protected-hosting.json",
+      "bytes": 1003,
+      "sha256": "8583aa3628929c29e0c80fdefdc93372d72e7bbf7d7f0de04ecdebd738722b1c"
+    },
+    {
+      "path": "firebase.paired-vc498-protected-hosting.json",
+      "bytes": 1003,
+      "sha256": "0f8c77b9b830a67e1ae7d370b41d4dd010cb7d28b67e036f094b247dc6896184"
+    },
+    {
+      "path": ".firebaserc",
+      "bytes": 58,
+      "sha256": "a7a705c68f5164aaecc59dcd3e978b373edfe6d81942249918c2420e21802c0d"
+    },
+    {
+      "path": "firebase.json",
+      "bytes": 1593,
+      "sha256": "e0149ee3d5a21ee102dbcc45f50c1585fed2941ab3d127da9a4c7333bceae259"
+    }
+  ],
+  "safety": {
+    "staging_content_uploaded": false,
+    "secrets_uploaded": false,
+    "operational_or_personal_data_uploaded": false,
+    "server_write_performed": false,
+    "hosting_deploy_performed": false,
+    "canary_or_version_admission_opened": false
+  }
+}
