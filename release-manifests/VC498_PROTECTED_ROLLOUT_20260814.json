@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "evidence_id": "VC498-PROTECTED-ROLLOUT-20260814",
+  "recorded_at": "2026-08-14T20:20:30.8619121+09:00",
+  "scope": "paired public Hosting and beta/gwanje update signals",
+  "director_shorthand": {
+    "instruction": "빌드배포빨간불 자동",
+    "meaning": "A paired build-and-deploy request includes both fixed public APK links, qp-update.json, both update signals, and exact readback unless the director explicitly says director-test-only.",
+    "excluded_without_separate_authority": [
+      "CANARY",
+      "VERSION",
+      "order write admission",
+      "paired-phone order synchronization"
+    ]
+  },
+  "source": {
+    "repository": "pnomade12-lgtm/QuickPilot_beta",
+    "branch": "backup/vc497-preserved-20260814",
+    "head": "1e5a6cdd42574f610ab1bc49bf73d8ee55364e45",
+    "annotated_tag": "wip-vc498-toast-address-state-20260814-r3",
+    "version_code": 498,
+    "ponytail_status": "PASS",
+    "core_invariant_status": "PASS",
+    "data_cost_safety_status": "PASS",
+    "full_tests": 1930,
+    "failures": 0,
+    "errors": 0
+  },
+  "artifacts": {
+    "package": "com.quickpilot.v1.beta",
+    "signer_sha256": "4674568937aec0d5f7bb8a5e87e118d91c35960249724d50896c9a0102ea3a43",
+    "beta": {
+      "version_name": "beta-0.15f",
+      "label": "QP베타0.15f",
+      "bytes": 12820627,
+      "sha256": "aecd312427a20127bd8922ca396ac7d1a211bd4099c1538f92e1cf684733a21c",
+      "url": "https://quickpilot-39d72.web.app/qp-beta.apk"
+    },
+    "gwanje": {
+      "version_name": "관제-0.15f",
+      "label": "QP관제0.15f",
+      "bytes": 12820623,
+      "sha256": "ccde6265bae59f6bbc8b125c5d119bdcc09182f149d7315cadd4fa34498d0b62",
+      "url": "https://quickpilot-39d72.web.app/qp-gwanje.apk",
+      "latest_url": "https://quickpilot-39d72.web.app/qp-gwanje-latest.apk"
+    }
+  },
+  "hosting": {
+    "project": "quickpilot-39d72",
+    "repository": "pnomade12-lgtm/quickpilot-landing",
+    "branch": "backup/vc497-hosting-preserved-20260814",
+    "predeploy_head": "9edd16ed1bd7edd24c10e832cd91b6a253d7671b",
+    "config": "firebase.paired-vc498-protected-hosting.json",
+    "config_sha256": "0f8c77b9b830a67e1ae7d370b41d4dd010cb7d28b67e036f094b247dc6896184",
+    "base_staging": "release-staging/vc498-paired-director-public-20260814",
+    "candidate_staging": "release-staging/paired-vc498-protected-public-20260814",
+    "candidate_file_count": 71,
+    "candidate_total_bytes": 188946031,
+    "candidate_tree_sha256": "f4c130007442c066d9b34a6b40ecd40f8e1f1a491f48831b0672b5096a926577",
+    "intentional_delta": [
+      "qp-beta.apk",
+      "qp-gwanje.apk",
+      "qp-gwanje-latest.apk",
+      "qp-update.json"
+    ],
+    "update_manifest_sha256": "9c79cd5d90d6f5374ff50dc60b50b0fbf8d98cfa2c530adcee48f92901d877bd",
+    "firebase_deploy_status": "PASS",
+    "uploaded_new_files": 1,
+    "postdeploy_readback_files": 71,
+    "postdeploy_mismatches": 0
+  },
+  "update_signals": {
+    "beta": {
+      "versionCode": 498,
+      "versionName": "beta-0.15f",
+      "apk": "qp-beta.apk",
+      "readback": "PASS"
+    },
+    "gwanje": {
+      "versionCode": 498,
+      "versionName": "관제-0.15f",
+      "apk": "qp-gwanje.apk",
+      "readback": "PASS"
+    }
+  },
+  "protected_gate": {
+    "status": "QP_PROTECTED_CLIENT_ROLLOUT_STATUS=PASS",
+    "order_write_status": "QP_ORDER_WRITE_ENABLE_STATUS=BLOCKED",
+    "rules_candidate_sha256": "1e39284d7c2ab4293122a827c3b156ad48db5f87d576a444d5955df34ad185f4",
+    "rules_canonical_sha256": "3341fc27c26e9b63410aabe2bc8083bba4419a987931f8470e36716ce60bbdaf",
+    "rollback_rules_sha256": "5d89c19f60b47650f8baf8bbdc340488bc21d8fc624e9b2381990bd3ba052541"
+  },
+  "live_order_sync_control": {
+    "enabled": false,
+    "mode": "BLOCKED",
+    "generation": 41,
+    "evidence_id": "VC498-PROTECTED-ROLLOUT-20260814",
+    "minimum_client_version_code": 498,
+    "allowed_uid": "",
+    "allowed_date": ""
+  },
+  "safety": {
+    "functions_deployed": false,
+    "database_rules_deployed": false,
+    "canary_opened": false,
+    "version_admission_opened": false,
+    "paired_phone_order_sync_opened": false,
+    "real_business_order_action_performed": false,
+    "field_status": "FIELD_REQUIRED"
+  }
+}
