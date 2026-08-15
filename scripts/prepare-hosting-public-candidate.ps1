@@ -3,6 +3,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "Assert-QpActionPermit.ps1")
 
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 $Public = Join-Path $Root "public"
@@ -132,6 +133,8 @@ if (!$Execute) {
   Write-Output "No files were copied."
   exit 0
 }
+
+Assert-QpActionPermit -Action "HOSTING_STAGE"
 
 if (!(Test-Path -LiteralPath $Public)) {
   New-Item -ItemType Directory -Path $Public | Out-Null

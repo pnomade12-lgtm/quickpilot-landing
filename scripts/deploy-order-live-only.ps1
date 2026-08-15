@@ -4,6 +4,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot "Assert-QpActionPermit.ps1")
 
 $Project = "quickpilot-39d72"
 $ExpectedLiveHash = "cf88a416502890b58ff33399fe04137108cd79c7"
@@ -95,6 +96,7 @@ try {
         }
     }
 
+    Assert-QpActionPermit -Action "FUNCTION_DEPLOY"
     & firebase deploy --config $Config --only "functions:orderLive" --project $Project
     if ($LASTEXITCODE -ne 0) {
         throw "Isolated orderLive deployment failed."

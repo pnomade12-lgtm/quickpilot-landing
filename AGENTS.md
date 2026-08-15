@@ -2,6 +2,14 @@
 
 This repository serves the live QuickPilot Firebase project. Preserve unrelated dirty and untracked files.
 
+## Action Permit Gate
+
+- Every official mutating `-Execute` path must dot-source `scripts/Assert-QpActionPermit.ps1` and assert its exact action immediately before the first mutation. Environment approval flags and product-specific safety checks remain mandatory but do not replace the shared permit.
+- `SINGLE_USE_ACTION_PERMIT`: the permit is issued only from the sibling `QuickPilot_beta` current task ledger for one exact action set. It binds a unique permit ID, the current director approval, per-action limit, guide, trace, policy, both repository HEADs/tracked diffs, allowed targets, and expiry. The shared adapter consumes it atomically before the first normal mutation; replay, a second active permit, and issuance past the task limit fail closed. Each official command needs a fresh permit. Exact emergency `ORDER_CONTROL_BLOCKED` remains non-consuming. Permission inheritance is forbidden: Hosting, update signal, Functions, rules, CANARY, VERSION, data backfill, Git push, quarantine, and delete are separate actions.
+- Hosting deploys use only `scripts/deploy-hosting-only.ps1` with an exact Hosting-only config. Watcher-driven deployment, active Obsidian input, broad Firebase deploys, and copied console mutation commands are disabled.
+- `scripts/publish-order-sync-control.ps1` remains the only order-control writer. Exact emergency `ORDER_CONTROL_BLOCKED` may run through its fail-closed exception; CANARY and VERSION always require their own current permits and existing rollout evidence.
+- Local pre-push uses `.githooks/pre-push` and requires an exact `GIT_PUSH` permit. Do not bypass the hook or invoke raw mutation commands as an alternative owner.
+
 ## Order-cost safety
 
 - Treat server cost and every user's mobile data as release-blocking correctness requirements.

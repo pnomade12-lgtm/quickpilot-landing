@@ -1,6 +1,7 @@
 param([switch]$Execute)
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "Assert-QpActionPermit.ps1")
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location -LiteralPath $repoRoot
 
@@ -16,6 +17,7 @@ if (-not $Execute) {
 if ($env:QP_ORDER_SYNC_WATCHDOG_DEPLOY_APPROVED -ne "YES") {
     throw "QP_WATCHDOG_DEPLOY_BLOCKED: explicit deploy approval environment marker is missing"
 }
+Assert-QpActionPermit -Action "WATCHDOG_DEPLOY"
 firebase deploy --project quickpilot-39d72 --config firebase.order-sync-watchdog-only.json --only functions:orderSyncMetricsCollector,functions:orderSyncWatchdog
 if ($LASTEXITCODE -ne 0) {
     throw "QP_WATCHDOG_DEPLOY_BLOCKED: isolated deploy command failed; read the live function list before retrying because Firebase may have deployed functions before an Artifact Registry policy warning"

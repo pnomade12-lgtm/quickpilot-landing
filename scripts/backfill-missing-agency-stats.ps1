@@ -7,6 +7,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "Assert-QpActionPermit.ps1")
 
 firebase projects:list --json | Out-Null
 $configPath = Join-Path $env:USERPROFILE ".config\configstore\firebase-tools.json"
@@ -44,6 +45,8 @@ while ($cursor -le $endDate) {
 } | Format-List
 
 if (-not $Execute) { exit 0 }
+
+Assert-QpActionPermit -Action "DATA_BACKFILL"
 
 $results = foreach ($date in $pending) {
     $uri = "${FunctionUrl}?k=$([uri]::EscapeDataString($Key))&date=$date"

@@ -25,6 +25,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot "Assert-QpActionPermit.ps1")
 
 $Project = "quickpilot-39d72"
 $Instance = "quickpilot-39d72-default-rtdb"
@@ -288,6 +289,13 @@ try {
     }
     if ($Mode -eq "VERSION" -and $env:QP_ORDER_SYNC_VERSION_APPROVED -ne "CAN-F01_PASS") {
         Fail "VERSION Execute requires QP_ORDER_SYNC_VERSION_APPROVED=CAN-F01_PASS"
+    }
+
+    switch ($Mode) {
+        "BLOCKED" { Assert-QpActionPermit -Action "ORDER_CONTROL_BLOCKED" -EmergencyFailClosed }
+        "CANARY" { Assert-QpActionPermit -Action "ORDER_CONTROL_CANARY" }
+        "VERSION" { Assert-QpActionPermit -Action "ORDER_CONTROL_VERSION" }
+        default { Fail "unsupported order sync control mode" }
     }
 
     $TempFile = Join-Path ([System.IO.Path]::GetTempPath()) (

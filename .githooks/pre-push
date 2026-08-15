@@ -1,0 +1,3 @@
+#!/bin/sh
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "../QuickPilot_beta/scripts/verify-qp-action-permit.ps1" -Action "GIT_PUSH" -Consume
+exit $?

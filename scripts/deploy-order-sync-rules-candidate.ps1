@@ -4,6 +4,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot "Assert-QpActionPermit.ps1")
 
 $Project = "quickpilot-39d72"
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -11,7 +12,7 @@ $Config = Join-Path $Root "firebase.order-sync-rules-only.json"
 
 Push-Location $Root
 try {
-    & node ".\scripts\build-order-sync-rules-candidate.js" "--write"
+    & node ".\scripts\build-order-sync-rules-candidate.js"
     if ($LASTEXITCODE -ne 0) {
         throw "Could not reproduce the exact rules candidate."
     }
@@ -41,6 +42,7 @@ try {
         throw "Execute requires QP_ORDER_SYNC_RULES_DEPLOY_APPROVED=YES."
     }
 
+    Assert-QpActionPermit -Action "RULES_DEPLOY"
     & firebase deploy --config $Config --only "database" --project $Project
     if ($LASTEXITCODE -ne 0) {
         throw "Isolated order sync rules deployment failed."

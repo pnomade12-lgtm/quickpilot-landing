@@ -7,6 +7,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "Assert-QpActionPermit.ps1")
 
 $projectId = "quickpilot-39d72"
 $databaseInstance = "quickpilot-39d72-default-rtdb"
@@ -98,6 +99,7 @@ try {
         throw "Hosting APK와 로컬 APK의 SHA256이 다릅니다. 업데이트 신호를 보내지 않습니다."
     }
 
+    Assert-QpActionPermit -Action "UPDATE_SIGNAL"
     [System.IO.File]::WriteAllText($tempFile, $payloadJson, [System.Text.UTF8Encoding]::new($false))
     & $firebase.Source database:set $targetPath $tempFile --project $projectId --instance $databaseInstance --force
     if ($LASTEXITCODE -ne 0) {

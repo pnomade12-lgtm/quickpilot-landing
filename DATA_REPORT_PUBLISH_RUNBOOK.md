@@ -27,24 +27,13 @@ QuickPilot 유저용 데이터 리포트 발행 절차. 앱 코드/APK를 건드
 2. 금지 표현과 개인정보성 문구를 검사한다.
    - 예: `중위값`, `칼럼`, `짐 신호`, 전화번호 패턴, 불필요한 내부 표현
 
-3. Hosting 배포한다.
+3. Hosting 후보를 검증한 뒤, 현재 작업에 `HOSTING_DEPLOY`가 명시 승인된 경우에만
+   `scripts/deploy-hosting-only.ps1`을 사용한다. 이 스크립트가 현재 작업 허가서와
+   Hosting-only config를 다시 검사한다. 임의의 Firebase 명령을 직접 실행하지 않는다.
 
-```powershell
-firebase.cmd deploy --only hosting --project quickpilot-39d72
-```
-
-4. RTDB 목록에 `colN`을 등록한다. PowerShell에서 BOM 없는 UTF-8 임시파일을 사용한다.
-
-```powershell
-$payload = [ordered]@{
-  title = "데이터 리포트 N호 · 제목"
-  ts = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-  url = "https://quickpilot-39d72.web.app/column-N-slug.html"
-} | ConvertTo-Json -Compress
-$tmp = Join-Path $env:TEMP "qp-report-colN.json"
-[System.IO.File]::WriteAllText($tmp, $payload, [System.Text.UTF8Encoding]::new($false))
-firebase.cmd database:set /v1/reports/colN $tmp --project quickpilot-39d72 --force
-```
+4. RTDB 목록 등록은 현재 전용 permit-guarded owner가 없으므로 중지 상태다. 새 작업에서
+   별도 action과 exact writer를 먼저 정의하고, 디렉터가 그 행동을 명시 승인한 뒤에만
+   실행한다. 임시파일이나 콘솔 명령으로 우회하지 않는다.
 
 5. 확인한다.
 
@@ -79,7 +68,8 @@ Invoke-WebRequest -Uri "https://quickpilot-39d72.web.app/column-3-weekend.html" 
 
 - `database.rules.json`에서 `/v1/reports` 읽기를 `true`로 열었다.
 - 앱이 쓰는 `orderByChild("ts")` 조회를 위해 `.indexOn`: `["ts"]`를 추가했다.
-- `firebase.cmd deploy --only database --project quickpilot-39d72`로 rules 배포했다.
+- 당시 database rules도 직접 명령으로 배포했으나, 현재는 이 과거 절차를 재사용하지 않는다.
+  rules-only permit owner와 현재 작업 승인이 모두 있어야 한다.
 
 확인:
 
