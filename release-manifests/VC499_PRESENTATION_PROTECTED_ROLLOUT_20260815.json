@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "evidence_id": "VC499-PRESENTATION-PROTECTED-ROLLOUT-20260815",
+  "recorded_at": "2026-08-15T18:13:26.3963645+09:00",
+  "scope": "paired VC499 presentation fixes, isolated Hosting, exact update-signal readback, and fail-closed order control",
+  "source": {
+    "repository": "pnomade12-lgtm/QuickPilot_beta",
+    "branch": "backup/vc499-integrated-20260815",
+    "prebuild_head": "d98e935d814d35aafce21f7ea0e4c3517ca67ef0",
+    "prebuild_working_source_fingerprint": "7aaeaab136409173ef4444a3183a499ea9b21b76",
+    "source_commit": "0f63462dd89cbb6405e682b5702a5fc9cc941a52",
+    "proof_backup_head": "319dd54c7068c2609d3fe579bd0b50ba586ecead",
+    "annotated_backup_tag": "backup-vc499-presentation-protected-20260815",
+    "version_code": 499,
+    "visible_beta_version": "beta-0.15f",
+    "visible_gwanje_version": "관제-0.15f",
+    "focused_tests": 311,
+    "full_unit_tests": 1949,
+    "failures": 0,
+    "errors": 0,
+    "ponytail_status": "PASS"
+  },
+  "artifacts": {
+    "package": "com.quickpilot.v1.beta",
+    "beta": {
+      "version_name": "beta-0.15f",
+      "label": "QP베타0.15f",
+      "bytes": 12828819,
+      "sha256": "740f2e22bce9944a5a623a2cdd2a54539568b7938e8db174adc36e655f23c264",
+      "url": "https://quickpilot-39d72.web.app/qp-beta.apk"
+    },
+    "gwanje": {
+      "version_name": "관제-0.15f",
+      "label": "QP관제0.15f",
+      "bytes": 12828815,
+      "sha256": "8521e20746532844b4d51847d4ec186b8dba1d42790f55f7cf2eabebd1ac3d08",
+      "url": "https://quickpilot-39d72.web.app/qp-gwanje.apk",
+      "latest_url": "https://quickpilot-39d72.web.app/qp-gwanje-latest.apk"
+    },
+    "update_manifest_sha256": "823710cf1bced0454314d85a2daf5475f202550cb6c1d663d28c8617cf9e392a"
+  },
+  "hosting": {
+    "project": "quickpilot-39d72",
+    "repository": "pnomade12-lgtm/quickpilot-landing",
+    "branch": "backup/vc499-hosting-predeploy-20260815",
+    "predeploy_head": "ad6f00bdf119509040fbeb5df30f2769e6c7331b",
+    "config": "firebase.paired-vc499-presentation-protected-hosting.json",
+    "config_sha256": "d341d0cd0c1f9f38496510bf75ba0c4ce62834f8ca5fc17d14995a557666ad82",
+    "rollback_staging": {
+      "path": "release-staging/paired-vc499-protected-public-20260815",
+      "file_count": 71,
+      "total_bytes": 188970607,
+      "tree_sha256": "0bf5f9196dbaedb3cd664f6fa372e2a9abc765f51ab4bddc1feb4dd607975378"
+    },
+    "candidate_staging": {
+      "path": "release-staging/paired-vc499-presentation-protected-public-20260815",
+      "file_count": 71,
+      "total_bytes": 188970613,
+      "tree_sha256": "b4a6ea4378225e5dfc6e6a1a22f1b6a0dd3b840733442bf42c0fe3df9492a319"
+    },
+    "tree_hash_contract": "SHA-256 of UTF-8 sorted relative-path=lowercase-file-sha256 lines joined by LF",
+    "intentional_delta": [
+      "qp-beta.apk",
+      "qp-gwanje.apk",
+      "qp-gwanje-latest.apk",
+      "qp-update.json"
+    ],
+    "firebase_deploy_status": "PASS",
+    "remote_key_artifact_readback": "PASS"
+  },
+  "update_signals": {
+    "beta": {
+      "versionCode": 499,
+      "versionName": "beta-0.15f",
+      "apk": "qp-beta.apk",
+      "readback": "PASS"
+    },
+    "gwanje": {
+      "versionCode": 499,
+      "versionName": "관제-0.15f",
+      "apk": "qp-gwanje.apk",
+      "readback": "PASS"
+    }
+  },
+  "protected_gate": {
+    "data_cost_policy": "PASS",
+    "status": "QP_PROTECTED_CLIENT_ROLLOUT_STATUS=PASS",
+    "order_write_status": "QP_ORDER_WRITE_ENABLE_STATUS=BLOCKED",
+    "field_status": "CAN-F01_FIELD_REQUIRED"
+  },
+  "live_order_sync_control": {
+    "enabled": false,
+    "mode": "BLOCKED",
+    "generation": 42,
+    "evidence_id": "VC499-PROTECTED-ROLLOUT-20260815",
+    "minimum_client_version_code": 499,
+    "allowed_uid": "",
+    "allowed_date": ""
+  },
+  "backup_policy": {
+    "staging_content": "local-only; exact tree and key artifact hashes are preserved in GitHub",
+    "rollback_staging_preserved": true,
+    "candidate_staging_preserved": true,
+    "secrets_uploaded": false,
+    "personal_or_operational_data_uploaded": false,
+    "node_modules_or_build_cache_uploaded": false,
+    "large_logs_uploaded": false
+  },
+  "safety": {
+    "functions_deployed": false,
+    "database_rules_deployed": false,
+    "order_control_written": false,
+    "canary_opened": false,
+    "version_admission_opened": false,
+    "paired_phone_order_sync_opened": false,
+    "real_business_order_action_performed": false,
+    "field_status": "FIELD_REQUIRED"
+  }
+}
