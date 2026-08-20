@@ -64,6 +64,12 @@ This repository serves the live QuickPilot Firebase project. Preserve unrelated 
   denied order writes in both windows, zero idle order writes/invocations, active writes and `orderLive`
   invocations equal to the exact semantic change count, at most 1 MiB outbound in the two-minute idle
   window, and at most 5 MiB in the ten-minute active window.
+- A sparse Cloud Monitoring DELTA point is not current traffic merely because it is the last visible point.
+  Expire it at the metric-specific visibility watermark, retain its source observation time, and keep the
+  slow database-load observation out of the fast-signal watermark. Immediately before CANARY, current
+  traffic authority is a fresh privacy-sanitized two-minute RTDB profiler proof bound to the exact live
+  BLOCKED generation and minimum client version; missing, stale, denied root-multipath, explicit
+  order-path, or downstream write evidence fails before mutation.
 - VERSION must not release historical permission-blocked outbox rows. As of vc459, VERSION is forbidden:
   that client can release all old blocked rows for a UID. Only exact current-date CANARY is eligible after
   the protected client is installed and the rules-only candidate is separately verified and deployed

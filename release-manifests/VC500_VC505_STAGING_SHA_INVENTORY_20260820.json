@@ -1,0 +1,2573 @@
+{
+  "schema_version": 1,
+  "generated_at_kst": "2026-08-20T21:09:26.4373994+09:00",
+  "purpose": "Hash-only preservation of current and rollback Hosting staging; APK binaries are intentionally excluded from Git.",
+  "sets": [
+    {
+      "name": "paired-vc500-seven-task-protected-public-20260816",
+      "relative_root": "release-staging/paired-vc500-seven-task-protected-public-20260816",
+      "file_count": 71,
+      "bytes": 188982908,
+      "files": [
+        {
+          "path": "admin-applications.html",
+          "bytes": 20292,
+          "sha256": "5d730b56da16720ad0ff04f8e44e591900aa591c4de82e0ee24c9c2f6385dafd"
+        },
+        {
+          "path": "apply.html",
+          "bytes": 15760,
+          "sha256": "f92fd393cc480e51ce4637fcc6d1d0d2f15dc700001678ed55b52a0d7709b298"
+        },
+        {
+          "path": "column-1-ordermap.html",
+          "bytes": 13603,
+          "sha256": "52c22df783991484134986eb630f316142f842674776560ecfd67f3669f4eb75"
+        },
+        {
+          "path": "column-2-worktime.html",
+          "bytes": 14392,
+          "sha256": "b48116632215851eb212c1f648de69ffd56ab0d874ae9c3c3e97540b9afdce3a"
+        },
+        {
+          "path": "column-3-crowd.html",
+          "bytes": 18052,
+          "sha256": "6830185e837326761849f7692fd809d54f6ddaa9f497234e4f3da1722c4e79d3"
+        },
+        {
+          "path": "column-4-longhaul.html",
+          "bytes": 15861,
+          "sha256": "27710b3e309df7b88400497dd44d98a842c0977fafb15559e8a6ef54ca205c28"
+        },
+        {
+          "path": "column-5-cargo-load.html",
+          "bytes": 16988,
+          "sha256": "0901c02354e1f20903eebb346eba8bff9c86aa457b6dee961a5caea214f710e5"
+        },
+        {
+          "path": "guide-ops.html",
+          "bytes": 57861,
+          "sha256": "af3343e3df95f501790f490ecee938f505e0a54ad9916da65d39c6c847e2d3cf"
+        },
+        {
+          "path": "guide-summary.html",
+          "bytes": 15847,
+          "sha256": "5085460f37b02863f046afa976db86f05e7732c7a0a0dd5f1d535d1a9c1e671d"
+        },
+        {
+          "path": "guide.html",
+          "bytes": 54977,
+          "sha256": "a13acb7706ae9b47a05a0bca43a4e47620042b33fc055427e218acaeda530e7d"
+        },
+        {
+          "path": "img/guide/insung-amount.png",
+          "bytes": 416128,
+          "sha256": "3b12c5f6e91d0ec337558bd50d90eb3a903b44de32af7a21b4a63ddd4e9be8fc"
+        },
+        {
+          "path": "img/guide/insung-exclude.png",
+          "bytes": 285729,
+          "sha256": "d2d2b82d55af131d32f6a26639e7aba24c46e1fafb1a73987cd83f4a20bc3cab"
+        },
+        {
+          "path": "img/guide/insung-setting.jpg",
+          "bytes": 177109,
+          "sha256": "41b1f2d2ac846af3496215620585eb5f4454771c71f9e994501580e8c40f62b1"
+        },
+        {
+          "path": "img/guide/insung-stop.png",
+          "bytes": 793913,
+          "sha256": "4388431195e1c1aaf87afcb713650d7b299a69c7f42c47feb9a81ee2a7a5f8d1"
+        },
+        {
+          "path": "img/guide/kakao-blink.png",
+          "bytes": 445589,
+          "sha256": "d4ebb406b934203671e4ff96dd65a095dcfb25db8e95ed71a76fd1033c81b984"
+        },
+        {
+          "path": "img/guide/kakao-distance.png",
+          "bytes": 254378,
+          "sha256": "00b46371c790ff0d04dc31dc63cbb118f5fc7a3cb2e69d831880316f06fde983"
+        },
+        {
+          "path": "img/guide/kakao-sound.png",
+          "bytes": 139589,
+          "sha256": "8b42b9b782f13fccd3ea3a05fbde37d7e1762821c49974b63e80e89f48cc2222"
+        },
+        {
+          "path": "img/guide/km-1.png",
+          "bytes": 292582,
+          "sha256": "7a6a27eb596c3ef67d4f20ce73724a7b1aa46b0de5054047444a05a995c81d44"
+        },
+        {
+          "path": "img/guide/km-2.png",
+          "bytes": 270531,
+          "sha256": "c65afa29173e971ea010d43852759cbdc5d79116d2c24734ce26350424b7e81d"
+        },
+        {
+          "path": "img/guide/km-3.png",
+          "bytes": 275009,
+          "sha256": "a2be9292b9eb7ad4e041a309e7f6de5f75772874e3dd2b92c6fae65ae2ac8068"
+        },
+        {
+          "path": "img/guide/km-4.png",
+          "bytes": 281713,
+          "sha256": "162356d53d0c2679131431044b35bdc0176ed1091fd3a6c065a71f6ec125df9b"
+        },
+        {
+          "path": "img/guide/qp-start.png",
+          "bytes": 175236,
+          "sha256": "78d16aa11a1fa17b1c9d5ddbec67ccd4ba52fe36c3596d84918e47e433997354"
+        },
+        {
+          "path": "img/guide/radar.png",
+          "bytes": 469463,
+          "sha256": "0783a2aa2bb33d4689d82028c143e43f1c5c9fa3e20cb10ba24ed2c1322efdf2"
+        },
+        {
+          "path": "img/guide/sidepanel-1.png",
+          "bytes": 346708,
+          "sha256": "6b2e73bc3068b4dd3027cfeb45608e673239f9d24fa3f53e1c10f37a62edc5f1"
+        },
+        {
+          "path": "img/guide/sidepanel-2.png",
+          "bytes": 323865,
+          "sha256": "df38bcf438a9ba5184c1c2174657d11dccb8c0061542c08c84c614f7e1dbca6a"
+        },
+        {
+          "path": "img/guide/split-1.png",
+          "bytes": 263237,
+          "sha256": "9ef5105ed106ab537b25e43c0ee2873d961b7b527f78da98b97709fd83ad5982"
+        },
+        {
+          "path": "img/guide/split-2.png",
+          "bytes": 254120,
+          "sha256": "fd095a9248c833e902d9fa731c3f6a5fc9e529abaf40b4e7fd50860dd58d18e3"
+        },
+        {
+          "path": "img/guide/split-3.png",
+          "bytes": 225339,
+          "sha256": "dc07ab3ae9d53090c069649f1cced1b092cb7a82b247dc2cedfb49ee457b83cf"
+        },
+        {
+          "path": "img/guide/split-4.png",
+          "bytes": 347057,
+          "sha256": "120ee84fea23d4aeb3ab49bc0edbf858dc115876a71e2c9681512ecc9da59d91"
+        },
+        {
+          "path": "img/guide/split-5.png",
+          "bytes": 331401,
+          "sha256": "93af868cae3179aa513705a4188ed26818a84183dc324b5e4220e1434651b4a7"
+        },
+        {
+          "path": "img/guide/split-6.png",
+          "bytes": 757379,
+          "sha256": "5a5d2cc48b116519e67a6ce0502a3a3e346922f9c28aece3793dec5791dcad9c"
+        },
+        {
+          "path": "img/guide/split-7.png",
+          "bytes": 402149,
+          "sha256": "53122b49d17631eaeefcf2f3918679e5e4c12bd823a518dad9575c451d3698c0"
+        },
+        {
+          "path": "img/guide/toast.png",
+          "bytes": 129250,
+          "sha256": "b59cf3d5c39885e21e37944b0ece60f4bc0ea484b7bf08c4439624fde6eeb121"
+        },
+        {
+          "path": "img/guide/totalcall-confirm.png",
+          "bytes": 350354,
+          "sha256": "cfded416b258c139bba36bc1fe0c0ffdd0eafd732f77f2e83a70e1250f0e820d"
+        },
+        {
+          "path": "img/guide/totalcall-popup.png",
+          "bytes": 432998,
+          "sha256": "db247c671801c433eaa346214cf2d92126842f3f014dd004bfd288a546dca95d"
+        },
+        {
+          "path": "img/guide/totalcall-popup2.png",
+          "bytes": 316798,
+          "sha256": "963de31c14bbd3789f3f3818815634f8ea2b14aaeef59e1ebbd285930bd52408"
+        },
+        {
+          "path": "img/guide/totalcall-setting.png",
+          "bytes": 198608,
+          "sha256": "b2f1bb3bda49523dc96d396dd6e3aed1366bfd478977ac5f70a5bce0c1272e2d"
+        },
+        {
+          "path": "img/landing/01_hero.png",
+          "bytes": 1896856,
+          "sha256": "4dc7b8e98c1a967cbdf097f5cfd79e5c9b799e25add7b48c87aee0f622ca976e"
+        },
+        {
+          "path": "img/landing/02_line.png",
+          "bytes": 2020604,
+          "sha256": "265a1a8f572fcd308cd0ccf8c8479906b1857f4ec8b1089aa83afd2a990c732a"
+        },
+        {
+          "path": "img/landing/03_ox.png",
+          "bytes": 2394984,
+          "sha256": "dd17e6cf9bbb449d98879b75c472f5c2e41135bdcad0e2bbccdc25139453a734"
+        },
+        {
+          "path": "img/landing/04_judge.png",
+          "bytes": 1968449,
+          "sha256": "968dc69b3829ce60e2033f3fd60b6dd67a8c74630c72001666571b1bf8f92405"
+        },
+        {
+          "path": "img/landing/05_home.png",
+          "bytes": 2022700,
+          "sha256": "b37ab9eb42ac808a4afe50b27a7c54d6fb5a8491cea001ebe2699070116e9c9b"
+        },
+        {
+          "path": "img/landing/06_door.jpg",
+          "bytes": 5119726,
+          "sha256": "57c40c03d6d703bd683a4870651574c8228b7beae77b4a1105be2b9c41791128"
+        },
+        {
+          "path": "img/landing/proof_dist.jpg",
+          "bytes": 339409,
+          "sha256": "95e83544182be400079ffa858aa5979d10ca10e497d2846fc7442cefaa26d401"
+        },
+        {
+          "path": "img/landing/proof_heat.jpg",
+          "bytes": 331595,
+          "sha256": "f28e86b19ac6c6e05b5b9fc26b3b7da9488d1cfec647a7e90737d52f1820273e"
+        },
+        {
+          "path": "img/landing/proof_time.jpg",
+          "bytes": 74658,
+          "sha256": "e24e14c8de0dcbb1bbadaf3d686439dc2f54a015600d13f9a7680b5618a56fc0"
+        },
+        {
+          "path": "img/landing/proof_toast.jpg",
+          "bytes": 211369,
+          "sha256": "4d73903f6ceb16e0cf14c247b94111535bb8e88a8fab4a01a1818e0bb2c3ab87"
+        },
+        {
+          "path": "index.html",
+          "bytes": 34448,
+          "sha256": "c6b7f3df7514432a924c6b945c2c9ff72f88e75c95af121d8ecb1616a5ef6096"
+        },
+        {
+          "path": "landing-v2.html",
+          "bytes": 30707,
+          "sha256": "70007b7ab9779ffe2572ca8f30d48274aae443d9ebbd04a2b54dd0f62ae701ee"
+        },
+        {
+          "path": "monitor-all.html",
+          "bytes": 74907,
+          "sha256": "5a65dacd3e23497d43c799908fd6302901b0135b6c7448846f6c86d84d5880a5"
+        },
+        {
+          "path": "qp-beta-director-test.apk",
+          "bytes": 12820627,
+          "sha256": "aecd312427a20127bd8922ca396ac7d1a211bd4099c1538f92e1cf684733a21c"
+        },
+        {
+          "path": "qp-beta.apk",
+          "bytes": 12832915,
+          "sha256": "aecc3ddf5c4892c69c597572bc3082376f04f9992d637cbc7d905ba446f8e2ac"
+        },
+        {
+          "path": "qp-gwanje-director-test.apk",
+          "bytes": 12820623,
+          "sha256": "ccde6265bae59f6bbc8b125c5d119bdcc09182f149d7315cadd4fa34498d0b62"
+        },
+        {
+          "path": "qp-gwanje-latest.apk",
+          "bytes": 12832911,
+          "sha256": "dfee0ecf07cdef13b9e25c3da630cee97576b44e4215e32002c77f6fd0faafcc"
+        },
+        {
+          "path": "qp-gwanje-vc290-20260705.apk",
+          "bytes": 10976179,
+          "sha256": "e923ccc72d821f220a97a45a5bd119b96ee708978ec13f90aeeba6b470b951eb"
+        },
+        {
+          "path": "qp-gwanje-vc291-20260705.apk",
+          "bytes": 10976183,
+          "sha256": "701e0a49f73617c13d0e0627e6f6b67386d63c23e3be1ac8e96d0a28690e1dc6"
+        },
+        {
+          "path": "qp-gwanje-vc312-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "4eb864d76ff44d133e5670da9803f016eb26cb0a7f7e610c5105fe5a26afbc75"
+        },
+        {
+          "path": "qp-gwanje-vc313-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "daed9d379b5177b0dc03f9a7ab9e38894176c018f5d310380bcd0294614a18a3"
+        },
+        {
+          "path": "qp-gwanje-vc314-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "b3d170ff531f53e17e6782c906dd22a55f3bfb3577a66bf8f34bc790b8874f12"
+        },
+        {
+          "path": "qp-gwanje-vc315-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "639d649cc7b886a8c5121113d790a8d067403096c12548258c7b60f1c75c3836"
+        },
+        {
+          "path": "qp-gwanje-vc316-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "66aa6fb21aa76e56c27ca7351fb185c85b21fcbdb49cf6a93f81ab6277cffb25"
+        },
+        {
+          "path": "qp-gwanje-vc317-20260705.apk",
+          "bytes": 10980287,
+          "sha256": "4e5c9816aff16c619b505bb6fb5ad56e48f3855b730d04d39a37ee623770758f"
+        },
+        {
+          "path": "qp-gwanje-vc318-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "91c6c1ac1618b57760954e66ab4fc496949da88358a6eea37bbed6f87706e9e1"
+        },
+        {
+          "path": "qp-gwanje.apk",
+          "bytes": 12832911,
+          "sha256": "dfee0ecf07cdef13b9e25c3da630cee97576b44e4215e32002c77f6fd0faafcc"
+        },
+        {
+          "path": "qp-update.json",
+          "bytes": 384,
+          "sha256": "58139915baefc2b0332431158fe958a9fb16bd3d84efbea491fbbaf242248323"
+        },
+        {
+          "path": "report-editor-edit.html",
+          "bytes": 223433,
+          "sha256": "4d065c59166616105f2fe7ce4c405433f44410883c394deb16d78a25f9560b1c"
+        },
+        {
+          "path": "report-editor.html",
+          "bytes": 14877,
+          "sha256": "c970190541ff09363cf0f9ef87344e4c23240a12a2f2dff960e9b4fc160d57bf"
+        },
+        {
+          "path": "server.html",
+          "bytes": 24798,
+          "sha256": "6fd9d831741fe249dea2d02e0dad9b46612a11c9f86067842abd17963d452392"
+        },
+        {
+          "path": "serverops.html",
+          "bytes": 8522,
+          "sha256": "00c73822b5272e72575884c70d9630c8a9d7c1c44dcdf617a21ac2b72dd4b991"
+        },
+        {
+          "path": "special-longhaul-report-20260709.html",
+          "bytes": 16249,
+          "sha256": "fba552d15e7026fe1f4457de2077f63004052f31aa3fa8514ab4251ee19f5cf1"
+        },
+        {
+          "path": "special-memo.html",
+          "bytes": 20070,
+          "sha256": "bb09af81fa4be69d67b07e5630db62c7119c170e31b66c797983d66a9939654f"
+        }
+      ]
+    },
+    {
+      "name": "paired-vc501-current-protected-public-20260816",
+      "relative_root": "release-staging/paired-vc501-current-protected-public-20260816",
+      "file_count": 71,
+      "bytes": 189019808,
+      "files": [
+        {
+          "path": "admin-applications.html",
+          "bytes": 20292,
+          "sha256": "5d730b56da16720ad0ff04f8e44e591900aa591c4de82e0ee24c9c2f6385dafd"
+        },
+        {
+          "path": "apply.html",
+          "bytes": 15760,
+          "sha256": "f92fd393cc480e51ce4637fcc6d1d0d2f15dc700001678ed55b52a0d7709b298"
+        },
+        {
+          "path": "column-1-ordermap.html",
+          "bytes": 13603,
+          "sha256": "52c22df783991484134986eb630f316142f842674776560ecfd67f3669f4eb75"
+        },
+        {
+          "path": "column-2-worktime.html",
+          "bytes": 14392,
+          "sha256": "b48116632215851eb212c1f648de69ffd56ab0d874ae9c3c3e97540b9afdce3a"
+        },
+        {
+          "path": "column-3-crowd.html",
+          "bytes": 18052,
+          "sha256": "6830185e837326761849f7692fd809d54f6ddaa9f497234e4f3da1722c4e79d3"
+        },
+        {
+          "path": "column-4-longhaul.html",
+          "bytes": 15861,
+          "sha256": "27710b3e309df7b88400497dd44d98a842c0977fafb15559e8a6ef54ca205c28"
+        },
+        {
+          "path": "column-5-cargo-load.html",
+          "bytes": 16988,
+          "sha256": "0901c02354e1f20903eebb346eba8bff9c86aa457b6dee961a5caea214f710e5"
+        },
+        {
+          "path": "guide-ops.html",
+          "bytes": 57861,
+          "sha256": "af3343e3df95f501790f490ecee938f505e0a54ad9916da65d39c6c847e2d3cf"
+        },
+        {
+          "path": "guide-summary.html",
+          "bytes": 15847,
+          "sha256": "5085460f37b02863f046afa976db86f05e7732c7a0a0dd5f1d535d1a9c1e671d"
+        },
+        {
+          "path": "guide.html",
+          "bytes": 54977,
+          "sha256": "a13acb7706ae9b47a05a0bca43a4e47620042b33fc055427e218acaeda530e7d"
+        },
+        {
+          "path": "img/guide/insung-amount.png",
+          "bytes": 416128,
+          "sha256": "3b12c5f6e91d0ec337558bd50d90eb3a903b44de32af7a21b4a63ddd4e9be8fc"
+        },
+        {
+          "path": "img/guide/insung-exclude.png",
+          "bytes": 285729,
+          "sha256": "d2d2b82d55af131d32f6a26639e7aba24c46e1fafb1a73987cd83f4a20bc3cab"
+        },
+        {
+          "path": "img/guide/insung-setting.jpg",
+          "bytes": 177109,
+          "sha256": "41b1f2d2ac846af3496215620585eb5f4454771c71f9e994501580e8c40f62b1"
+        },
+        {
+          "path": "img/guide/insung-stop.png",
+          "bytes": 793913,
+          "sha256": "4388431195e1c1aaf87afcb713650d7b299a69c7f42c47feb9a81ee2a7a5f8d1"
+        },
+        {
+          "path": "img/guide/kakao-blink.png",
+          "bytes": 445589,
+          "sha256": "d4ebb406b934203671e4ff96dd65a095dcfb25db8e95ed71a76fd1033c81b984"
+        },
+        {
+          "path": "img/guide/kakao-distance.png",
+          "bytes": 254378,
+          "sha256": "00b46371c790ff0d04dc31dc63cbb118f5fc7a3cb2e69d831880316f06fde983"
+        },
+        {
+          "path": "img/guide/kakao-sound.png",
+          "bytes": 139589,
+          "sha256": "8b42b9b782f13fccd3ea3a05fbde37d7e1762821c49974b63e80e89f48cc2222"
+        },
+        {
+          "path": "img/guide/km-1.png",
+          "bytes": 292582,
+          "sha256": "7a6a27eb596c3ef67d4f20ce73724a7b1aa46b0de5054047444a05a995c81d44"
+        },
+        {
+          "path": "img/guide/km-2.png",
+          "bytes": 270531,
+          "sha256": "c65afa29173e971ea010d43852759cbdc5d79116d2c24734ce26350424b7e81d"
+        },
+        {
+          "path": "img/guide/km-3.png",
+          "bytes": 275009,
+          "sha256": "a2be9292b9eb7ad4e041a309e7f6de5f75772874e3dd2b92c6fae65ae2ac8068"
+        },
+        {
+          "path": "img/guide/km-4.png",
+          "bytes": 281713,
+          "sha256": "162356d53d0c2679131431044b35bdc0176ed1091fd3a6c065a71f6ec125df9b"
+        },
+        {
+          "path": "img/guide/qp-start.png",
+          "bytes": 175236,
+          "sha256": "78d16aa11a1fa17b1c9d5ddbec67ccd4ba52fe36c3596d84918e47e433997354"
+        },
+        {
+          "path": "img/guide/radar.png",
+          "bytes": 469463,
+          "sha256": "0783a2aa2bb33d4689d82028c143e43f1c5c9fa3e20cb10ba24ed2c1322efdf2"
+        },
+        {
+          "path": "img/guide/sidepanel-1.png",
+          "bytes": 346708,
+          "sha256": "6b2e73bc3068b4dd3027cfeb45608e673239f9d24fa3f53e1c10f37a62edc5f1"
+        },
+        {
+          "path": "img/guide/sidepanel-2.png",
+          "bytes": 323865,
+          "sha256": "df38bcf438a9ba5184c1c2174657d11dccb8c0061542c08c84c614f7e1dbca6a"
+        },
+        {
+          "path": "img/guide/split-1.png",
+          "bytes": 263237,
+          "sha256": "9ef5105ed106ab537b25e43c0ee2873d961b7b527f78da98b97709fd83ad5982"
+        },
+        {
+          "path": "img/guide/split-2.png",
+          "bytes": 254120,
+          "sha256": "fd095a9248c833e902d9fa731c3f6a5fc9e529abaf40b4e7fd50860dd58d18e3"
+        },
+        {
+          "path": "img/guide/split-3.png",
+          "bytes": 225339,
+          "sha256": "dc07ab3ae9d53090c069649f1cced1b092cb7a82b247dc2cedfb49ee457b83cf"
+        },
+        {
+          "path": "img/guide/split-4.png",
+          "bytes": 347057,
+          "sha256": "120ee84fea23d4aeb3ab49bc0edbf858dc115876a71e2c9681512ecc9da59d91"
+        },
+        {
+          "path": "img/guide/split-5.png",
+          "bytes": 331401,
+          "sha256": "93af868cae3179aa513705a4188ed26818a84183dc324b5e4220e1434651b4a7"
+        },
+        {
+          "path": "img/guide/split-6.png",
+          "bytes": 757379,
+          "sha256": "5a5d2cc48b116519e67a6ce0502a3a3e346922f9c28aece3793dec5791dcad9c"
+        },
+        {
+          "path": "img/guide/split-7.png",
+          "bytes": 402149,
+          "sha256": "53122b49d17631eaeefcf2f3918679e5e4c12bd823a518dad9575c451d3698c0"
+        },
+        {
+          "path": "img/guide/toast.png",
+          "bytes": 129250,
+          "sha256": "b59cf3d5c39885e21e37944b0ece60f4bc0ea484b7bf08c4439624fde6eeb121"
+        },
+        {
+          "path": "img/guide/totalcall-confirm.png",
+          "bytes": 350354,
+          "sha256": "cfded416b258c139bba36bc1fe0c0ffdd0eafd732f77f2e83a70e1250f0e820d"
+        },
+        {
+          "path": "img/guide/totalcall-popup.png",
+          "bytes": 432998,
+          "sha256": "db247c671801c433eaa346214cf2d92126842f3f014dd004bfd288a546dca95d"
+        },
+        {
+          "path": "img/guide/totalcall-popup2.png",
+          "bytes": 316798,
+          "sha256": "963de31c14bbd3789f3f3818815634f8ea2b14aaeef59e1ebbd285930bd52408"
+        },
+        {
+          "path": "img/guide/totalcall-setting.png",
+          "bytes": 198608,
+          "sha256": "b2f1bb3bda49523dc96d396dd6e3aed1366bfd478977ac5f70a5bce0c1272e2d"
+        },
+        {
+          "path": "img/landing/01_hero.png",
+          "bytes": 1896856,
+          "sha256": "4dc7b8e98c1a967cbdf097f5cfd79e5c9b799e25add7b48c87aee0f622ca976e"
+        },
+        {
+          "path": "img/landing/02_line.png",
+          "bytes": 2020604,
+          "sha256": "265a1a8f572fcd308cd0ccf8c8479906b1857f4ec8b1089aa83afd2a990c732a"
+        },
+        {
+          "path": "img/landing/03_ox.png",
+          "bytes": 2394984,
+          "sha256": "dd17e6cf9bbb449d98879b75c472f5c2e41135bdcad0e2bbccdc25139453a734"
+        },
+        {
+          "path": "img/landing/04_judge.png",
+          "bytes": 1968449,
+          "sha256": "968dc69b3829ce60e2033f3fd60b6dd67a8c74630c72001666571b1bf8f92405"
+        },
+        {
+          "path": "img/landing/05_home.png",
+          "bytes": 2022700,
+          "sha256": "b37ab9eb42ac808a4afe50b27a7c54d6fb5a8491cea001ebe2699070116e9c9b"
+        },
+        {
+          "path": "img/landing/06_door.jpg",
+          "bytes": 5119726,
+          "sha256": "57c40c03d6d703bd683a4870651574c8228b7beae77b4a1105be2b9c41791128"
+        },
+        {
+          "path": "img/landing/proof_dist.jpg",
+          "bytes": 339409,
+          "sha256": "95e83544182be400079ffa858aa5979d10ca10e497d2846fc7442cefaa26d401"
+        },
+        {
+          "path": "img/landing/proof_heat.jpg",
+          "bytes": 331595,
+          "sha256": "f28e86b19ac6c6e05b5b9fc26b3b7da9488d1cfec647a7e90737d52f1820273e"
+        },
+        {
+          "path": "img/landing/proof_time.jpg",
+          "bytes": 74658,
+          "sha256": "e24e14c8de0dcbb1bbadaf3d686439dc2f54a015600d13f9a7680b5618a56fc0"
+        },
+        {
+          "path": "img/landing/proof_toast.jpg",
+          "bytes": 211369,
+          "sha256": "4d73903f6ceb16e0cf14c247b94111535bb8e88a8fab4a01a1818e0bb2c3ab87"
+        },
+        {
+          "path": "index.html",
+          "bytes": 34448,
+          "sha256": "c6b7f3df7514432a924c6b945c2c9ff72f88e75c95af121d8ecb1616a5ef6096"
+        },
+        {
+          "path": "landing-v2.html",
+          "bytes": 30707,
+          "sha256": "70007b7ab9779ffe2572ca8f30d48274aae443d9ebbd04a2b54dd0f62ae701ee"
+        },
+        {
+          "path": "monitor-all.html",
+          "bytes": 74907,
+          "sha256": "5a65dacd3e23497d43c799908fd6302901b0135b6c7448846f6c86d84d5880a5"
+        },
+        {
+          "path": "qp-beta-director-test.apk",
+          "bytes": 12820627,
+          "sha256": "aecd312427a20127bd8922ca396ac7d1a211bd4099c1538f92e1cf684733a21c"
+        },
+        {
+          "path": "qp-beta.apk",
+          "bytes": 12845215,
+          "sha256": "97abc50941cb8812d8ed83ca18f8221b0044a5cf1e1c773b9215c7d53130e3b1"
+        },
+        {
+          "path": "qp-gwanje-director-test.apk",
+          "bytes": 12820623,
+          "sha256": "ccde6265bae59f6bbc8b125c5d119bdcc09182f149d7315cadd4fa34498d0b62"
+        },
+        {
+          "path": "qp-gwanje-latest.apk",
+          "bytes": 12845211,
+          "sha256": "a8b98d13ce731da319e47fd13340381b499f5a27e9e43123dad2b53486822a81"
+        },
+        {
+          "path": "qp-gwanje-vc290-20260705.apk",
+          "bytes": 10976179,
+          "sha256": "e923ccc72d821f220a97a45a5bd119b96ee708978ec13f90aeeba6b470b951eb"
+        },
+        {
+          "path": "qp-gwanje-vc291-20260705.apk",
+          "bytes": 10976183,
+          "sha256": "701e0a49f73617c13d0e0627e6f6b67386d63c23e3be1ac8e96d0a28690e1dc6"
+        },
+        {
+          "path": "qp-gwanje-vc312-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "4eb864d76ff44d133e5670da9803f016eb26cb0a7f7e610c5105fe5a26afbc75"
+        },
+        {
+          "path": "qp-gwanje-vc313-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "daed9d379b5177b0dc03f9a7ab9e38894176c018f5d310380bcd0294614a18a3"
+        },
+        {
+          "path": "qp-gwanje-vc314-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "b3d170ff531f53e17e6782c906dd22a55f3bfb3577a66bf8f34bc790b8874f12"
+        },
+        {
+          "path": "qp-gwanje-vc315-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "639d649cc7b886a8c5121113d790a8d067403096c12548258c7b60f1c75c3836"
+        },
+        {
+          "path": "qp-gwanje-vc316-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "66aa6fb21aa76e56c27ca7351fb185c85b21fcbdb49cf6a93f81ab6277cffb25"
+        },
+        {
+          "path": "qp-gwanje-vc317-20260705.apk",
+          "bytes": 10980287,
+          "sha256": "4e5c9816aff16c619b505bb6fb5ad56e48f3855b730d04d39a37ee623770758f"
+        },
+        {
+          "path": "qp-gwanje-vc318-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "91c6c1ac1618b57760954e66ab4fc496949da88358a6eea37bbed6f87706e9e1"
+        },
+        {
+          "path": "qp-gwanje.apk",
+          "bytes": 12845211,
+          "sha256": "a8b98d13ce731da319e47fd13340381b499f5a27e9e43123dad2b53486822a81"
+        },
+        {
+          "path": "qp-update.json",
+          "bytes": 384,
+          "sha256": "e4ca08dd47f5991919eb45c0e990fb761bc3e6d73687b8647dedbafb6d309cb2"
+        },
+        {
+          "path": "report-editor-edit.html",
+          "bytes": 223433,
+          "sha256": "4d065c59166616105f2fe7ce4c405433f44410883c394deb16d78a25f9560b1c"
+        },
+        {
+          "path": "report-editor.html",
+          "bytes": 14877,
+          "sha256": "c970190541ff09363cf0f9ef87344e4c23240a12a2f2dff960e9b4fc160d57bf"
+        },
+        {
+          "path": "server.html",
+          "bytes": 24798,
+          "sha256": "6fd9d831741fe249dea2d02e0dad9b46612a11c9f86067842abd17963d452392"
+        },
+        {
+          "path": "serverops.html",
+          "bytes": 8522,
+          "sha256": "00c73822b5272e72575884c70d9630c8a9d7c1c44dcdf617a21ac2b72dd4b991"
+        },
+        {
+          "path": "special-longhaul-report-20260709.html",
+          "bytes": 16249,
+          "sha256": "fba552d15e7026fe1f4457de2077f63004052f31aa3fa8514ab4251ee19f5cf1"
+        },
+        {
+          "path": "special-memo.html",
+          "bytes": 20070,
+          "sha256": "bb09af81fa4be69d67b07e5630db62c7119c170e31b66c797983d66a9939654f"
+        }
+      ]
+    },
+    {
+      "name": "paired-vc502-current-protected-public-20260817",
+      "relative_root": "release-staging/paired-vc502-current-protected-public-20260817",
+      "file_count": 71,
+      "bytes": 189044384,
+      "files": [
+        {
+          "path": "admin-applications.html",
+          "bytes": 20292,
+          "sha256": "5d730b56da16720ad0ff04f8e44e591900aa591c4de82e0ee24c9c2f6385dafd"
+        },
+        {
+          "path": "apply.html",
+          "bytes": 15760,
+          "sha256": "f92fd393cc480e51ce4637fcc6d1d0d2f15dc700001678ed55b52a0d7709b298"
+        },
+        {
+          "path": "column-1-ordermap.html",
+          "bytes": 13603,
+          "sha256": "52c22df783991484134986eb630f316142f842674776560ecfd67f3669f4eb75"
+        },
+        {
+          "path": "column-2-worktime.html",
+          "bytes": 14392,
+          "sha256": "b48116632215851eb212c1f648de69ffd56ab0d874ae9c3c3e97540b9afdce3a"
+        },
+        {
+          "path": "column-3-crowd.html",
+          "bytes": 18052,
+          "sha256": "6830185e837326761849f7692fd809d54f6ddaa9f497234e4f3da1722c4e79d3"
+        },
+        {
+          "path": "column-4-longhaul.html",
+          "bytes": 15861,
+          "sha256": "27710b3e309df7b88400497dd44d98a842c0977fafb15559e8a6ef54ca205c28"
+        },
+        {
+          "path": "column-5-cargo-load.html",
+          "bytes": 16988,
+          "sha256": "0901c02354e1f20903eebb346eba8bff9c86aa457b6dee961a5caea214f710e5"
+        },
+        {
+          "path": "guide-ops.html",
+          "bytes": 57861,
+          "sha256": "af3343e3df95f501790f490ecee938f505e0a54ad9916da65d39c6c847e2d3cf"
+        },
+        {
+          "path": "guide-summary.html",
+          "bytes": 15847,
+          "sha256": "5085460f37b02863f046afa976db86f05e7732c7a0a0dd5f1d535d1a9c1e671d"
+        },
+        {
+          "path": "guide.html",
+          "bytes": 54977,
+          "sha256": "a13acb7706ae9b47a05a0bca43a4e47620042b33fc055427e218acaeda530e7d"
+        },
+        {
+          "path": "img/guide/insung-amount.png",
+          "bytes": 416128,
+          "sha256": "3b12c5f6e91d0ec337558bd50d90eb3a903b44de32af7a21b4a63ddd4e9be8fc"
+        },
+        {
+          "path": "img/guide/insung-exclude.png",
+          "bytes": 285729,
+          "sha256": "d2d2b82d55af131d32f6a26639e7aba24c46e1fafb1a73987cd83f4a20bc3cab"
+        },
+        {
+          "path": "img/guide/insung-setting.jpg",
+          "bytes": 177109,
+          "sha256": "41b1f2d2ac846af3496215620585eb5f4454771c71f9e994501580e8c40f62b1"
+        },
+        {
+          "path": "img/guide/insung-stop.png",
+          "bytes": 793913,
+          "sha256": "4388431195e1c1aaf87afcb713650d7b299a69c7f42c47feb9a81ee2a7a5f8d1"
+        },
+        {
+          "path": "img/guide/kakao-blink.png",
+          "bytes": 445589,
+          "sha256": "d4ebb406b934203671e4ff96dd65a095dcfb25db8e95ed71a76fd1033c81b984"
+        },
+        {
+          "path": "img/guide/kakao-distance.png",
+          "bytes": 254378,
+          "sha256": "00b46371c790ff0d04dc31dc63cbb118f5fc7a3cb2e69d831880316f06fde983"
+        },
+        {
+          "path": "img/guide/kakao-sound.png",
+          "bytes": 139589,
+          "sha256": "8b42b9b782f13fccd3ea3a05fbde37d7e1762821c49974b63e80e89f48cc2222"
+        },
+        {
+          "path": "img/guide/km-1.png",
+          "bytes": 292582,
+          "sha256": "7a6a27eb596c3ef67d4f20ce73724a7b1aa46b0de5054047444a05a995c81d44"
+        },
+        {
+          "path": "img/guide/km-2.png",
+          "bytes": 270531,
+          "sha256": "c65afa29173e971ea010d43852759cbdc5d79116d2c24734ce26350424b7e81d"
+        },
+        {
+          "path": "img/guide/km-3.png",
+          "bytes": 275009,
+          "sha256": "a2be9292b9eb7ad4e041a309e7f6de5f75772874e3dd2b92c6fae65ae2ac8068"
+        },
+        {
+          "path": "img/guide/km-4.png",
+          "bytes": 281713,
+          "sha256": "162356d53d0c2679131431044b35bdc0176ed1091fd3a6c065a71f6ec125df9b"
+        },
+        {
+          "path": "img/guide/qp-start.png",
+          "bytes": 175236,
+          "sha256": "78d16aa11a1fa17b1c9d5ddbec67ccd4ba52fe36c3596d84918e47e433997354"
+        },
+        {
+          "path": "img/guide/radar.png",
+          "bytes": 469463,
+          "sha256": "0783a2aa2bb33d4689d82028c143e43f1c5c9fa3e20cb10ba24ed2c1322efdf2"
+        },
+        {
+          "path": "img/guide/sidepanel-1.png",
+          "bytes": 346708,
+          "sha256": "6b2e73bc3068b4dd3027cfeb45608e673239f9d24fa3f53e1c10f37a62edc5f1"
+        },
+        {
+          "path": "img/guide/sidepanel-2.png",
+          "bytes": 323865,
+          "sha256": "df38bcf438a9ba5184c1c2174657d11dccb8c0061542c08c84c614f7e1dbca6a"
+        },
+        {
+          "path": "img/guide/split-1.png",
+          "bytes": 263237,
+          "sha256": "9ef5105ed106ab537b25e43c0ee2873d961b7b527f78da98b97709fd83ad5982"
+        },
+        {
+          "path": "img/guide/split-2.png",
+          "bytes": 254120,
+          "sha256": "fd095a9248c833e902d9fa731c3f6a5fc9e529abaf40b4e7fd50860dd58d18e3"
+        },
+        {
+          "path": "img/guide/split-3.png",
+          "bytes": 225339,
+          "sha256": "dc07ab3ae9d53090c069649f1cced1b092cb7a82b247dc2cedfb49ee457b83cf"
+        },
+        {
+          "path": "img/guide/split-4.png",
+          "bytes": 347057,
+          "sha256": "120ee84fea23d4aeb3ab49bc0edbf858dc115876a71e2c9681512ecc9da59d91"
+        },
+        {
+          "path": "img/guide/split-5.png",
+          "bytes": 331401,
+          "sha256": "93af868cae3179aa513705a4188ed26818a84183dc324b5e4220e1434651b4a7"
+        },
+        {
+          "path": "img/guide/split-6.png",
+          "bytes": 757379,
+          "sha256": "5a5d2cc48b116519e67a6ce0502a3a3e346922f9c28aece3793dec5791dcad9c"
+        },
+        {
+          "path": "img/guide/split-7.png",
+          "bytes": 402149,
+          "sha256": "53122b49d17631eaeefcf2f3918679e5e4c12bd823a518dad9575c451d3698c0"
+        },
+        {
+          "path": "img/guide/toast.png",
+          "bytes": 129250,
+          "sha256": "b59cf3d5c39885e21e37944b0ece60f4bc0ea484b7bf08c4439624fde6eeb121"
+        },
+        {
+          "path": "img/guide/totalcall-confirm.png",
+          "bytes": 350354,
+          "sha256": "cfded416b258c139bba36bc1fe0c0ffdd0eafd732f77f2e83a70e1250f0e820d"
+        },
+        {
+          "path": "img/guide/totalcall-popup.png",
+          "bytes": 432998,
+          "sha256": "db247c671801c433eaa346214cf2d92126842f3f014dd004bfd288a546dca95d"
+        },
+        {
+          "path": "img/guide/totalcall-popup2.png",
+          "bytes": 316798,
+          "sha256": "963de31c14bbd3789f3f3818815634f8ea2b14aaeef59e1ebbd285930bd52408"
+        },
+        {
+          "path": "img/guide/totalcall-setting.png",
+          "bytes": 198608,
+          "sha256": "b2f1bb3bda49523dc96d396dd6e3aed1366bfd478977ac5f70a5bce0c1272e2d"
+        },
+        {
+          "path": "img/landing/01_hero.png",
+          "bytes": 1896856,
+          "sha256": "4dc7b8e98c1a967cbdf097f5cfd79e5c9b799e25add7b48c87aee0f622ca976e"
+        },
+        {
+          "path": "img/landing/02_line.png",
+          "bytes": 2020604,
+          "sha256": "265a1a8f572fcd308cd0ccf8c8479906b1857f4ec8b1089aa83afd2a990c732a"
+        },
+        {
+          "path": "img/landing/03_ox.png",
+          "bytes": 2394984,
+          "sha256": "dd17e6cf9bbb449d98879b75c472f5c2e41135bdcad0e2bbccdc25139453a734"
+        },
+        {
+          "path": "img/landing/04_judge.png",
+          "bytes": 1968449,
+          "sha256": "968dc69b3829ce60e2033f3fd60b6dd67a8c74630c72001666571b1bf8f92405"
+        },
+        {
+          "path": "img/landing/05_home.png",
+          "bytes": 2022700,
+          "sha256": "b37ab9eb42ac808a4afe50b27a7c54d6fb5a8491cea001ebe2699070116e9c9b"
+        },
+        {
+          "path": "img/landing/06_door.jpg",
+          "bytes": 5119726,
+          "sha256": "57c40c03d6d703bd683a4870651574c8228b7beae77b4a1105be2b9c41791128"
+        },
+        {
+          "path": "img/landing/proof_dist.jpg",
+          "bytes": 339409,
+          "sha256": "95e83544182be400079ffa858aa5979d10ca10e497d2846fc7442cefaa26d401"
+        },
+        {
+          "path": "img/landing/proof_heat.jpg",
+          "bytes": 331595,
+          "sha256": "f28e86b19ac6c6e05b5b9fc26b3b7da9488d1cfec647a7e90737d52f1820273e"
+        },
+        {
+          "path": "img/landing/proof_time.jpg",
+          "bytes": 74658,
+          "sha256": "e24e14c8de0dcbb1bbadaf3d686439dc2f54a015600d13f9a7680b5618a56fc0"
+        },
+        {
+          "path": "img/landing/proof_toast.jpg",
+          "bytes": 211369,
+          "sha256": "4d73903f6ceb16e0cf14c247b94111535bb8e88a8fab4a01a1818e0bb2c3ab87"
+        },
+        {
+          "path": "index.html",
+          "bytes": 34448,
+          "sha256": "c6b7f3df7514432a924c6b945c2c9ff72f88e75c95af121d8ecb1616a5ef6096"
+        },
+        {
+          "path": "landing-v2.html",
+          "bytes": 30707,
+          "sha256": "70007b7ab9779ffe2572ca8f30d48274aae443d9ebbd04a2b54dd0f62ae701ee"
+        },
+        {
+          "path": "monitor-all.html",
+          "bytes": 74907,
+          "sha256": "5a65dacd3e23497d43c799908fd6302901b0135b6c7448846f6c86d84d5880a5"
+        },
+        {
+          "path": "qp-beta-director-test.apk",
+          "bytes": 12820627,
+          "sha256": "aecd312427a20127bd8922ca396ac7d1a211bd4099c1538f92e1cf684733a21c"
+        },
+        {
+          "path": "qp-beta.apk",
+          "bytes": 12853407,
+          "sha256": "f4905ff238a5932ee65197a1ee41c2569b3ee9f579171e0af496cf1c54b96ad1"
+        },
+        {
+          "path": "qp-gwanje-director-test.apk",
+          "bytes": 12820623,
+          "sha256": "ccde6265bae59f6bbc8b125c5d119bdcc09182f149d7315cadd4fa34498d0b62"
+        },
+        {
+          "path": "qp-gwanje-latest.apk",
+          "bytes": 12853403,
+          "sha256": "a134de0dddd28a0a06895a1964ceac40f37535b3b948cef62b42e167686aeb5a"
+        },
+        {
+          "path": "qp-gwanje-vc290-20260705.apk",
+          "bytes": 10976179,
+          "sha256": "e923ccc72d821f220a97a45a5bd119b96ee708978ec13f90aeeba6b470b951eb"
+        },
+        {
+          "path": "qp-gwanje-vc291-20260705.apk",
+          "bytes": 10976183,
+          "sha256": "701e0a49f73617c13d0e0627e6f6b67386d63c23e3be1ac8e96d0a28690e1dc6"
+        },
+        {
+          "path": "qp-gwanje-vc312-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "4eb864d76ff44d133e5670da9803f016eb26cb0a7f7e610c5105fe5a26afbc75"
+        },
+        {
+          "path": "qp-gwanje-vc313-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "daed9d379b5177b0dc03f9a7ab9e38894176c018f5d310380bcd0294614a18a3"
+        },
+        {
+          "path": "qp-gwanje-vc314-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "b3d170ff531f53e17e6782c906dd22a55f3bfb3577a66bf8f34bc790b8874f12"
+        },
+        {
+          "path": "qp-gwanje-vc315-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "639d649cc7b886a8c5121113d790a8d067403096c12548258c7b60f1c75c3836"
+        },
+        {
+          "path": "qp-gwanje-vc316-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "66aa6fb21aa76e56c27ca7351fb185c85b21fcbdb49cf6a93f81ab6277cffb25"
+        },
+        {
+          "path": "qp-gwanje-vc317-20260705.apk",
+          "bytes": 10980287,
+          "sha256": "4e5c9816aff16c619b505bb6fb5ad56e48f3855b730d04d39a37ee623770758f"
+        },
+        {
+          "path": "qp-gwanje-vc318-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "91c6c1ac1618b57760954e66ab4fc496949da88358a6eea37bbed6f87706e9e1"
+        },
+        {
+          "path": "qp-gwanje.apk",
+          "bytes": 12853403,
+          "sha256": "a134de0dddd28a0a06895a1964ceac40f37535b3b948cef62b42e167686aeb5a"
+        },
+        {
+          "path": "qp-update.json",
+          "bytes": 384,
+          "sha256": "7fbf5419bcd639a60fab9c314e787c4ddf584477d3c0a95537acbaac42a95919"
+        },
+        {
+          "path": "report-editor-edit.html",
+          "bytes": 223433,
+          "sha256": "4d065c59166616105f2fe7ce4c405433f44410883c394deb16d78a25f9560b1c"
+        },
+        {
+          "path": "report-editor.html",
+          "bytes": 14877,
+          "sha256": "c970190541ff09363cf0f9ef87344e4c23240a12a2f2dff960e9b4fc160d57bf"
+        },
+        {
+          "path": "server.html",
+          "bytes": 24798,
+          "sha256": "6fd9d831741fe249dea2d02e0dad9b46612a11c9f86067842abd17963d452392"
+        },
+        {
+          "path": "serverops.html",
+          "bytes": 8522,
+          "sha256": "00c73822b5272e72575884c70d9630c8a9d7c1c44dcdf617a21ac2b72dd4b991"
+        },
+        {
+          "path": "special-longhaul-report-20260709.html",
+          "bytes": 16249,
+          "sha256": "fba552d15e7026fe1f4457de2077f63004052f31aa3fa8514ab4251ee19f5cf1"
+        },
+        {
+          "path": "special-memo.html",
+          "bytes": 20070,
+          "sha256": "bb09af81fa4be69d67b07e5630db62c7119c170e31b66c797983d66a9939654f"
+        }
+      ]
+    },
+    {
+      "name": "paired-vc503-totalcall-exact-action-pickup-20260818",
+      "relative_root": "release-staging/paired-vc503-totalcall-exact-action-pickup-20260818",
+      "file_count": 71,
+      "bytes": 189089440,
+      "files": [
+        {
+          "path": "admin-applications.html",
+          "bytes": 20292,
+          "sha256": "5d730b56da16720ad0ff04f8e44e591900aa591c4de82e0ee24c9c2f6385dafd"
+        },
+        {
+          "path": "apply.html",
+          "bytes": 15760,
+          "sha256": "f92fd393cc480e51ce4637fcc6d1d0d2f15dc700001678ed55b52a0d7709b298"
+        },
+        {
+          "path": "column-1-ordermap.html",
+          "bytes": 13603,
+          "sha256": "52c22df783991484134986eb630f316142f842674776560ecfd67f3669f4eb75"
+        },
+        {
+          "path": "column-2-worktime.html",
+          "bytes": 14392,
+          "sha256": "b48116632215851eb212c1f648de69ffd56ab0d874ae9c3c3e97540b9afdce3a"
+        },
+        {
+          "path": "column-3-crowd.html",
+          "bytes": 18052,
+          "sha256": "6830185e837326761849f7692fd809d54f6ddaa9f497234e4f3da1722c4e79d3"
+        },
+        {
+          "path": "column-4-longhaul.html",
+          "bytes": 15861,
+          "sha256": "27710b3e309df7b88400497dd44d98a842c0977fafb15559e8a6ef54ca205c28"
+        },
+        {
+          "path": "column-5-cargo-load.html",
+          "bytes": 16988,
+          "sha256": "0901c02354e1f20903eebb346eba8bff9c86aa457b6dee961a5caea214f710e5"
+        },
+        {
+          "path": "guide-ops.html",
+          "bytes": 57861,
+          "sha256": "af3343e3df95f501790f490ecee938f505e0a54ad9916da65d39c6c847e2d3cf"
+        },
+        {
+          "path": "guide-summary.html",
+          "bytes": 15847,
+          "sha256": "5085460f37b02863f046afa976db86f05e7732c7a0a0dd5f1d535d1a9c1e671d"
+        },
+        {
+          "path": "guide.html",
+          "bytes": 54977,
+          "sha256": "a13acb7706ae9b47a05a0bca43a4e47620042b33fc055427e218acaeda530e7d"
+        },
+        {
+          "path": "img/guide/insung-amount.png",
+          "bytes": 416128,
+          "sha256": "3b12c5f6e91d0ec337558bd50d90eb3a903b44de32af7a21b4a63ddd4e9be8fc"
+        },
+        {
+          "path": "img/guide/insung-exclude.png",
+          "bytes": 285729,
+          "sha256": "d2d2b82d55af131d32f6a26639e7aba24c46e1fafb1a73987cd83f4a20bc3cab"
+        },
+        {
+          "path": "img/guide/insung-setting.jpg",
+          "bytes": 177109,
+          "sha256": "41b1f2d2ac846af3496215620585eb5f4454771c71f9e994501580e8c40f62b1"
+        },
+        {
+          "path": "img/guide/insung-stop.png",
+          "bytes": 793913,
+          "sha256": "4388431195e1c1aaf87afcb713650d7b299a69c7f42c47feb9a81ee2a7a5f8d1"
+        },
+        {
+          "path": "img/guide/kakao-blink.png",
+          "bytes": 445589,
+          "sha256": "d4ebb406b934203671e4ff96dd65a095dcfb25db8e95ed71a76fd1033c81b984"
+        },
+        {
+          "path": "img/guide/kakao-distance.png",
+          "bytes": 254378,
+          "sha256": "00b46371c790ff0d04dc31dc63cbb118f5fc7a3cb2e69d831880316f06fde983"
+        },
+        {
+          "path": "img/guide/kakao-sound.png",
+          "bytes": 139589,
+          "sha256": "8b42b9b782f13fccd3ea3a05fbde37d7e1762821c49974b63e80e89f48cc2222"
+        },
+        {
+          "path": "img/guide/km-1.png",
+          "bytes": 292582,
+          "sha256": "7a6a27eb596c3ef67d4f20ce73724a7b1aa46b0de5054047444a05a995c81d44"
+        },
+        {
+          "path": "img/guide/km-2.png",
+          "bytes": 270531,
+          "sha256": "c65afa29173e971ea010d43852759cbdc5d79116d2c24734ce26350424b7e81d"
+        },
+        {
+          "path": "img/guide/km-3.png",
+          "bytes": 275009,
+          "sha256": "a2be9292b9eb7ad4e041a309e7f6de5f75772874e3dd2b92c6fae65ae2ac8068"
+        },
+        {
+          "path": "img/guide/km-4.png",
+          "bytes": 281713,
+          "sha256": "162356d53d0c2679131431044b35bdc0176ed1091fd3a6c065a71f6ec125df9b"
+        },
+        {
+          "path": "img/guide/qp-start.png",
+          "bytes": 175236,
+          "sha256": "78d16aa11a1fa17b1c9d5ddbec67ccd4ba52fe36c3596d84918e47e433997354"
+        },
+        {
+          "path": "img/guide/radar.png",
+          "bytes": 469463,
+          "sha256": "0783a2aa2bb33d4689d82028c143e43f1c5c9fa3e20cb10ba24ed2c1322efdf2"
+        },
+        {
+          "path": "img/guide/sidepanel-1.png",
+          "bytes": 346708,
+          "sha256": "6b2e73bc3068b4dd3027cfeb45608e673239f9d24fa3f53e1c10f37a62edc5f1"
+        },
+        {
+          "path": "img/guide/sidepanel-2.png",
+          "bytes": 323865,
+          "sha256": "df38bcf438a9ba5184c1c2174657d11dccb8c0061542c08c84c614f7e1dbca6a"
+        },
+        {
+          "path": "img/guide/split-1.png",
+          "bytes": 263237,
+          "sha256": "9ef5105ed106ab537b25e43c0ee2873d961b7b527f78da98b97709fd83ad5982"
+        },
+        {
+          "path": "img/guide/split-2.png",
+          "bytes": 254120,
+          "sha256": "fd095a9248c833e902d9fa731c3f6a5fc9e529abaf40b4e7fd50860dd58d18e3"
+        },
+        {
+          "path": "img/guide/split-3.png",
+          "bytes": 225339,
+          "sha256": "dc07ab3ae9d53090c069649f1cced1b092cb7a82b247dc2cedfb49ee457b83cf"
+        },
+        {
+          "path": "img/guide/split-4.png",
+          "bytes": 347057,
+          "sha256": "120ee84fea23d4aeb3ab49bc0edbf858dc115876a71e2c9681512ecc9da59d91"
+        },
+        {
+          "path": "img/guide/split-5.png",
+          "bytes": 331401,
+          "sha256": "93af868cae3179aa513705a4188ed26818a84183dc324b5e4220e1434651b4a7"
+        },
+        {
+          "path": "img/guide/split-6.png",
+          "bytes": 757379,
+          "sha256": "5a5d2cc48b116519e67a6ce0502a3a3e346922f9c28aece3793dec5791dcad9c"
+        },
+        {
+          "path": "img/guide/split-7.png",
+          "bytes": 402149,
+          "sha256": "53122b49d17631eaeefcf2f3918679e5e4c12bd823a518dad9575c451d3698c0"
+        },
+        {
+          "path": "img/guide/toast.png",
+          "bytes": 129250,
+          "sha256": "b59cf3d5c39885e21e37944b0ece60f4bc0ea484b7bf08c4439624fde6eeb121"
+        },
+        {
+          "path": "img/guide/totalcall-confirm.png",
+          "bytes": 350354,
+          "sha256": "cfded416b258c139bba36bc1fe0c0ffdd0eafd732f77f2e83a70e1250f0e820d"
+        },
+        {
+          "path": "img/guide/totalcall-popup.png",
+          "bytes": 432998,
+          "sha256": "db247c671801c433eaa346214cf2d92126842f3f014dd004bfd288a546dca95d"
+        },
+        {
+          "path": "img/guide/totalcall-popup2.png",
+          "bytes": 316798,
+          "sha256": "963de31c14bbd3789f3f3818815634f8ea2b14aaeef59e1ebbd285930bd52408"
+        },
+        {
+          "path": "img/guide/totalcall-setting.png",
+          "bytes": 198608,
+          "sha256": "b2f1bb3bda49523dc96d396dd6e3aed1366bfd478977ac5f70a5bce0c1272e2d"
+        },
+        {
+          "path": "img/landing/01_hero.png",
+          "bytes": 1896856,
+          "sha256": "4dc7b8e98c1a967cbdf097f5cfd79e5c9b799e25add7b48c87aee0f622ca976e"
+        },
+        {
+          "path": "img/landing/02_line.png",
+          "bytes": 2020604,
+          "sha256": "265a1a8f572fcd308cd0ccf8c8479906b1857f4ec8b1089aa83afd2a990c732a"
+        },
+        {
+          "path": "img/landing/03_ox.png",
+          "bytes": 2394984,
+          "sha256": "dd17e6cf9bbb449d98879b75c472f5c2e41135bdcad0e2bbccdc25139453a734"
+        },
+        {
+          "path": "img/landing/04_judge.png",
+          "bytes": 1968449,
+          "sha256": "968dc69b3829ce60e2033f3fd60b6dd67a8c74630c72001666571b1bf8f92405"
+        },
+        {
+          "path": "img/landing/05_home.png",
+          "bytes": 2022700,
+          "sha256": "b37ab9eb42ac808a4afe50b27a7c54d6fb5a8491cea001ebe2699070116e9c9b"
+        },
+        {
+          "path": "img/landing/06_door.jpg",
+          "bytes": 5119726,
+          "sha256": "57c40c03d6d703bd683a4870651574c8228b7beae77b4a1105be2b9c41791128"
+        },
+        {
+          "path": "img/landing/proof_dist.jpg",
+          "bytes": 339409,
+          "sha256": "95e83544182be400079ffa858aa5979d10ca10e497d2846fc7442cefaa26d401"
+        },
+        {
+          "path": "img/landing/proof_heat.jpg",
+          "bytes": 331595,
+          "sha256": "f28e86b19ac6c6e05b5b9fc26b3b7da9488d1cfec647a7e90737d52f1820273e"
+        },
+        {
+          "path": "img/landing/proof_time.jpg",
+          "bytes": 74658,
+          "sha256": "e24e14c8de0dcbb1bbadaf3d686439dc2f54a015600d13f9a7680b5618a56fc0"
+        },
+        {
+          "path": "img/landing/proof_toast.jpg",
+          "bytes": 211369,
+          "sha256": "4d73903f6ceb16e0cf14c247b94111535bb8e88a8fab4a01a1818e0bb2c3ab87"
+        },
+        {
+          "path": "index.html",
+          "bytes": 34448,
+          "sha256": "c6b7f3df7514432a924c6b945c2c9ff72f88e75c95af121d8ecb1616a5ef6096"
+        },
+        {
+          "path": "landing-v2.html",
+          "bytes": 30707,
+          "sha256": "70007b7ab9779ffe2572ca8f30d48274aae443d9ebbd04a2b54dd0f62ae701ee"
+        },
+        {
+          "path": "monitor-all.html",
+          "bytes": 74907,
+          "sha256": "5a65dacd3e23497d43c799908fd6302901b0135b6c7448846f6c86d84d5880a5"
+        },
+        {
+          "path": "qp-beta-director-test.apk",
+          "bytes": 12820627,
+          "sha256": "aecd312427a20127bd8922ca396ac7d1a211bd4099c1538f92e1cf684733a21c"
+        },
+        {
+          "path": "qp-beta.apk",
+          "bytes": 12865695,
+          "sha256": "9dfd1332c64f9619574fa46a38a1ba606dc53b95009f1bb7882187294f96c5b4"
+        },
+        {
+          "path": "qp-gwanje-director-test.apk",
+          "bytes": 12820623,
+          "sha256": "ccde6265bae59f6bbc8b125c5d119bdcc09182f149d7315cadd4fa34498d0b62"
+        },
+        {
+          "path": "qp-gwanje-latest.apk",
+          "bytes": 12869787,
+          "sha256": "6be98af7303dbb55985a3f9b82fb954056a5266c2fb20bfbefa097e527b54e5f"
+        },
+        {
+          "path": "qp-gwanje-vc290-20260705.apk",
+          "bytes": 10976179,
+          "sha256": "e923ccc72d821f220a97a45a5bd119b96ee708978ec13f90aeeba6b470b951eb"
+        },
+        {
+          "path": "qp-gwanje-vc291-20260705.apk",
+          "bytes": 10976183,
+          "sha256": "701e0a49f73617c13d0e0627e6f6b67386d63c23e3be1ac8e96d0a28690e1dc6"
+        },
+        {
+          "path": "qp-gwanje-vc312-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "4eb864d76ff44d133e5670da9803f016eb26cb0a7f7e610c5105fe5a26afbc75"
+        },
+        {
+          "path": "qp-gwanje-vc313-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "daed9d379b5177b0dc03f9a7ab9e38894176c018f5d310380bcd0294614a18a3"
+        },
+        {
+          "path": "qp-gwanje-vc314-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "b3d170ff531f53e17e6782c906dd22a55f3bfb3577a66bf8f34bc790b8874f12"
+        },
+        {
+          "path": "qp-gwanje-vc315-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "639d649cc7b886a8c5121113d790a8d067403096c12548258c7b60f1c75c3836"
+        },
+        {
+          "path": "qp-gwanje-vc316-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "66aa6fb21aa76e56c27ca7351fb185c85b21fcbdb49cf6a93f81ab6277cffb25"
+        },
+        {
+          "path": "qp-gwanje-vc317-20260705.apk",
+          "bytes": 10980287,
+          "sha256": "4e5c9816aff16c619b505bb6fb5ad56e48f3855b730d04d39a37ee623770758f"
+        },
+        {
+          "path": "qp-gwanje-vc318-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "91c6c1ac1618b57760954e66ab4fc496949da88358a6eea37bbed6f87706e9e1"
+        },
+        {
+          "path": "qp-gwanje.apk",
+          "bytes": 12869787,
+          "sha256": "6be98af7303dbb55985a3f9b82fb954056a5266c2fb20bfbefa097e527b54e5f"
+        },
+        {
+          "path": "qp-update.json",
+          "bytes": 384,
+          "sha256": "35522ade988078381f70bef9439636d3a6417cdead918fe931127bdc94fb317c"
+        },
+        {
+          "path": "report-editor-edit.html",
+          "bytes": 223433,
+          "sha256": "4d065c59166616105f2fe7ce4c405433f44410883c394deb16d78a25f9560b1c"
+        },
+        {
+          "path": "report-editor.html",
+          "bytes": 14877,
+          "sha256": "c970190541ff09363cf0f9ef87344e4c23240a12a2f2dff960e9b4fc160d57bf"
+        },
+        {
+          "path": "server.html",
+          "bytes": 24798,
+          "sha256": "6fd9d831741fe249dea2d02e0dad9b46612a11c9f86067842abd17963d452392"
+        },
+        {
+          "path": "serverops.html",
+          "bytes": 8522,
+          "sha256": "00c73822b5272e72575884c70d9630c8a9d7c1c44dcdf617a21ac2b72dd4b991"
+        },
+        {
+          "path": "special-longhaul-report-20260709.html",
+          "bytes": 16249,
+          "sha256": "fba552d15e7026fe1f4457de2077f63004052f31aa3fa8514ab4251ee19f5cf1"
+        },
+        {
+          "path": "special-memo.html",
+          "bytes": 20070,
+          "sha256": "bb09af81fa4be69d67b07e5630db62c7119c170e31b66c797983d66a9939654f"
+        }
+      ]
+    },
+    {
+      "name": "paired-vc504-address-popup-protected-public-20260819",
+      "relative_root": "release-staging/paired-vc504-address-popup-protected-public-20260819",
+      "file_count": 71,
+      "bytes": 189105824,
+      "files": [
+        {
+          "path": "admin-applications.html",
+          "bytes": 20292,
+          "sha256": "5d730b56da16720ad0ff04f8e44e591900aa591c4de82e0ee24c9c2f6385dafd"
+        },
+        {
+          "path": "apply.html",
+          "bytes": 15760,
+          "sha256": "f92fd393cc480e51ce4637fcc6d1d0d2f15dc700001678ed55b52a0d7709b298"
+        },
+        {
+          "path": "column-1-ordermap.html",
+          "bytes": 13603,
+          "sha256": "52c22df783991484134986eb630f316142f842674776560ecfd67f3669f4eb75"
+        },
+        {
+          "path": "column-2-worktime.html",
+          "bytes": 14392,
+          "sha256": "b48116632215851eb212c1f648de69ffd56ab0d874ae9c3c3e97540b9afdce3a"
+        },
+        {
+          "path": "column-3-crowd.html",
+          "bytes": 18052,
+          "sha256": "6830185e837326761849f7692fd809d54f6ddaa9f497234e4f3da1722c4e79d3"
+        },
+        {
+          "path": "column-4-longhaul.html",
+          "bytes": 15861,
+          "sha256": "27710b3e309df7b88400497dd44d98a842c0977fafb15559e8a6ef54ca205c28"
+        },
+        {
+          "path": "column-5-cargo-load.html",
+          "bytes": 16988,
+          "sha256": "0901c02354e1f20903eebb346eba8bff9c86aa457b6dee961a5caea214f710e5"
+        },
+        {
+          "path": "guide-ops.html",
+          "bytes": 57861,
+          "sha256": "af3343e3df95f501790f490ecee938f505e0a54ad9916da65d39c6c847e2d3cf"
+        },
+        {
+          "path": "guide-summary.html",
+          "bytes": 15847,
+          "sha256": "5085460f37b02863f046afa976db86f05e7732c7a0a0dd5f1d535d1a9c1e671d"
+        },
+        {
+          "path": "guide.html",
+          "bytes": 54977,
+          "sha256": "a13acb7706ae9b47a05a0bca43a4e47620042b33fc055427e218acaeda530e7d"
+        },
+        {
+          "path": "img/guide/insung-amount.png",
+          "bytes": 416128,
+          "sha256": "3b12c5f6e91d0ec337558bd50d90eb3a903b44de32af7a21b4a63ddd4e9be8fc"
+        },
+        {
+          "path": "img/guide/insung-exclude.png",
+          "bytes": 285729,
+          "sha256": "d2d2b82d55af131d32f6a26639e7aba24c46e1fafb1a73987cd83f4a20bc3cab"
+        },
+        {
+          "path": "img/guide/insung-setting.jpg",
+          "bytes": 177109,
+          "sha256": "41b1f2d2ac846af3496215620585eb5f4454771c71f9e994501580e8c40f62b1"
+        },
+        {
+          "path": "img/guide/insung-stop.png",
+          "bytes": 793913,
+          "sha256": "4388431195e1c1aaf87afcb713650d7b299a69c7f42c47feb9a81ee2a7a5f8d1"
+        },
+        {
+          "path": "img/guide/kakao-blink.png",
+          "bytes": 445589,
+          "sha256": "d4ebb406b934203671e4ff96dd65a095dcfb25db8e95ed71a76fd1033c81b984"
+        },
+        {
+          "path": "img/guide/kakao-distance.png",
+          "bytes": 254378,
+          "sha256": "00b46371c790ff0d04dc31dc63cbb118f5fc7a3cb2e69d831880316f06fde983"
+        },
+        {
+          "path": "img/guide/kakao-sound.png",
+          "bytes": 139589,
+          "sha256": "8b42b9b782f13fccd3ea3a05fbde37d7e1762821c49974b63e80e89f48cc2222"
+        },
+        {
+          "path": "img/guide/km-1.png",
+          "bytes": 292582,
+          "sha256": "7a6a27eb596c3ef67d4f20ce73724a7b1aa46b0de5054047444a05a995c81d44"
+        },
+        {
+          "path": "img/guide/km-2.png",
+          "bytes": 270531,
+          "sha256": "c65afa29173e971ea010d43852759cbdc5d79116d2c24734ce26350424b7e81d"
+        },
+        {
+          "path": "img/guide/km-3.png",
+          "bytes": 275009,
+          "sha256": "a2be9292b9eb7ad4e041a309e7f6de5f75772874e3dd2b92c6fae65ae2ac8068"
+        },
+        {
+          "path": "img/guide/km-4.png",
+          "bytes": 281713,
+          "sha256": "162356d53d0c2679131431044b35bdc0176ed1091fd3a6c065a71f6ec125df9b"
+        },
+        {
+          "path": "img/guide/qp-start.png",
+          "bytes": 175236,
+          "sha256": "78d16aa11a1fa17b1c9d5ddbec67ccd4ba52fe36c3596d84918e47e433997354"
+        },
+        {
+          "path": "img/guide/radar.png",
+          "bytes": 469463,
+          "sha256": "0783a2aa2bb33d4689d82028c143e43f1c5c9fa3e20cb10ba24ed2c1322efdf2"
+        },
+        {
+          "path": "img/guide/sidepanel-1.png",
+          "bytes": 346708,
+          "sha256": "6b2e73bc3068b4dd3027cfeb45608e673239f9d24fa3f53e1c10f37a62edc5f1"
+        },
+        {
+          "path": "img/guide/sidepanel-2.png",
+          "bytes": 323865,
+          "sha256": "df38bcf438a9ba5184c1c2174657d11dccb8c0061542c08c84c614f7e1dbca6a"
+        },
+        {
+          "path": "img/guide/split-1.png",
+          "bytes": 263237,
+          "sha256": "9ef5105ed106ab537b25e43c0ee2873d961b7b527f78da98b97709fd83ad5982"
+        },
+        {
+          "path": "img/guide/split-2.png",
+          "bytes": 254120,
+          "sha256": "fd095a9248c833e902d9fa731c3f6a5fc9e529abaf40b4e7fd50860dd58d18e3"
+        },
+        {
+          "path": "img/guide/split-3.png",
+          "bytes": 225339,
+          "sha256": "dc07ab3ae9d53090c069649f1cced1b092cb7a82b247dc2cedfb49ee457b83cf"
+        },
+        {
+          "path": "img/guide/split-4.png",
+          "bytes": 347057,
+          "sha256": "120ee84fea23d4aeb3ab49bc0edbf858dc115876a71e2c9681512ecc9da59d91"
+        },
+        {
+          "path": "img/guide/split-5.png",
+          "bytes": 331401,
+          "sha256": "93af868cae3179aa513705a4188ed26818a84183dc324b5e4220e1434651b4a7"
+        },
+        {
+          "path": "img/guide/split-6.png",
+          "bytes": 757379,
+          "sha256": "5a5d2cc48b116519e67a6ce0502a3a3e346922f9c28aece3793dec5791dcad9c"
+        },
+        {
+          "path": "img/guide/split-7.png",
+          "bytes": 402149,
+          "sha256": "53122b49d17631eaeefcf2f3918679e5e4c12bd823a518dad9575c451d3698c0"
+        },
+        {
+          "path": "img/guide/toast.png",
+          "bytes": 129250,
+          "sha256": "b59cf3d5c39885e21e37944b0ece60f4bc0ea484b7bf08c4439624fde6eeb121"
+        },
+        {
+          "path": "img/guide/totalcall-confirm.png",
+          "bytes": 350354,
+          "sha256": "cfded416b258c139bba36bc1fe0c0ffdd0eafd732f77f2e83a70e1250f0e820d"
+        },
+        {
+          "path": "img/guide/totalcall-popup.png",
+          "bytes": 432998,
+          "sha256": "db247c671801c433eaa346214cf2d92126842f3f014dd004bfd288a546dca95d"
+        },
+        {
+          "path": "img/guide/totalcall-popup2.png",
+          "bytes": 316798,
+          "sha256": "963de31c14bbd3789f3f3818815634f8ea2b14aaeef59e1ebbd285930bd52408"
+        },
+        {
+          "path": "img/guide/totalcall-setting.png",
+          "bytes": 198608,
+          "sha256": "b2f1bb3bda49523dc96d396dd6e3aed1366bfd478977ac5f70a5bce0c1272e2d"
+        },
+        {
+          "path": "img/landing/01_hero.png",
+          "bytes": 1896856,
+          "sha256": "4dc7b8e98c1a967cbdf097f5cfd79e5c9b799e25add7b48c87aee0f622ca976e"
+        },
+        {
+          "path": "img/landing/02_line.png",
+          "bytes": 2020604,
+          "sha256": "265a1a8f572fcd308cd0ccf8c8479906b1857f4ec8b1089aa83afd2a990c732a"
+        },
+        {
+          "path": "img/landing/03_ox.png",
+          "bytes": 2394984,
+          "sha256": "dd17e6cf9bbb449d98879b75c472f5c2e41135bdcad0e2bbccdc25139453a734"
+        },
+        {
+          "path": "img/landing/04_judge.png",
+          "bytes": 1968449,
+          "sha256": "968dc69b3829ce60e2033f3fd60b6dd67a8c74630c72001666571b1bf8f92405"
+        },
+        {
+          "path": "img/landing/05_home.png",
+          "bytes": 2022700,
+          "sha256": "b37ab9eb42ac808a4afe50b27a7c54d6fb5a8491cea001ebe2699070116e9c9b"
+        },
+        {
+          "path": "img/landing/06_door.jpg",
+          "bytes": 5119726,
+          "sha256": "57c40c03d6d703bd683a4870651574c8228b7beae77b4a1105be2b9c41791128"
+        },
+        {
+          "path": "img/landing/proof_dist.jpg",
+          "bytes": 339409,
+          "sha256": "95e83544182be400079ffa858aa5979d10ca10e497d2846fc7442cefaa26d401"
+        },
+        {
+          "path": "img/landing/proof_heat.jpg",
+          "bytes": 331595,
+          "sha256": "f28e86b19ac6c6e05b5b9fc26b3b7da9488d1cfec647a7e90737d52f1820273e"
+        },
+        {
+          "path": "img/landing/proof_time.jpg",
+          "bytes": 74658,
+          "sha256": "e24e14c8de0dcbb1bbadaf3d686439dc2f54a015600d13f9a7680b5618a56fc0"
+        },
+        {
+          "path": "img/landing/proof_toast.jpg",
+          "bytes": 211369,
+          "sha256": "4d73903f6ceb16e0cf14c247b94111535bb8e88a8fab4a01a1818e0bb2c3ab87"
+        },
+        {
+          "path": "index.html",
+          "bytes": 34448,
+          "sha256": "c6b7f3df7514432a924c6b945c2c9ff72f88e75c95af121d8ecb1616a5ef6096"
+        },
+        {
+          "path": "landing-v2.html",
+          "bytes": 30707,
+          "sha256": "70007b7ab9779ffe2572ca8f30d48274aae443d9ebbd04a2b54dd0f62ae701ee"
+        },
+        {
+          "path": "monitor-all.html",
+          "bytes": 74907,
+          "sha256": "5a65dacd3e23497d43c799908fd6302901b0135b6c7448846f6c86d84d5880a5"
+        },
+        {
+          "path": "qp-beta-director-test.apk",
+          "bytes": 12820627,
+          "sha256": "aecd312427a20127bd8922ca396ac7d1a211bd4099c1538f92e1cf684733a21c"
+        },
+        {
+          "path": "qp-beta.apk",
+          "bytes": 12873887,
+          "sha256": "396b8a6507768345577bdb71c7366cc5220114ff820be01c2be8ee949acb2afa"
+        },
+        {
+          "path": "qp-gwanje-director-test.apk",
+          "bytes": 12820623,
+          "sha256": "ccde6265bae59f6bbc8b125c5d119bdcc09182f149d7315cadd4fa34498d0b62"
+        },
+        {
+          "path": "qp-gwanje-latest.apk",
+          "bytes": 12873883,
+          "sha256": "02cb28e1ba6b682bf87fbb11ac5f52875edeb737f74ea159842cc8bda3b383a7"
+        },
+        {
+          "path": "qp-gwanje-vc290-20260705.apk",
+          "bytes": 10976179,
+          "sha256": "e923ccc72d821f220a97a45a5bd119b96ee708978ec13f90aeeba6b470b951eb"
+        },
+        {
+          "path": "qp-gwanje-vc291-20260705.apk",
+          "bytes": 10976183,
+          "sha256": "701e0a49f73617c13d0e0627e6f6b67386d63c23e3be1ac8e96d0a28690e1dc6"
+        },
+        {
+          "path": "qp-gwanje-vc312-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "4eb864d76ff44d133e5670da9803f016eb26cb0a7f7e610c5105fe5a26afbc75"
+        },
+        {
+          "path": "qp-gwanje-vc313-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "daed9d379b5177b0dc03f9a7ab9e38894176c018f5d310380bcd0294614a18a3"
+        },
+        {
+          "path": "qp-gwanje-vc314-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "b3d170ff531f53e17e6782c906dd22a55f3bfb3577a66bf8f34bc790b8874f12"
+        },
+        {
+          "path": "qp-gwanje-vc315-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "639d649cc7b886a8c5121113d790a8d067403096c12548258c7b60f1c75c3836"
+        },
+        {
+          "path": "qp-gwanje-vc316-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "66aa6fb21aa76e56c27ca7351fb185c85b21fcbdb49cf6a93f81ab6277cffb25"
+        },
+        {
+          "path": "qp-gwanje-vc317-20260705.apk",
+          "bytes": 10980287,
+          "sha256": "4e5c9816aff16c619b505bb6fb5ad56e48f3855b730d04d39a37ee623770758f"
+        },
+        {
+          "path": "qp-gwanje-vc318-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "91c6c1ac1618b57760954e66ab4fc496949da88358a6eea37bbed6f87706e9e1"
+        },
+        {
+          "path": "qp-gwanje.apk",
+          "bytes": 12873883,
+          "sha256": "02cb28e1ba6b682bf87fbb11ac5f52875edeb737f74ea159842cc8bda3b383a7"
+        },
+        {
+          "path": "qp-update.json",
+          "bytes": 384,
+          "sha256": "df35c227cb406f835618547873168db3af39925e05b9c484438b3890ae864a0e"
+        },
+        {
+          "path": "report-editor-edit.html",
+          "bytes": 223433,
+          "sha256": "4d065c59166616105f2fe7ce4c405433f44410883c394deb16d78a25f9560b1c"
+        },
+        {
+          "path": "report-editor.html",
+          "bytes": 14877,
+          "sha256": "c970190541ff09363cf0f9ef87344e4c23240a12a2f2dff960e9b4fc160d57bf"
+        },
+        {
+          "path": "server.html",
+          "bytes": 24798,
+          "sha256": "6fd9d831741fe249dea2d02e0dad9b46612a11c9f86067842abd17963d452392"
+        },
+        {
+          "path": "serverops.html",
+          "bytes": 8522,
+          "sha256": "00c73822b5272e72575884c70d9630c8a9d7c1c44dcdf617a21ac2b72dd4b991"
+        },
+        {
+          "path": "special-longhaul-report-20260709.html",
+          "bytes": 16249,
+          "sha256": "fba552d15e7026fe1f4457de2077f63004052f31aa3fa8514ab4251ee19f5cf1"
+        },
+        {
+          "path": "special-memo.html",
+          "bytes": 20070,
+          "sha256": "bb09af81fa4be69d67b07e5630db62c7119c170e31b66c797983d66a9939654f"
+        }
+      ]
+    },
+    {
+      "name": "paired-vc505-current-protected-public-20260820",
+      "relative_root": "release-staging/paired-vc505-current-protected-public-20260820",
+      "file_count": 71,
+      "bytes": 189142688,
+      "files": [
+        {
+          "path": "admin-applications.html",
+          "bytes": 20292,
+          "sha256": "5d730b56da16720ad0ff04f8e44e591900aa591c4de82e0ee24c9c2f6385dafd"
+        },
+        {
+          "path": "apply.html",
+          "bytes": 15760,
+          "sha256": "f92fd393cc480e51ce4637fcc6d1d0d2f15dc700001678ed55b52a0d7709b298"
+        },
+        {
+          "path": "column-1-ordermap.html",
+          "bytes": 13603,
+          "sha256": "52c22df783991484134986eb630f316142f842674776560ecfd67f3669f4eb75"
+        },
+        {
+          "path": "column-2-worktime.html",
+          "bytes": 14392,
+          "sha256": "b48116632215851eb212c1f648de69ffd56ab0d874ae9c3c3e97540b9afdce3a"
+        },
+        {
+          "path": "column-3-crowd.html",
+          "bytes": 18052,
+          "sha256": "6830185e837326761849f7692fd809d54f6ddaa9f497234e4f3da1722c4e79d3"
+        },
+        {
+          "path": "column-4-longhaul.html",
+          "bytes": 15861,
+          "sha256": "27710b3e309df7b88400497dd44d98a842c0977fafb15559e8a6ef54ca205c28"
+        },
+        {
+          "path": "column-5-cargo-load.html",
+          "bytes": 16988,
+          "sha256": "0901c02354e1f20903eebb346eba8bff9c86aa457b6dee961a5caea214f710e5"
+        },
+        {
+          "path": "guide-ops.html",
+          "bytes": 57861,
+          "sha256": "af3343e3df95f501790f490ecee938f505e0a54ad9916da65d39c6c847e2d3cf"
+        },
+        {
+          "path": "guide-summary.html",
+          "bytes": 15847,
+          "sha256": "5085460f37b02863f046afa976db86f05e7732c7a0a0dd5f1d535d1a9c1e671d"
+        },
+        {
+          "path": "guide.html",
+          "bytes": 54977,
+          "sha256": "a13acb7706ae9b47a05a0bca43a4e47620042b33fc055427e218acaeda530e7d"
+        },
+        {
+          "path": "img/guide/insung-amount.png",
+          "bytes": 416128,
+          "sha256": "3b12c5f6e91d0ec337558bd50d90eb3a903b44de32af7a21b4a63ddd4e9be8fc"
+        },
+        {
+          "path": "img/guide/insung-exclude.png",
+          "bytes": 285729,
+          "sha256": "d2d2b82d55af131d32f6a26639e7aba24c46e1fafb1a73987cd83f4a20bc3cab"
+        },
+        {
+          "path": "img/guide/insung-setting.jpg",
+          "bytes": 177109,
+          "sha256": "41b1f2d2ac846af3496215620585eb5f4454771c71f9e994501580e8c40f62b1"
+        },
+        {
+          "path": "img/guide/insung-stop.png",
+          "bytes": 793913,
+          "sha256": "4388431195e1c1aaf87afcb713650d7b299a69c7f42c47feb9a81ee2a7a5f8d1"
+        },
+        {
+          "path": "img/guide/kakao-blink.png",
+          "bytes": 445589,
+          "sha256": "d4ebb406b934203671e4ff96dd65a095dcfb25db8e95ed71a76fd1033c81b984"
+        },
+        {
+          "path": "img/guide/kakao-distance.png",
+          "bytes": 254378,
+          "sha256": "00b46371c790ff0d04dc31dc63cbb118f5fc7a3cb2e69d831880316f06fde983"
+        },
+        {
+          "path": "img/guide/kakao-sound.png",
+          "bytes": 139589,
+          "sha256": "8b42b9b782f13fccd3ea3a05fbde37d7e1762821c49974b63e80e89f48cc2222"
+        },
+        {
+          "path": "img/guide/km-1.png",
+          "bytes": 292582,
+          "sha256": "7a6a27eb596c3ef67d4f20ce73724a7b1aa46b0de5054047444a05a995c81d44"
+        },
+        {
+          "path": "img/guide/km-2.png",
+          "bytes": 270531,
+          "sha256": "c65afa29173e971ea010d43852759cbdc5d79116d2c24734ce26350424b7e81d"
+        },
+        {
+          "path": "img/guide/km-3.png",
+          "bytes": 275009,
+          "sha256": "a2be9292b9eb7ad4e041a309e7f6de5f75772874e3dd2b92c6fae65ae2ac8068"
+        },
+        {
+          "path": "img/guide/km-4.png",
+          "bytes": 281713,
+          "sha256": "162356d53d0c2679131431044b35bdc0176ed1091fd3a6c065a71f6ec125df9b"
+        },
+        {
+          "path": "img/guide/qp-start.png",
+          "bytes": 175236,
+          "sha256": "78d16aa11a1fa17b1c9d5ddbec67ccd4ba52fe36c3596d84918e47e433997354"
+        },
+        {
+          "path": "img/guide/radar.png",
+          "bytes": 469463,
+          "sha256": "0783a2aa2bb33d4689d82028c143e43f1c5c9fa3e20cb10ba24ed2c1322efdf2"
+        },
+        {
+          "path": "img/guide/sidepanel-1.png",
+          "bytes": 346708,
+          "sha256": "6b2e73bc3068b4dd3027cfeb45608e673239f9d24fa3f53e1c10f37a62edc5f1"
+        },
+        {
+          "path": "img/guide/sidepanel-2.png",
+          "bytes": 323865,
+          "sha256": "df38bcf438a9ba5184c1c2174657d11dccb8c0061542c08c84c614f7e1dbca6a"
+        },
+        {
+          "path": "img/guide/split-1.png",
+          "bytes": 263237,
+          "sha256": "9ef5105ed106ab537b25e43c0ee2873d961b7b527f78da98b97709fd83ad5982"
+        },
+        {
+          "path": "img/guide/split-2.png",
+          "bytes": 254120,
+          "sha256": "fd095a9248c833e902d9fa731c3f6a5fc9e529abaf40b4e7fd50860dd58d18e3"
+        },
+        {
+          "path": "img/guide/split-3.png",
+          "bytes": 225339,
+          "sha256": "dc07ab3ae9d53090c069649f1cced1b092cb7a82b247dc2cedfb49ee457b83cf"
+        },
+        {
+          "path": "img/guide/split-4.png",
+          "bytes": 347057,
+          "sha256": "120ee84fea23d4aeb3ab49bc0edbf858dc115876a71e2c9681512ecc9da59d91"
+        },
+        {
+          "path": "img/guide/split-5.png",
+          "bytes": 331401,
+          "sha256": "93af868cae3179aa513705a4188ed26818a84183dc324b5e4220e1434651b4a7"
+        },
+        {
+          "path": "img/guide/split-6.png",
+          "bytes": 757379,
+          "sha256": "5a5d2cc48b116519e67a6ce0502a3a3e346922f9c28aece3793dec5791dcad9c"
+        },
+        {
+          "path": "img/guide/split-7.png",
+          "bytes": 402149,
+          "sha256": "53122b49d17631eaeefcf2f3918679e5e4c12bd823a518dad9575c451d3698c0"
+        },
+        {
+          "path": "img/guide/toast.png",
+          "bytes": 129250,
+          "sha256": "b59cf3d5c39885e21e37944b0ece60f4bc0ea484b7bf08c4439624fde6eeb121"
+        },
+        {
+          "path": "img/guide/totalcall-confirm.png",
+          "bytes": 350354,
+          "sha256": "cfded416b258c139bba36bc1fe0c0ffdd0eafd732f77f2e83a70e1250f0e820d"
+        },
+        {
+          "path": "img/guide/totalcall-popup.png",
+          "bytes": 432998,
+          "sha256": "db247c671801c433eaa346214cf2d92126842f3f014dd004bfd288a546dca95d"
+        },
+        {
+          "path": "img/guide/totalcall-popup2.png",
+          "bytes": 316798,
+          "sha256": "963de31c14bbd3789f3f3818815634f8ea2b14aaeef59e1ebbd285930bd52408"
+        },
+        {
+          "path": "img/guide/totalcall-setting.png",
+          "bytes": 198608,
+          "sha256": "b2f1bb3bda49523dc96d396dd6e3aed1366bfd478977ac5f70a5bce0c1272e2d"
+        },
+        {
+          "path": "img/landing/01_hero.png",
+          "bytes": 1896856,
+          "sha256": "4dc7b8e98c1a967cbdf097f5cfd79e5c9b799e25add7b48c87aee0f622ca976e"
+        },
+        {
+          "path": "img/landing/02_line.png",
+          "bytes": 2020604,
+          "sha256": "265a1a8f572fcd308cd0ccf8c8479906b1857f4ec8b1089aa83afd2a990c732a"
+        },
+        {
+          "path": "img/landing/03_ox.png",
+          "bytes": 2394984,
+          "sha256": "dd17e6cf9bbb449d98879b75c472f5c2e41135bdcad0e2bbccdc25139453a734"
+        },
+        {
+          "path": "img/landing/04_judge.png",
+          "bytes": 1968449,
+          "sha256": "968dc69b3829ce60e2033f3fd60b6dd67a8c74630c72001666571b1bf8f92405"
+        },
+        {
+          "path": "img/landing/05_home.png",
+          "bytes": 2022700,
+          "sha256": "b37ab9eb42ac808a4afe50b27a7c54d6fb5a8491cea001ebe2699070116e9c9b"
+        },
+        {
+          "path": "img/landing/06_door.jpg",
+          "bytes": 5119726,
+          "sha256": "57c40c03d6d703bd683a4870651574c8228b7beae77b4a1105be2b9c41791128"
+        },
+        {
+          "path": "img/landing/proof_dist.jpg",
+          "bytes": 339409,
+          "sha256": "95e83544182be400079ffa858aa5979d10ca10e497d2846fc7442cefaa26d401"
+        },
+        {
+          "path": "img/landing/proof_heat.jpg",
+          "bytes": 331595,
+          "sha256": "f28e86b19ac6c6e05b5b9fc26b3b7da9488d1cfec647a7e90737d52f1820273e"
+        },
+        {
+          "path": "img/landing/proof_time.jpg",
+          "bytes": 74658,
+          "sha256": "e24e14c8de0dcbb1bbadaf3d686439dc2f54a015600d13f9a7680b5618a56fc0"
+        },
+        {
+          "path": "img/landing/proof_toast.jpg",
+          "bytes": 211369,
+          "sha256": "4d73903f6ceb16e0cf14c247b94111535bb8e88a8fab4a01a1818e0bb2c3ab87"
+        },
+        {
+          "path": "index.html",
+          "bytes": 34448,
+          "sha256": "c6b7f3df7514432a924c6b945c2c9ff72f88e75c95af121d8ecb1616a5ef6096"
+        },
+        {
+          "path": "landing-v2.html",
+          "bytes": 30707,
+          "sha256": "70007b7ab9779ffe2572ca8f30d48274aae443d9ebbd04a2b54dd0f62ae701ee"
+        },
+        {
+          "path": "monitor-all.html",
+          "bytes": 74907,
+          "sha256": "5a65dacd3e23497d43c799908fd6302901b0135b6c7448846f6c86d84d5880a5"
+        },
+        {
+          "path": "qp-beta-director-test.apk",
+          "bytes": 12820627,
+          "sha256": "aecd312427a20127bd8922ca396ac7d1a211bd4099c1538f92e1cf684733a21c"
+        },
+        {
+          "path": "qp-beta.apk",
+          "bytes": 12886175,
+          "sha256": "7c1f95e61b963af91a82d96e750d3e8a22f0b18a01d8b27c8d7ad92301069900"
+        },
+        {
+          "path": "qp-gwanje-director-test.apk",
+          "bytes": 12820623,
+          "sha256": "ccde6265bae59f6bbc8b125c5d119bdcc09182f149d7315cadd4fa34498d0b62"
+        },
+        {
+          "path": "qp-gwanje-latest.apk",
+          "bytes": 12886171,
+          "sha256": "fb94c4327618b183749403eb0c5153b4bc32bd352f38e91595eda798b0b768ad"
+        },
+        {
+          "path": "qp-gwanje-vc290-20260705.apk",
+          "bytes": 10976179,
+          "sha256": "e923ccc72d821f220a97a45a5bd119b96ee708978ec13f90aeeba6b470b951eb"
+        },
+        {
+          "path": "qp-gwanje-vc291-20260705.apk",
+          "bytes": 10976183,
+          "sha256": "701e0a49f73617c13d0e0627e6f6b67386d63c23e3be1ac8e96d0a28690e1dc6"
+        },
+        {
+          "path": "qp-gwanje-vc312-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "4eb864d76ff44d133e5670da9803f016eb26cb0a7f7e610c5105fe5a26afbc75"
+        },
+        {
+          "path": "qp-gwanje-vc313-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "daed9d379b5177b0dc03f9a7ab9e38894176c018f5d310380bcd0294614a18a3"
+        },
+        {
+          "path": "qp-gwanje-vc314-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "b3d170ff531f53e17e6782c906dd22a55f3bfb3577a66bf8f34bc790b8874f12"
+        },
+        {
+          "path": "qp-gwanje-vc315-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "639d649cc7b886a8c5121113d790a8d067403096c12548258c7b60f1c75c3836"
+        },
+        {
+          "path": "qp-gwanje-vc316-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "66aa6fb21aa76e56c27ca7351fb185c85b21fcbdb49cf6a93f81ab6277cffb25"
+        },
+        {
+          "path": "qp-gwanje-vc317-20260705.apk",
+          "bytes": 10980287,
+          "sha256": "4e5c9816aff16c619b505bb6fb5ad56e48f3855b730d04d39a37ee623770758f"
+        },
+        {
+          "path": "qp-gwanje-vc318-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "91c6c1ac1618b57760954e66ab4fc496949da88358a6eea37bbed6f87706e9e1"
+        },
+        {
+          "path": "qp-gwanje.apk",
+          "bytes": 12886171,
+          "sha256": "fb94c4327618b183749403eb0c5153b4bc32bd352f38e91595eda798b0b768ad"
+        },
+        {
+          "path": "qp-update.json",
+          "bytes": 384,
+          "sha256": "2fc6421beb3667119fcb10f39bf2c1186973dc27e1729b82facf867d0a9ef37a"
+        },
+        {
+          "path": "report-editor-edit.html",
+          "bytes": 223433,
+          "sha256": "4d065c59166616105f2fe7ce4c405433f44410883c394deb16d78a25f9560b1c"
+        },
+        {
+          "path": "report-editor.html",
+          "bytes": 14877,
+          "sha256": "c970190541ff09363cf0f9ef87344e4c23240a12a2f2dff960e9b4fc160d57bf"
+        },
+        {
+          "path": "server.html",
+          "bytes": 24798,
+          "sha256": "6fd9d831741fe249dea2d02e0dad9b46612a11c9f86067842abd17963d452392"
+        },
+        {
+          "path": "serverops.html",
+          "bytes": 8522,
+          "sha256": "00c73822b5272e72575884c70d9630c8a9d7c1c44dcdf617a21ac2b72dd4b991"
+        },
+        {
+          "path": "special-longhaul-report-20260709.html",
+          "bytes": 16249,
+          "sha256": "fba552d15e7026fe1f4457de2077f63004052f31aa3fa8514ab4251ee19f5cf1"
+        },
+        {
+          "path": "special-memo.html",
+          "bytes": 20070,
+          "sha256": "bb09af81fa4be69d67b07e5630db62c7119c170e31b66c797983d66a9939654f"
+        }
+      ]
+    },
+    {
+      "name": "current-public-vc505",
+      "relative_root": "public",
+      "file_count": 76,
+      "bytes": 189181455,
+      "files": [
+        {
+          "path": "admin-applications.html",
+          "bytes": 20292,
+          "sha256": "5d730b56da16720ad0ff04f8e44e591900aa591c4de82e0ee24c9c2f6385dafd"
+        },
+        {
+          "path": "apply.html",
+          "bytes": 15760,
+          "sha256": "f92fd393cc480e51ce4637fcc6d1d0d2f15dc700001678ed55b52a0d7709b298"
+        },
+        {
+          "path": "column-1-ordermap.html",
+          "bytes": 13603,
+          "sha256": "52c22df783991484134986eb630f316142f842674776560ecfd67f3669f4eb75"
+        },
+        {
+          "path": "column-2-worktime.html",
+          "bytes": 14392,
+          "sha256": "b48116632215851eb212c1f648de69ffd56ab0d874ae9c3c3e97540b9afdce3a"
+        },
+        {
+          "path": "column-3-crowd.html",
+          "bytes": 18052,
+          "sha256": "6830185e837326761849f7692fd809d54f6ddaa9f497234e4f3da1722c4e79d3"
+        },
+        {
+          "path": "column-4-longhaul.html",
+          "bytes": 15861,
+          "sha256": "27710b3e309df7b88400497dd44d98a842c0977fafb15559e8a6ef54ca205c28"
+        },
+        {
+          "path": "column-5-cargo-load.html",
+          "bytes": 16988,
+          "sha256": "0901c02354e1f20903eebb346eba8bff9c86aa457b6dee961a5caea214f710e5"
+        },
+        {
+          "path": "column-6-memo-rules.html",
+          "bytes": 14700,
+          "sha256": "f7c670aa105dd0d3505178b48c480e201e05c16022877bf9d80bf40872456660"
+        },
+        {
+          "path": "column-7-destination-origin.html",
+          "bytes": 17233,
+          "sha256": "f9425ac9a235580eb052ebd25682c36e4f76e61c886352e709060a06471bdb97"
+        },
+        {
+          "path": "drafts/column-3-night.html",
+          "bytes": 14730,
+          "sha256": "60236ada1bb592d06876b9edb219094b894a3e87419a86fbb7cb494e8c17eb4c"
+        },
+        {
+          "path": "drafts/column-3-weekend.html",
+          "bytes": 15523,
+          "sha256": "66ed8fe2e3c006a41642796829eeadc3cdfcecf8527e8e4f108f62c4c30bb018"
+        },
+        {
+          "path": "guide-ops.html",
+          "bytes": 57861,
+          "sha256": "af3343e3df95f501790f490ecee938f505e0a54ad9916da65d39c6c847e2d3cf"
+        },
+        {
+          "path": "guide-summary.html",
+          "bytes": 15847,
+          "sha256": "5085460f37b02863f046afa976db86f05e7732c7a0a0dd5f1d535d1a9c1e671d"
+        },
+        {
+          "path": "guide.html",
+          "bytes": 54977,
+          "sha256": "a13acb7706ae9b47a05a0bca43a4e47620042b33fc055427e218acaeda530e7d"
+        },
+        {
+          "path": "img/guide/insung-amount.png",
+          "bytes": 416128,
+          "sha256": "3b12c5f6e91d0ec337558bd50d90eb3a903b44de32af7a21b4a63ddd4e9be8fc"
+        },
+        {
+          "path": "img/guide/insung-exclude.png",
+          "bytes": 285729,
+          "sha256": "d2d2b82d55af131d32f6a26639e7aba24c46e1fafb1a73987cd83f4a20bc3cab"
+        },
+        {
+          "path": "img/guide/insung-setting.jpg",
+          "bytes": 177109,
+          "sha256": "41b1f2d2ac846af3496215620585eb5f4454771c71f9e994501580e8c40f62b1"
+        },
+        {
+          "path": "img/guide/insung-stop.png",
+          "bytes": 793913,
+          "sha256": "4388431195e1c1aaf87afcb713650d7b299a69c7f42c47feb9a81ee2a7a5f8d1"
+        },
+        {
+          "path": "img/guide/kakao-blink.png",
+          "bytes": 445589,
+          "sha256": "d4ebb406b934203671e4ff96dd65a095dcfb25db8e95ed71a76fd1033c81b984"
+        },
+        {
+          "path": "img/guide/kakao-distance.png",
+          "bytes": 254378,
+          "sha256": "00b46371c790ff0d04dc31dc63cbb118f5fc7a3cb2e69d831880316f06fde983"
+        },
+        {
+          "path": "img/guide/kakao-sound.png",
+          "bytes": 139589,
+          "sha256": "8b42b9b782f13fccd3ea3a05fbde37d7e1762821c49974b63e80e89f48cc2222"
+        },
+        {
+          "path": "img/guide/km-1.png",
+          "bytes": 292582,
+          "sha256": "7a6a27eb596c3ef67d4f20ce73724a7b1aa46b0de5054047444a05a995c81d44"
+        },
+        {
+          "path": "img/guide/km-2.png",
+          "bytes": 270531,
+          "sha256": "c65afa29173e971ea010d43852759cbdc5d79116d2c24734ce26350424b7e81d"
+        },
+        {
+          "path": "img/guide/km-3.png",
+          "bytes": 275009,
+          "sha256": "a2be9292b9eb7ad4e041a309e7f6de5f75772874e3dd2b92c6fae65ae2ac8068"
+        },
+        {
+          "path": "img/guide/km-4.png",
+          "bytes": 281713,
+          "sha256": "162356d53d0c2679131431044b35bdc0176ed1091fd3a6c065a71f6ec125df9b"
+        },
+        {
+          "path": "img/guide/qp-start.png",
+          "bytes": 175236,
+          "sha256": "78d16aa11a1fa17b1c9d5ddbec67ccd4ba52fe36c3596d84918e47e433997354"
+        },
+        {
+          "path": "img/guide/radar.png",
+          "bytes": 469463,
+          "sha256": "0783a2aa2bb33d4689d82028c143e43f1c5c9fa3e20cb10ba24ed2c1322efdf2"
+        },
+        {
+          "path": "img/guide/sidepanel-1.png",
+          "bytes": 346708,
+          "sha256": "6b2e73bc3068b4dd3027cfeb45608e673239f9d24fa3f53e1c10f37a62edc5f1"
+        },
+        {
+          "path": "img/guide/sidepanel-2.png",
+          "bytes": 323865,
+          "sha256": "df38bcf438a9ba5184c1c2174657d11dccb8c0061542c08c84c614f7e1dbca6a"
+        },
+        {
+          "path": "img/guide/split-1.png",
+          "bytes": 263237,
+          "sha256": "9ef5105ed106ab537b25e43c0ee2873d961b7b527f78da98b97709fd83ad5982"
+        },
+        {
+          "path": "img/guide/split-2.png",
+          "bytes": 254120,
+          "sha256": "fd095a9248c833e902d9fa731c3f6a5fc9e529abaf40b4e7fd50860dd58d18e3"
+        },
+        {
+          "path": "img/guide/split-3.png",
+          "bytes": 225339,
+          "sha256": "dc07ab3ae9d53090c069649f1cced1b092cb7a82b247dc2cedfb49ee457b83cf"
+        },
+        {
+          "path": "img/guide/split-4.png",
+          "bytes": 347057,
+          "sha256": "120ee84fea23d4aeb3ab49bc0edbf858dc115876a71e2c9681512ecc9da59d91"
+        },
+        {
+          "path": "img/guide/split-5.png",
+          "bytes": 331401,
+          "sha256": "93af868cae3179aa513705a4188ed26818a84183dc324b5e4220e1434651b4a7"
+        },
+        {
+          "path": "img/guide/split-6.png",
+          "bytes": 757379,
+          "sha256": "5a5d2cc48b116519e67a6ce0502a3a3e346922f9c28aece3793dec5791dcad9c"
+        },
+        {
+          "path": "img/guide/split-7.png",
+          "bytes": 402149,
+          "sha256": "53122b49d17631eaeefcf2f3918679e5e4c12bd823a518dad9575c451d3698c0"
+        },
+        {
+          "path": "img/guide/toast.png",
+          "bytes": 129250,
+          "sha256": "b59cf3d5c39885e21e37944b0ece60f4bc0ea484b7bf08c4439624fde6eeb121"
+        },
+        {
+          "path": "img/guide/totalcall-confirm.png",
+          "bytes": 350354,
+          "sha256": "cfded416b258c139bba36bc1fe0c0ffdd0eafd732f77f2e83a70e1250f0e820d"
+        },
+        {
+          "path": "img/guide/totalcall-popup.png",
+          "bytes": 432998,
+          "sha256": "db247c671801c433eaa346214cf2d92126842f3f014dd004bfd288a546dca95d"
+        },
+        {
+          "path": "img/guide/totalcall-popup2.png",
+          "bytes": 316798,
+          "sha256": "963de31c14bbd3789f3f3818815634f8ea2b14aaeef59e1ebbd285930bd52408"
+        },
+        {
+          "path": "img/guide/totalcall-setting.png",
+          "bytes": 198608,
+          "sha256": "b2f1bb3bda49523dc96d396dd6e3aed1366bfd478977ac5f70a5bce0c1272e2d"
+        },
+        {
+          "path": "img/landing/01_hero.png",
+          "bytes": 1896856,
+          "sha256": "4dc7b8e98c1a967cbdf097f5cfd79e5c9b799e25add7b48c87aee0f622ca976e"
+        },
+        {
+          "path": "img/landing/02_line.png",
+          "bytes": 2020604,
+          "sha256": "265a1a8f572fcd308cd0ccf8c8479906b1857f4ec8b1089aa83afd2a990c732a"
+        },
+        {
+          "path": "img/landing/03_ox.png",
+          "bytes": 2394984,
+          "sha256": "dd17e6cf9bbb449d98879b75c472f5c2e41135bdcad0e2bbccdc25139453a734"
+        },
+        {
+          "path": "img/landing/04_judge.png",
+          "bytes": 1968449,
+          "sha256": "968dc69b3829ce60e2033f3fd60b6dd67a8c74630c72001666571b1bf8f92405"
+        },
+        {
+          "path": "img/landing/05_home.png",
+          "bytes": 2022700,
+          "sha256": "b37ab9eb42ac808a4afe50b27a7c54d6fb5a8491cea001ebe2699070116e9c9b"
+        },
+        {
+          "path": "img/landing/06_door.jpg",
+          "bytes": 5119726,
+          "sha256": "57c40c03d6d703bd683a4870651574c8228b7beae77b4a1105be2b9c41791128"
+        },
+        {
+          "path": "img/landing/proof_dist.jpg",
+          "bytes": 339409,
+          "sha256": "95e83544182be400079ffa858aa5979d10ca10e497d2846fc7442cefaa26d401"
+        },
+        {
+          "path": "img/landing/proof_heat.jpg",
+          "bytes": 331595,
+          "sha256": "f28e86b19ac6c6e05b5b9fc26b3b7da9488d1cfec647a7e90737d52f1820273e"
+        },
+        {
+          "path": "img/landing/proof_time.jpg",
+          "bytes": 74658,
+          "sha256": "e24e14c8de0dcbb1bbadaf3d686439dc2f54a015600d13f9a7680b5618a56fc0"
+        },
+        {
+          "path": "img/landing/proof_toast.jpg",
+          "bytes": 211369,
+          "sha256": "4d73903f6ceb16e0cf14c247b94111535bb8e88a8fab4a01a1818e0bb2c3ab87"
+        },
+        {
+          "path": "index.html",
+          "bytes": 34448,
+          "sha256": "c6b7f3df7514432a924c6b945c2c9ff72f88e75c95af121d8ecb1616a5ef6096"
+        },
+        {
+          "path": "landing-v2.html",
+          "bytes": 30707,
+          "sha256": "70007b7ab9779ffe2572ca8f30d48274aae443d9ebbd04a2b54dd0f62ae701ee"
+        },
+        {
+          "path": "monitor-all.html",
+          "bytes": 74907,
+          "sha256": "5a65dacd3e23497d43c799908fd6302901b0135b6c7448846f6c86d84d5880a5"
+        },
+        {
+          "path": "qp-beta-director-test.apk",
+          "bytes": 12755063,
+          "sha256": "a554945991a73f118e0e470c1c484536f2567f16b2d8e4ab8647e2d025379d8c"
+        },
+        {
+          "path": "qp-beta.apk",
+          "bytes": 12886175,
+          "sha256": "7c1f95e61b963af91a82d96e750d3e8a22f0b18a01d8b27c8d7ad92301069900"
+        },
+        {
+          "path": "qp-gwanje-director-test.apk",
+          "bytes": 12783735,
+          "sha256": "da25ac847ea98dc854b563b8b1d86887f372d18b9fe93bca0314bd9fda208d1b"
+        },
+        {
+          "path": "qp-gwanje-latest.apk",
+          "bytes": 12886171,
+          "sha256": "fb94c4327618b183749403eb0c5153b4bc32bd352f38e91595eda798b0b768ad"
+        },
+        {
+          "path": "qp-gwanje-vc290-20260705.apk",
+          "bytes": 10976179,
+          "sha256": "e923ccc72d821f220a97a45a5bd119b96ee708978ec13f90aeeba6b470b951eb"
+        },
+        {
+          "path": "qp-gwanje-vc291-20260705.apk",
+          "bytes": 10976183,
+          "sha256": "701e0a49f73617c13d0e0627e6f6b67386d63c23e3be1ac8e96d0a28690e1dc6"
+        },
+        {
+          "path": "qp-gwanje-vc312-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "4eb864d76ff44d133e5670da9803f016eb26cb0a7f7e610c5105fe5a26afbc75"
+        },
+        {
+          "path": "qp-gwanje-vc313-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "daed9d379b5177b0dc03f9a7ab9e38894176c018f5d310380bcd0294614a18a3"
+        },
+        {
+          "path": "qp-gwanje-vc314-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "b3d170ff531f53e17e6782c906dd22a55f3bfb3577a66bf8f34bc790b8874f12"
+        },
+        {
+          "path": "qp-gwanje-vc315-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "639d649cc7b886a8c5121113d790a8d067403096c12548258c7b60f1c75c3836"
+        },
+        {
+          "path": "qp-gwanje-vc316-20260705.apk",
+          "bytes": 10980279,
+          "sha256": "66aa6fb21aa76e56c27ca7351fb185c85b21fcbdb49cf6a93f81ab6277cffb25"
+        },
+        {
+          "path": "qp-gwanje-vc317-20260705.apk",
+          "bytes": 10980287,
+          "sha256": "4e5c9816aff16c619b505bb6fb5ad56e48f3855b730d04d39a37ee623770758f"
+        },
+        {
+          "path": "qp-gwanje-vc318-20260705.apk",
+          "bytes": 10980275,
+          "sha256": "91c6c1ac1618b57760954e66ab4fc496949da88358a6eea37bbed6f87706e9e1"
+        },
+        {
+          "path": "qp-gwanje.apk",
+          "bytes": 12886171,
+          "sha256": "fb94c4327618b183749403eb0c5153b4bc32bd352f38e91595eda798b0b768ad"
+        },
+        {
+          "path": "qp-update.json",
+          "bytes": 384,
+          "sha256": "2fc6421beb3667119fcb10f39bf2c1186973dc27e1729b82facf867d0a9ef37a"
+        },
+        {
+          "path": "report-editor-data.js",
+          "bytes": 79033,
+          "sha256": "26166d4027ca43fdbdb5c11bbfe572940cdbaa47e0ee08e8abe0a58dd6c0e159"
+        },
+        {
+          "path": "report-editor-edit.html",
+          "bytes": 223433,
+          "sha256": "4d065c59166616105f2fe7ce4c405433f44410883c394deb16d78a25f9560b1c"
+        },
+        {
+          "path": "report-editor.html",
+          "bytes": 14877,
+          "sha256": "c970190541ff09363cf0f9ef87344e4c23240a12a2f2dff960e9b4fc160d57bf"
+        },
+        {
+          "path": "server.html",
+          "bytes": 24798,
+          "sha256": "6fd9d831741fe249dea2d02e0dad9b46612a11c9f86067842abd17963d452392"
+        },
+        {
+          "path": "serverops.html",
+          "bytes": 8522,
+          "sha256": "00c73822b5272e72575884c70d9630c8a9d7c1c44dcdf617a21ac2b72dd4b991"
+        },
+        {
+          "path": "special-longhaul-report-20260709.html",
+          "bytes": 16249,
+          "sha256": "fba552d15e7026fe1f4457de2077f63004052f31aa3fa8514ab4251ee19f5cf1"
+        },
+        {
+          "path": "special-memo.html",
+          "bytes": 20070,
+          "sha256": "bb09af81fa4be69d67b07e5630db62c7119c170e31b66c797983d66a9939654f"
+        }
+      ]
+    }
+  ]
+}
