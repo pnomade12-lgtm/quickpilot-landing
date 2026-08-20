@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "release_id": "VC506-PROTECTED-ROLLOUT-20260820",
+  "created_at": "2026-08-20T21:58:28.8695097+09:00",
+  "source": {
+    "app_pre_release_commit_head": "841473087f8113e626fcbfd92b73ab71624b86ea",
+    "hosting_pre_release_commit_head": "41a4dc9b9647fe5b551c9a0d1dcd868a305622a2",
+    "hosting_branch": "backup/vc506-hosting-20260820",
+    "hosting_backup_tag": "hosting-vc506-backup-20260820",
+    "hosting_backup_tag_object": "1742e40abe279f33bcad212a3fbafc0db9709261",
+    "hosting_backup_tag_peeled": "41a4dc9b9647fe5b551c9a0d1dcd868a305622a2",
+    "hosting_release_tag_to_bind": "hosting-vc506-protected-20260820"
+  },
+  "hosting": {
+    "config": "firebase.paired-vc506-current-protected-hosting.json",
+    "config_sha256": "81e50101f22f95faf421498ecc1aa4b930a9903bb97ba7e38a6dc82cde248192",
+    "public_candidate": "release-staging/paired-vc506-current-protected-public-20260820",
+    "manifest_sha256": "33ad1565c7630acdf5f3b68322f79e445a2be218572bbbe234cb53c140e1bb6b",
+    "deployed_site": "https://quickpilot-39d72.web.app",
+    "remote_sha_match": true
+  },
+  "channels": {
+    "beta": {
+      "versionCode": 506,
+      "versionName": "beta-0.15f",
+      "apk": "qp-beta.apk",
+      "size_bytes": 12886171,
+      "sha256": "986c021fea5beaa92f29d03043c7152b8669a7f72f4f4201f30e35aee2787d73"
+    },
+    "gwanje": {
+      "versionCode": 506,
+      "versionName": "관제-0.15f",
+      "apk": "qp-gwanje.apk",
+      "size_bytes": 12886171,
+      "sha256": "4389c694ad961faaae402814de569bbb04984d55f01bd187995893cbdd9ab89b"
+    }
+  },
+  "order_sync_control": {
+    "generation": 49,
+    "minimum_client_version_code": 506,
+    "enabled": false,
+    "mode": "BLOCKED",
+    "allowed_uid": "",
+    "allowed_date": "",
+    "evidence_id": "VC506-PROTECTED-ROLLOUT-20260820"
+  },
+  "database_rules": {
+    "candidate": "rules/database.rules.order-sync-candidate.json",
+    "candidate_sha256": "08e9dc53e5425921b5c6f9f6da14755f064b1ea60d2b49d461798c791037192d",
+    "deployed": false
+  },
+  "field_status": "FIELD_REQUIRED",
+  "excluded_from_git": [
+    "APK binaries",
+    "build output",
+    "cache",
+    "logs",
+    "credentials",
+    "personal data"
+  ]
+}
