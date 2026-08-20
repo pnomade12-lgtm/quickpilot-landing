@@ -19,6 +19,11 @@ const dataCostVerifierPath = path.join(
   "scripts",
   "verify-data-cost-policy.js",
 );
+const blockedQuietVerifierPath = path.join(
+  root,
+  "scripts",
+  "verify-blocked-quiet-profiler-evidence.js",
+);
 
 const failures = [];
 
@@ -90,6 +95,11 @@ const controlPublisherSource = read("scripts/publish-order-sync-control.ps1");
 for (const marker of [
   "Read-ProtectedRelease",
   "Verify-InstalledCanary",
+  "Verify-BlockedQuietProof",
+  "BlockedQuietEvidencePath",
+  "QP_BLOCKED_QUIET_PROFILER=PASS",
+  "--max-age-ms 300000",
+  "live BLOCKED control changed after the quiet proof",
   "Verify-CanaryPass",
   "CANARY may open only from the exact matching BLOCKED control",
   "VERSION may open only from the exact matching live CANARY",
@@ -103,6 +113,129 @@ for (const marker of [
     marker,
     "order_sync_control transition publisher",
   );
+}
+const quietProofCall = controlPublisherSource.indexOf(
+  "Verify-BlockedQuietProof $Current",
+);
+const payloadBuild = controlPublisherSource.indexOf("$Payload = [ordered]@{");
+if (
+  quietProofCall < 0 ||
+  payloadBuild < 0 ||
+  quietProofCall > payloadBuild
+) {
+  failures.push("BLOCKED quiet proof must pass before the CANARY payload is built");
+}
+
+const blockedQuietVerifierSource = read(
+  "scripts/verify-blocked-quiet-profiler-evidence.js",
+);
+for (const marker of [
+  "MINIMUM_WINDOW_MS = 120000",
+  "DEFAULT_MAX_AGE_MS = 300000",
+  "allowed_false_write_events",
+  "order_path_write_events",
+  "order_live_path_write_events",
+  "root_update_events",
+  "raw_persisted: false",
+  "identifiers_persisted: false",
+  "paths_persisted: false",
+  "ephemeral_raw_deleted: true",
+]) {
+  requireText(blockedQuietVerifierSource, marker, "BLOCKED quiet profiler verifier");
+}
+
+if (fs.existsSync(blockedQuietVerifierPath)) {
+  const {
+    evidenceFailures,
+    summarizeEvents,
+  } = require(blockedQuietVerifierPath);
+  const quietNow = 1787103000000;
+  const control = {
+    enabled: false,
+    mode: "BLOCKED",
+    generation: 46,
+    evidence_id: "VC503-PROTECTED-ROLLOUT-20260818",
+    minimum_client_version_code: requiredVersionCode,
+    allowed_uid: "",
+    allowed_date: "",
+  };
+  const safeCounts = summarizeEvents([
+    { name: "listener-listen", path: ["v1", "app", "monitor_input"] },
+  ]);
+  const safeProof = {
+    schema_version: 1,
+    kind: "QP_BLOCKED_QUIET_PROFILER_EVIDENCE",
+    project: "quickpilot-39d72",
+    instance: "quickpilot-39d72-default-rtdb",
+    captured_at: quietNow,
+    window_started_at: quietNow - 120000,
+    window_ended_at: quietNow,
+    duration_ms: 120000,
+    profiler_complete: true,
+    control,
+    control_readback: { ...control },
+    counts: safeCounts,
+    raw_sha256: "0".repeat(64),
+    privacy: {
+      raw_persisted: false,
+      identifiers_persisted: false,
+      paths_persisted: false,
+      ephemeral_raw_deleted: true,
+    },
+  };
+  const verificationOptions = {
+    expectedGeneration: 46,
+    expectedMinimum: requiredVersionCode,
+    now: quietNow,
+    maxAgeMs: 300000,
+  };
+  if (evidenceFailures(safeProof, verificationOptions).length !== 0) {
+    failures.push("safe two-minute BLOCKED quiet proof fixture must pass");
+  }
+
+  const deniedCounts = summarizeEvents([
+    { name: "realtime-update", path: [], allowed: false },
+  ]);
+  if (
+    deniedCounts.allowed_false_write_events !== 1 ||
+    deniedCounts.root_update_events !== 1
+  ) {
+    failures.push("denied root update must be retained as BLOCKED quiet evidence");
+  }
+  const orderCounts = summarizeEvents([
+    {
+      name: "realtime-write",
+      path: ["v1", "users", "fixture-uid", "orders", "2026-08-19"],
+      allowed: true,
+    },
+    {
+      name: "realtime-transaction",
+      path: ["v1", "app", "agg_shadow_guard", "2026-08-19"],
+      allowed: true,
+    },
+  ]);
+  if (
+    orderCounts.order_path_write_events !== 1 ||
+    orderCounts.order_live_path_write_events !== 1
+  ) {
+    failures.push("order and orderLive writes must fail the BLOCKED quiet proof");
+  }
+  if (
+    !evidenceFailures(safeProof, {
+      ...verificationOptions,
+      now: quietNow + 300001,
+    }).includes("quiet proof is stale")
+  ) {
+    failures.push("stale BLOCKED quiet proof must fail");
+  }
+  if (
+    !evidenceFailures(safeProof, {
+      ...verificationOptions,
+      expectedGeneration: 47,
+    }).includes("control generation mismatch")
+  ) {
+    failures.push("mismatched BLOCKED generation proof must fail");
+  }
 }
 
 const indexSource = read("functions-order-live-release/index.js");

@@ -5,6 +5,7 @@ const test = require("node:test");
 const thresholds = require("../thresholds.json");
 const { evaluateMetrics, nextBlockedControl } = require("../order-sync-watchdog");
 const {
+  DATABASE_LOAD_MAX_OBSERVATION_LAG_MS,
   buildMonitoringMetrics,
   latestDelta,
   monitoringFilters,
@@ -22,6 +23,8 @@ function safeMetrics(overrides = {}) {
     order_live_invocations: 1,
     outbound_bytes: 1024,
     resource_load_percent: 20,
+    resource_load_observed_at: now - 60000,
+    resource_load_current: true,
     historical_replay_rows: 0,
     ...overrides,
   };
@@ -61,6 +64,25 @@ test("missing or stale collector blocks order sync", () => {
     ),
     ["collector_signal_stale"],
   );
+  assert.deepEqual(
+    evaluateMetrics(
+      safeMetrics({ resource_load_current: false }),
+      thresholds,
+      now,
+    ),
+    ["resource_load_signal_stale"],
+  );
+  assert.deepEqual(
+    evaluateMetrics(
+      safeMetrics({
+        resource_load_observed_at:
+          now - DATABASE_LOAD_MAX_OBSERVATION_LAG_MS - 1,
+      }),
+      thresholds,
+      now,
+    ),
+    ["resource_load_signal_stale"],
+  );
 });
 
 function point(value, endTime) {
@@ -79,9 +101,35 @@ test("collector sums only the newest aligned delta bucket", () => {
         { points: [point(7, latest), point(9000, old)] },
         { points: [point(2, latest), point(8000, old)] },
       ],
-      now - 120000,
+      {
+        now,
+        zeroObservedAt: now - 120000,
+        visibilityLagMs: 120000,
+      },
     ),
-    { value: 9, observedAt: now - 60000 },
+    {
+      value: 9,
+      observedAt: now - 60000,
+      sourceObservedAt: now - 60000,
+      inferredZero: false,
+    },
+  );
+});
+
+test("collector expires an old sparse nonzero delta instead of replaying it", () => {
+  const old = new Date(now - 121000).toISOString();
+  assert.deepEqual(
+    latestDelta([{ points: [point(33, old)] }], {
+      now,
+      zeroObservedAt: now - 120000,
+      visibilityLagMs: 120000,
+    }),
+    {
+      value: 0,
+      observedAt: now - 120000,
+      sourceObservedAt: now - 121000,
+      inferredZero: true,
+    },
   );
 });
 
@@ -100,6 +148,43 @@ test("collector turns monitored storm signals into a fail-closed sample", () => 
   assert.equal(metrics.collector_ok, true);
   assert.equal(metrics.control_generation, 11);
   assert.deepEqual(evaluateMetrics(metrics, thresholds, now), ["denied_order_requests"]);
+});
+
+test("slow database-load visibility does not stale the fast signals", () => {
+  const fastEnd = new Date(now - 60000).toISOString();
+  const slowLoadEnd = new Date(now - 20 * 60000).toISOString();
+  const metrics = buildMonitoringMetrics({
+    now,
+    control: { enabled: true, mode: "CANARY", generation: 12 },
+    series: {
+      deniedWrites: [{ points: [point(0, fastEnd)] }],
+      outboundBytes: [{ points: [point(1024, fastEnd)] }],
+      databaseLoad: [{ points: [point(0.2, slowLoadEnd)] }],
+      orderLiveInvocations: [{ points: [point(1, fastEnd)] }],
+    },
+  });
+  assert.equal(metrics.monitoring_observed_at, now - 60000);
+  assert.equal(metrics.resource_load_observed_at, now - 20 * 60000);
+  assert.equal(metrics.resource_load_current, true);
+  assert.deepEqual(evaluateMetrics(metrics, thresholds, now), []);
+});
+
+test("a high but delayed database-load sample still breaches", () => {
+  const fastEnd = new Date(now - 60000).toISOString();
+  const slowLoadEnd = new Date(now - 20 * 60000).toISOString();
+  const metrics = buildMonitoringMetrics({
+    now,
+    control: { enabled: true, mode: "CANARY", generation: 13 },
+    series: {
+      deniedWrites: [{ points: [point(0, fastEnd)] }],
+      outboundBytes: [{ points: [point(1024, fastEnd)] }],
+      databaseLoad: [{ points: [point(0.86, slowLoadEnd)] }],
+      orderLiveInvocations: [{ points: [point(1, fastEnd)] }],
+    },
+  });
+  assert.deepEqual(evaluateMetrics(metrics, thresholds, now), [
+    "resource_load_percent",
+  ]);
 });
 
 test("collector filter is bounded to one database and the orderLive function", () => {

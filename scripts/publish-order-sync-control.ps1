@@ -17,6 +17,7 @@ param(
 
     [string]$AllowedUid = "",
     [string]$AllowedDate = "",
+    [string]$BlockedQuietEvidencePath = "",
     [string]$CanaryStampPath = "",
     [string]$ClientRepoPath = "",
 
@@ -166,6 +167,40 @@ function Verify-InstalledCanary([object]$Release) {
     }
 }
 
+function Verify-BlockedQuietProof([object]$Current) {
+    if ([string]::IsNullOrWhiteSpace($BlockedQuietEvidencePath) -or
+        -not (Test-Path -LiteralPath $BlockedQuietEvidencePath -PathType Leaf)) {
+        Fail "CANARY requires a fresh two-minute BLOCKED profiler proof"
+    }
+    $verifier = Join-Path $Root "scripts\verify-blocked-quiet-profiler-evidence.js"
+    if (-not (Test-Path -LiteralPath $verifier -PathType Leaf)) {
+        Fail "BLOCKED quiet profiler verifier is missing"
+    }
+    $output = @(
+        & node $verifier `
+            --evidence $BlockedQuietEvidencePath `
+            --expected-generation ([long]$Current.generation) `
+            --expected-minimum-client-version-code $MinimumClientVersionCode `
+            --max-age-ms 300000
+    )
+    if ($LASTEXITCODE -ne 0 -or
+        "QP_BLOCKED_QUIET_PROFILER=PASS" -notin @($output | ForEach-Object { "$_".Trim() })) {
+        Fail "fresh two-minute BLOCKED profiler proof did not pass"
+    }
+
+    $readback = Read-FirebaseJson $Target "BLOCKED control after quiet proof"
+    if ($null -eq $readback -or
+        "$($readback.mode)" -ne "BLOCKED" -or
+        $readback.enabled -ne $false -or
+        [long]$readback.generation -ne [long]$Current.generation -or
+        "$($readback.evidence_id)" -ne "$($Current.evidence_id)" -or
+        [long]$readback.minimum_client_version_code -ne $MinimumClientVersionCode -or
+        -not [string]::IsNullOrEmpty("$($readback.allowed_uid)") -or
+        -not [string]::IsNullOrEmpty("$($readback.allowed_date)")) {
+        Fail "live BLOCKED control changed after the quiet proof"
+    }
+}
+
 function Verify-CanaryPass([object]$Current, [object]$Release) {
     if ([string]::IsNullOrWhiteSpace($CanaryStampPath) -or
         -not (Test-Path -LiteralPath $CanaryStampPath -PathType Leaf)) {
@@ -249,6 +284,7 @@ if ($Mode -eq "CANARY") {
         Fail "CANARY may open only from the exact matching BLOCKED control"
     }
     Verify-InstalledCanary $Release
+    Verify-BlockedQuietProof $Current
 }
 if ($Mode -eq "VERSION") {
     if ($null -eq $Current -or

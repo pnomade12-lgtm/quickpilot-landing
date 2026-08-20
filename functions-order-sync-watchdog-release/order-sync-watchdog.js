@@ -1,5 +1,7 @@
 "use strict";
 
+const DATABASE_LOAD_MAX_OBSERVATION_LAG_MS = 1800000;
+
 function number(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -22,6 +24,15 @@ function evaluateMetrics(metrics, thresholds, now) {
     now - monitoringObservedAt > thresholds.monitoring_max_lag_ms
   ) {
     return ["collector_signal_stale"];
+  }
+  const resourceLoadObservedAt = number(metrics.resource_load_observed_at);
+  if (
+    metrics.resource_load_current !== true ||
+    resourceLoadObservedAt <= 0 ||
+    resourceLoadObservedAt > now + 30000 ||
+    now - resourceLoadObservedAt > DATABASE_LOAD_MAX_OBSERVATION_LAG_MS
+  ) {
+    return ["resource_load_signal_stale"];
   }
 
   const breaches = [];
@@ -70,4 +81,8 @@ function nextBlockedControl(current, evidenceId, now, breaches) {
   };
 }
 
-module.exports = { evaluateMetrics, nextBlockedControl };
+module.exports = {
+  DATABASE_LOAD_MAX_OBSERVATION_LAG_MS,
+  evaluateMetrics,
+  nextBlockedControl,
+};

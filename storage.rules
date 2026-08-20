@@ -1,0 +1,26 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /landing/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'pnomade12@gmail.com';
+    }
+    // 6/2 — QP 베타 소셜 피드 사진. 읽기 공개(피드 표시), 쓰기는 로그인 유저 + 2MB·이미지 제한.
+    match /social_images/{imageId} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+    match /board_images/{imageId} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.token.email_verified == true
+        && (request.auth.token.email == 'pnomade12@gmail.com'
+          || request.auth.token.email == 'pnomade13@gmail.com')
+        && request.resource != null
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

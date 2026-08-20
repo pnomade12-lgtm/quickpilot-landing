@@ -4,6 +4,8 @@ const DATABASE_METRIC_PREFIX = "firebasedatabase.googleapis.com/";
 const FUNCTION_EXECUTION_METRIC =
   "cloudfunctions.googleapis.com/function/execution_count";
 const DEFAULT_ZERO_VISIBILITY_LAG_MS = 120000;
+const FUNCTION_ZERO_VISIBILITY_LAG_MS = 240000;
+const DATABASE_LOAD_MAX_OBSERVATION_LAG_MS = 1800000;
 
 function numericPointValue(point) {
   const value = point && point.value;
@@ -21,22 +23,39 @@ function pointEndMillis(point) {
  * newest aligned bucket across labels (for example function ok/error), never
  * an older non-zero point from a different label.
  */
-function latestDelta(timeSeries, fallbackObservedAt) {
+function latestDelta(
+  timeSeries,
+  { now, zeroObservedAt, visibilityLagMs },
+) {
   const points = (timeSeries || []).flatMap((series) => series.points || []);
   const newestEnd = points.reduce(
     (latest, point) => Math.max(latest, pointEndMillis(point)),
     0,
   );
-  if (newestEnd <= 0) {
-    return { value: 0, observedAt: fallbackObservedAt };
+  if (
+    newestEnd <= 0 ||
+    newestEnd > now + 30000 ||
+    newestEnd < now - visibilityLagMs
+  ) {
+    return {
+      value: 0,
+      observedAt: zeroObservedAt,
+      sourceObservedAt: newestEnd,
+      inferredZero: true,
+    };
   }
   const value = points
     .filter((point) => Math.abs(pointEndMillis(point) - newestEnd) <= 30000)
     .reduce((sum, point) => sum + numericPointValue(point), 0);
-  return { value, observedAt: newestEnd };
+  return {
+    value,
+    observedAt: newestEnd,
+    sourceObservedAt: newestEnd,
+    inferredZero: false,
+  };
 }
 
-function latestLoadPercent(timeSeries, fallbackObservedAt) {
+function latestLoadPercent(timeSeries, now) {
   const newestPoints = (timeSeries || [])
     .map((series) =>
       (series.points || []).reduce((latest, point) =>
@@ -45,26 +64,43 @@ function latestLoadPercent(timeSeries, fallbackObservedAt) {
     )
     .filter(Boolean);
   if (newestPoints.length === 0) {
-    return { value: 0, observedAt: fallbackObservedAt };
+    return { value: 0, observedAt: 0, current: false };
   }
+  const observedAt = Math.max(...newestPoints.map(pointEndMillis));
   return {
     value:
       Math.max(...newestPoints.map((point) => numericPointValue(point))) * 100,
-    observedAt: Math.max(...newestPoints.map(pointEndMillis)),
+    observedAt,
+    current:
+      observedAt > 0 &&
+      observedAt <= now + 30000 &&
+      now - observedAt <= DATABASE_LOAD_MAX_OBSERVATION_LAG_MS,
   };
 }
 
 function buildMonitoringMetrics({ now, control, series }) {
-  const zeroObservedAt = now - DEFAULT_ZERO_VISIBILITY_LAG_MS;
-  const denied = latestDelta(series.deniedWrites, zeroObservedAt);
-  const outbound = latestDelta(series.outboundBytes, zeroObservedAt);
-  const invocations = latestDelta(series.orderLiveInvocations, zeroObservedAt);
-  const load = latestLoadPercent(series.databaseLoad, zeroObservedAt);
+  const databaseZeroObservedAt = now - DEFAULT_ZERO_VISIBILITY_LAG_MS;
+  const functionZeroObservedAt = now - FUNCTION_ZERO_VISIBILITY_LAG_MS;
+  const denied = latestDelta(series.deniedWrites, {
+    now,
+    zeroObservedAt: databaseZeroObservedAt,
+    visibilityLagMs: DEFAULT_ZERO_VISIBILITY_LAG_MS,
+  });
+  const outbound = latestDelta(series.outboundBytes, {
+    now,
+    zeroObservedAt: databaseZeroObservedAt,
+    visibilityLagMs: DEFAULT_ZERO_VISIBILITY_LAG_MS,
+  });
+  const invocations = latestDelta(series.orderLiveInvocations, {
+    now,
+    zeroObservedAt: functionZeroObservedAt,
+    visibilityLagMs: FUNCTION_ZERO_VISIBILITY_LAG_MS,
+  });
+  const load = latestLoadPercent(series.databaseLoad, now);
   const monitoringObservedAt = Math.min(
     denied.observedAt,
     outbound.observedAt,
     invocations.observedAt,
-    load.observedAt,
   );
   const orderLiveInvocations = Math.max(0, Math.round(invocations.value));
   const isBlocked = control?.enabled === false && control?.mode === "BLOCKED";
@@ -75,13 +111,21 @@ function buildMonitoringMetrics({ now, control, series }) {
     collected_at: now,
     monitoring_observed_at: monitoringObservedAt,
     denied_order_requests: Math.max(0, Math.round(denied.value)),
+    denied_order_requests_source_observed_at: denied.sourceObservedAt,
+    denied_order_requests_inferred_zero: denied.inferredZero,
     blocked_idle_order_operations: isBlocked ? orderLiveInvocations : 0,
     // The exact semantic-change equality is proved by the path-scoped CAN-F01
     // profiler. The permanent cutoff remains conservative at 300 invocations/min.
     semantic_changes: orderLiveInvocations,
     order_live_invocations: orderLiveInvocations,
+    order_live_invocations_source_observed_at: invocations.sourceObservedAt,
+    order_live_invocations_inferred_zero: invocations.inferredZero,
     outbound_bytes: Math.max(0, Math.round(outbound.value)),
+    outbound_bytes_source_observed_at: outbound.sourceObservedAt,
+    outbound_bytes_inferred_zero: outbound.inferredZero,
     resource_load_percent: Math.max(0, load.value),
+    resource_load_observed_at: load.observedAt,
+    resource_load_current: load.current,
     // CANARY rules admit only one exact UID/current date. VERSION additionally
     // requires the client-side dormant historical-outbox contract and CAN-F01.
     historical_replay_rows: 0,
@@ -110,7 +154,9 @@ function monitoringFilters(tableName) {
 }
 
 module.exports = {
+  DATABASE_LOAD_MAX_OBSERVATION_LAG_MS,
   DEFAULT_ZERO_VISIBILITY_LAG_MS,
+  FUNCTION_ZERO_VISIBILITY_LAG_MS,
   buildMonitoringMetrics,
   latestDelta,
   latestLoadPercent,

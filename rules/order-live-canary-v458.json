@@ -1,0 +1,67 @@
+{
+  "schema": "qp-order-sync-control-v1",
+  "deployable": false,
+  "reason": "Merge only after the isolated orderLive cost guard is live and the vc458 app payload contract passes.",
+  "control_path": "rules/v1/app/order_sync_control",
+  "control_rules": {
+    ".read": "auth != null",
+    ".write": "auth != null && auth.token.email_verified === true && auth.token.email == 'pnomade12@gmail.com'",
+    ".validate": "newData.hasChildren(['enabled','mode','generation','evidence_id','minimum_client_version_code','allowed_uid','allowed_date'])",
+    "enabled": {
+      ".validate": "newData.isBoolean()"
+    },
+    "mode": {
+      ".validate": "newData.isString() && (newData.val() === 'BLOCKED' || newData.val() === 'CANARY' || newData.val() === 'VERSION')"
+    },
+    "generation": {
+      ".validate": "newData.isNumber() && newData.val() >= 1"
+    },
+    "evidence_id": {
+      ".validate": "newData.isString() && newData.val().length >= 8 && newData.val().length <= 120"
+    },
+    "minimum_client_version_code": {
+      ".validate": "newData.isNumber() && newData.val() >= 458"
+    },
+    "allowed_uid": {
+      ".validate": "newData.isString() && newData.val().length <= 128"
+    },
+    "allowed_date": {
+      ".validate": "newData.isString() && (newData.val() === '' || newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}$/))"
+    },
+    "$other": {
+      ".validate": false
+    }
+  },
+  "false_by_default_value": {
+    "enabled": false,
+    "mode": "BLOCKED",
+    "generation": 1,
+    "evidence_id": "NOT_APPROVED",
+    "minimum_client_version_code": 458,
+    "allowed_uid": "",
+    "allowed_date": ""
+  },
+  "target_path": "rules/v1/users/$uid/orders/$date/$orderId/.write",
+  "required_absences": [
+    "rules/v1/users/$uid/orders/.write",
+    "rules/v1/users/$uid/orders/$date/.write"
+  ],
+  "required_version_code": 458,
+  "required_order_payload_fields": [
+    "client_version_code"
+  ],
+  "write_expression": "auth != null && auth.uid === $uid && root.child('v1').child('app').child('order_sync_control').child('enabled').val() === true && newData.child('client_version_code').isNumber() && newData.child('client_version_code').val() >= root.child('v1').child('app').child('order_sync_control').child('minimum_client_version_code').val() && ((root.child('v1').child('app').child('order_sync_control').child('mode').val() === 'CANARY' && root.child('v1').child('app').child('order_sync_control').child('allowed_uid').val() === $uid && root.child('v1').child('app').child('order_sync_control').child('allowed_date').val() === $date) || (root.child('v1').child('app').child('order_sync_control').child('mode').val() === 'VERSION'))",
+  "limitations": [
+    "The control node is authenticated-readable so a blocked app can fetch one small permit, but only the release administrator can write it.",
+    "enabled=false or mode=BLOCKED denies every normal client order write.",
+    "Missing or sub-minimum client_version_code denies old clients.",
+    "CANARY requires the exact server-owned allowed UID and date; VERSION still requires the minimum payload version.",
+    "generation and evidence_id stay in the admin-owned control for the app bounded-read and local one-shot release proof; they are not order payload admission fields.",
+    "Every device sharing a CANARY UID must use the approved vc458 client payload contract before the control is enabled."
+  ],
+  "rollback": {
+    "orders_write": false,
+    "remove_child_write_rule": true,
+    "known_good_rules_backup": "C:/Users/rlasn/Documents/QuickPilot_beta/analysis/proof/20260730/billing_emergency_containment/database_rules_after_orders_block_20260730_1821.json"
+  }
+}

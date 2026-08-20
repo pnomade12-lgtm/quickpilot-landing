@@ -47,6 +47,47 @@ for (const marker of [
 ]) {
   if (!index.includes(marker)) failures.push(`watchdog source lost marker: ${marker}`);
 }
+
+const collector = fs.readFileSync(
+  path.join(release, "monitoring-collector.js"),
+  "utf8",
+);
+for (const marker of [
+  "FUNCTION_ZERO_VISIBILITY_LAG_MS",
+  "DATABASE_LOAD_MAX_OBSERVATION_LAG_MS",
+  "sourceObservedAt",
+  "inferredZero",
+  "resource_load_observed_at",
+  "resource_load_current",
+]) {
+  if (!collector.includes(marker)) {
+    failures.push(`monitoring collector lost watermark marker: ${marker}`);
+  }
+}
+const watermarkStart = collector.indexOf(
+  "const monitoringObservedAt = Math.min(",
+);
+const watermarkEnd = collector.indexOf(";", watermarkStart);
+const watermarkSource =
+  watermarkStart >= 0 && watermarkEnd > watermarkStart
+    ? collector.slice(watermarkStart, watermarkEnd)
+    : "";
+if (!watermarkSource || watermarkSource.includes("load.observedAt")) {
+  failures.push("slow database load must not set the fast-signal watermark");
+}
+
+const watchdog = fs.readFileSync(
+  path.join(release, "order-sync-watchdog.js"),
+  "utf8",
+);
+for (const marker of [
+  "resource_load_signal_stale",
+  "DATABASE_LOAD_MAX_OBSERVATION_LAG_MS",
+]) {
+  if (!watchdog.includes(marker)) {
+    failures.push(`watchdog lost load-freshness marker: ${marker}`);
+  }
+}
 for (const forbidden of ["functions/index.js", "database.rules.json", "hosting", "remove("] ) {
   if (index.includes(forbidden)) failures.push(`watchdog source contains forbidden scope: ${forbidden}`);
 }
